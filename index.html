@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clínica Recriar</title>
+    <link rel="stylesheet" href="styles/reset.css">
+    <link rel="stylesheet" href="styles/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="/img/Logo recriar.png">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header id="header" class="main-header">
+        <div class="container header-container">
+            <!-- Logo -->
+            <a href="#" class="logo">
+                <img src="/img/Logo recriar.png" alt="Logo Clínica Recriar" class="logo-img" onerror="this.onerror=null;this.src='https://placehold.co/200x50/00A79D/FFFFFF?text=Recriar';">
+            </a>
+
+            <!-- Desktop Navigation -->
+            <nav class="desktop-nav">
+                <a href="#sobre" class="nav-link">Sobre Nós</a>
+                <a href="#servicos" class="nav-link">Serviços</a>
+                <a href="#equipe" class="nav-link">Equipe</a>
+                <a href="#contato" class="nav-link">Contato</a>
+            </nav>
+
+            <!-- CTA Button -->
+            <a href="#contato" class="cta-button header-cta">
+                Agendar Consulta
+            </a>
+
+            <!-- Mobile Menu Button -->
+            <button id="mobile-menu-button" class="mobile-menu-toggle">
+                <i data-lucide="menu"></i>
+            </button>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="mobile-menu">
+            <nav class="mobile-nav-links">
+                <a href="#sobre" class="nav-link">Sobre Nós</a>
+                <a href="#servicos" class="nav-link">Serviços</a>
+                <a href="#equipe" class="nav-link">Equipe</a>
+                <a href="#contato" class="nav-link">Contato</a>
+                <a href="#contato" class="cta-button mobile-cta">
+                    Agendar Consulta
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section id="home" class="hero-section" style="background-image: url(img/frente.jpg);">
+            <div class="hero-gradient">
+                <div class="container">
+                    <div class="hero-content">
+                        <span class="hero-subtitle">Clínica Recriar</span>
+                        <h1 class="hero-title">
+                            Atendimento prestado de forma Multidisciplinar entre diversas áreas 
+                        </h1>
+                        <p class="hero-text">
+                            Na Clínica Recriar, temos profissionais capacitados em diversas áreas, como Psicologia, Nutrição, Psicopedagogia e Fonoaudiologia.
+                        </p>
+                        <a href="#contato" class="cta-button hero-cta">
+                            Fale Conosco
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Us Section -->
+        <section id="sobre" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Nossa Abordagem Multidisciplinar</h2>
+                    <p class="section-subtitle">Acreditamos que o atendimento Multidisciplinar auxilia em diversos contextos de nossas vidas, trabalhando e unindo profissionais 
+                        em um só local para melhor conveniencia e contato em equipe.</p>
+                </div>
+                <div class="features-grid">
+                    <!-- Feature 1 -->
+                    <div class="feature-card">
+                        <div class="feature-icon-wrapper">
+                            <i data-lucide="users-2"></i>
+                        </div>
+                        <h3 class="feature-title">Cuidado Integrado</h3>
+                        <p>Profissionais de diferentes áreas colaboram para garantir que todos os aspectos da sua saúde sejam atendidos.</p>
+                    </div>
+                    <!-- Feature 2 -->
+                    <div class="feature-card">
+                        <div class="feature-icon-wrapper">
+                            <i data-lucide="clipboard-list"></i>
+                        </div>
+                        <h3 class="feature-title">Atendimento Focalizado</h3>
+                        <p>São realizados atendimentos focados no paciente, para auxiliar suas necessidades especificas.</p>
+                    </div>
+                    <!-- Feature 3 -->
+                    <div class="feature-card">
+                        <div class="feature-icon-wrapper">
+                            <i data-lucide="heart-pulse"></i>
+                        </div>
+                        <h3 class="feature-title">Foco no Bem-Estar</h3>
+                        <p>Nosso objetivo é além de estarmos tratando a sáude, é trazermos comodidade e bom atendimento para diferenciar o cenário atual.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Services Section -->
+        <section id="servicos" class="section section-alt">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Nossos Serviços</h2>
+                    <p class="section-subtitle">Oferecemos diversos serviços para todas as faixas etárias.</p>
+                </div>
+                <div class="services-grid">
+                    <!-- Service Card -->
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <i data-lucide="brain-circuit"></i>
+                        </div>
+                        <h3 class="service-title">Psicologia</h3>
+                        <p class="servico__texto">Cuidamos da sua saúde mental e emocional, oferecendo um caminho para o autoconhecimento e o bem-estar.</p>
+                    </div>
+                    <!-- Service Card -->
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <i data-lucide="brain-circuit"></i>
+                        </div>
+                        <h3 class="service-title">Psicopedagogia</h3>
+                        <p class="servico__texto"> Transformamos dificuldades em conquistas, potencializando o processo de aprendizagem em todas as idades.</p>
+                    </div>  
+                    <!-- Service Card -->
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <i data-lucide="leaf"></i>
+                        </div>
+                        <h3 class="service-title">Nutrição</h3>
+                        <p class="servico__texto">Guiamos você a uma relação saudável com a comida através de planos alimentares personalizados para seus objetivos.</p>
+                    </div>
+                    <!-- Service Card -->
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <i data-lucide="speech"></i>
+                        </div>
+                        <h3 class="service-title">Fonoaudiologia</h3>
+                        <p class="servico__texto">Aprimoramos a comunicação humana, atuando na reabilitação da fala, voz, audição e deglutição.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Team Section -->
+        <section id="equipe" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Conheça Nossa Equipe</h2>
+                    <p class="section-subtitle">Profissionais dedicados e apaixonados pelo que fazem, prontos para acolher você.</p>
+                </div>
+                <div class="team-grid">
+                    <!-- Team Member -->
+                    <div class="team-member">
+                        <img src="img/Andreia.jpg" alt="Foto da Psicóloga Andreia" class="team-member-photo">
+                        <h3 class="team-member-name">Andreia Aparecido</h3>
+                        <p class="team-member-role">Psicóloga</p>
+                        <p class="team-member-role">CRP - 07/30835</p>                        
+                    </div>
+                                                                                                                                                                                                                       
+                    <!-- Team Member -->
+                    <div class="team-member">
+                        <img src="https://placehold.co/400x400/E6F6F5/333333?text=Dr.+Carlos" alt="Foto do Psiquiatra Alex" class="team-member-photo">
+                        <h3 class="team-member-name">Alex Krambech</h3>
+                        <p class="team-member-role">Psiquiatra</p>
+                        <p class="team-member-role">CRM - 52232 </p>                       
+                    </div>
+
+                    <!-- Team Member -->
+                    <div class="team-member">
+                        <img src="img/Amanda.png" alt="Foto da Psicopedagoga Amanda" class="team-member-photo">
+                        <h3 class="team-member-name">Amanda Carvalho Diniz</h3>
+                        <p class="team-member-role">Psicopedagoga</p>
+                        <p class="team-member-role">CFEP - 22004379</p>                        
+                    </div>
+
+                    <!-- Team Member -->
+                    <div class="team-member">
+                        <img src="img/Angélica.png" alt="Foto da Psicóloga Angélica" class="team-member-photo">
+                        <h3 class="team-member-name">Angélica Escobar</h3>
+                        <p class="team-member-role">Psicóloga</p>
+                        <p class="team-member-role">CRP - 07/34948</p>                        
+                    </div>
+
+                    <!-- Team Member -->
+                    <div class="team-member">
+                        <img src="img/Bruna.png" alt="Foto da Psicóloga Bruna" class="team-member-photo">
+                        <h3 class="team-member-name">Bruna Benitez Calmon</h3>
+                        <p class="team-member-role">Psicóloga</p>
+                        <p class="team-member-role">CRP - 07/33341</p>                        
+                    </div>
+                    
+                    <!-- Team Member -->
+                    <div class="team-member">
+                        <img src="img/Elizangela.png" alt="Foto da Psicóloga Elizangela" class="team-member-photo">
+                        <h3 class="team-member-name">Elizangela Rodrigues Matheus da Rosa</h3>
+                        <p class="team-member-role">Psicóloga</p>
+                        <p class="team-member-role">CRP - 07/31693</p>                        
+                    </div>
+                    
+                    <!-- Team Member -->
+                    <div class="team-member">
+                        <img src="img/Bruna.png" alt="Foto do Psicólogo Santiago" class="team-member-photo">
+                        <h3 class="team-member-name">Frederico Santiago Greis Favilla</h3>
+                        <p class="team-member-role">Psicólogo</p>
+                        <p class="team-member-role">CRP - 07/41885</p>                        
+                    </div>
+                    
+                    <!-- Team Member -->
+                    <div class="team-member">
+                        <img src="img/Gabriel.jpg" alt="Foto do Psicólogo Gabriel" class="team-member-photo">
+                        <h3 class="team-member-name">Gabriel Noguez Costa</h3>
+                        <p class="team-member-role">Psicólogo</p>
+                        <p class="team-member-role">CRP - 07/39486</p>                        
+                    </div>
+
+                    <!-- Team Member -->
+                    <div class="team-member">
+                        <img src="img/Isadora.jpg" alt="Foto da Psicóloga Isadora" class="team-member-photo">
+                        <h3 class="team-member-name">Isadora Donati Netto</h3>
+                        <p class="team-member-role">Psicóloga</p>
+                        <p class="team-member-role">CRP - 07/39592</p>                        
+                    </div>
+                    
+                    <!-- Team Member -->
+                    <div class="team-member">
+                        <img src="img/Isadora.jpg" alt="Foto da Psicóloga Jeniffer" class="team-member-photo">
+                        <h3 class="team-member-name">Jeniffer Lackman de Castro Feijó</h3>
+                        <p class="team-member-role">Psicóloga</p>
+                        <p class="team-member-role">CRP - 07/35344</p>                        
+                    </div>
+                    
+                    <!-- Team Member -->
+                    <div class="team-member">
+                        <img src="img/Jéssica.png" alt="Foto da Psicóloga Jéssica" class="team-member-photo">
+                        <h3 class="team-member-name">Jéssica Souza dos Santos</h3>
+                        <p class="team-member-role">Psicóloga</p>
+                        <p class="team-member-role">CRP - 07/31234</p>                        
+                    </div>
+                    
+                    <!-- Team Member -->
+                    <div class="team-member">
+                        <img src="img/Joana.jpg" alt="Foto da Psicóloga Joana" class="team-member-photo">
+                        <h3 class="team-member-name">Joana da Rosa de Lima</h3>
+                        <p class="team-member-role">Psicóloga</p>
+                        <p class="team-member-role">CRP - 07/43298</p>                        
+                    </div>
+
+                    <!-- Team Member -->
+                    <div class="team-member">
+                        <img src="img/Juliana.jpg" alt="Foto da Psicóloga Juliana" class="team-member-photo">
+                        <h3 class="team-member-name">Juliana Maia</h3>
+                        <p class="team-member-role">Psicóloga</p>
+                        <p class="team-member-role">CRP - 07/42044</p>                        
+                    </div>
+                    
+                    <!-- Team Member -->
+                    <div class="team-member">
+                        <img src="img/Liliane.jpg" alt="Foto da Psicóloga Liliane" class="team-member-photo">
+                        <h3 class="team-member-name">Liliane Albino Francisco</h3>
+                        <p class="team-member-role">Psicóloga</p>
+                        <p class="team-member-role">CRP -  07/33205</p>                        
+                    </div>                    
+                    
+                    <!-- Team Member -->
+                    <div class="team-member">
+                        <img src="img/Liziane².jpg" alt="Foto da Psicopedagoga Liziane" class="team-member-photo">
+                        <h3 class="team-member-name">Liziane de Ávila Gonçalves</h3>
+                        <p class="team-member-role">Psicopedagoga</p>
+                        <p class="team-member-role">CFEP - 2401278</p>                        
+                    </div>
+                    
+                    <!-- Team Member -->
+                    <div class="team-member">
+                        <img src="img/Liziane.png" alt="Foto da Psicóloga Liziane" class="team-member-photo">
+                        <h3 class="team-member-name">Liziane Paiva Souza Duran</h3>
+                        <p class="team-member-role">Psicóloga</p>
+                        <p class="team-member-role">CRP - 07/31902</p>                       
+                    </div>                    
+                    
+                    <!-- Team Member -->
+                    <div class="team-member">
+                        <img src="img/Maiza.jpg" alt="Foto da Psicóloga Maiza" class="team-member-photo">
+                        <h3 class="team-member-name">Maiza Vanzelote</h3>
+                        <p class="team-member-role">Psicóloga</p>
+                        <p class="team-member-role">CRP - 07/31953</p>                        
+                    </div>   
+
+                    <!-- Team Member -->
+                    <div class="team-member">
+                        <img src="img/Marcia.png" alt="Foto da Nutricionista Márcia" class="team-member-photo">
+                        <h3 class="team-member-name">Márcia Furtado</h3>
+                        <p class="team-member-role">Nutricionista</p>
+                        <p class="team-member-role">CRN - 19815D</p>                        
+                    </div>    
+
+                    <!-- Team Member -->
+                    <div class="team-member">
+                        <img src="img/Mariana.png" alt="Foto da Psicóloga Mariana" class="team-member-photo">
+                        <h3 class="team-member-name">Mariana Selagem Barros</h3>
+                        <p class="team-member-role">Psicóloga</p>
+                        <p class="team-member-role">CRP - 07/39172</p>                        
+                    </div>  
+
+                    <!-- Team Member -->
+                    <div class="team-member">
+                        <img src="img/Milena.png" alt="Foto da Fonoaudióloga Milena" class="team-member-photo">
+                        <h3 class="team-member-name">Milena de Souza</h3>
+                        <p class="team-member-role">Fonoaudióloga</p>
+                        <p class="team-member-role">CRFa 7-14017-4</p>                        
+                    </div>    
+                                   
+                    <!-- Team Member -->
+                    <div class="team-member">
+                        <img src="img/Mariana.png" alt="Foto da Fonoaudióloga Natasha" class="team-member-photo">
+                        <h3 class="team-member-name">Natasha Leoni</h3>
+                        <p class="team-member-role">Fonoaudióloga</p>
+                        <p class="team-member-role">CRFa 7-11456-5</p>                        
+                    </div>                    
+                                   
+                    <!-- Team Member -->
+                    <div class="team-member">
+                        <img src="img/Nathalia.png" alt="Foto da Psicóloga Nathalia " class="team-member-photo">
+                        <h3 class="team-member-name">Nathalia Cruz Oliveira</h3>
+                        <p class="team-member-role">Psicóloga</p>
+                        <p class="team-member-role">CRP - 07/39159</p>
+                    </div>                    
+                                   
+                    <!-- Team Member -->
+                    <div class="team-member">
+                        <img src="img/Tatiane.png" alt="Foto da Psicóloga Tatiane" class="team-member-photo">
+                        <h3 class="team-member-name">Tatiane Carreiros Viana</h3>
+                        <p class="team-member-role">Psicóloga</p>
+                        <p class="team-member-role">CRP - 07/33665</p>                       
+                    </div>                    
+                                   
+                    <!-- Team Member -->
+                    <div class="team-member">
+                        <img src="img/Thais.png" alt="Foto da Psicóloga Thais" class="team-member-photo">
+                        <h3 class="team-member-name">Thais Silva Medeiros</h3>
+                        <p class="team-member-role">Psicóloga</p>
+                        <p class="team-member-role">CRP - 07/31270</p>                        
+                    </div>                    
+                                   
+                    <!-- Team Member -->
+                    <div class="team-member">
+                        <img src="img/Thays Amanda.png" alt="Foto da Fonoaudióloga Thays" class="team-member-photo">
+                        <h3 class="team-member-name">Thays Amanda Ribeiro Santos</h3>
+                        <p class="team-member-role">Fonoaudióloga</p>
+                        <p class="team-member-role">CRFa - 7-1766-9</p>                        
+                    </div>                    
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contato" class="section section-alt">
+            <div class="container">
+                <div class="contact-grid">
+                    <div class="contact-info">
+                        <h2 class="section-title">Pronto para Recomeçar?</h2>
+                        <p class="contact-text">Entre em contato conosco para agendar sua primeira consulta. Estamos aqui para ouvir você e ajudar em sua jornada de bem-estar.</p>
+                        <div class="contact-details">
+                            <div class="contact-detail-item">
+                                <a class="contato__link"href="https://www.google.com/maps/place/Recriar+Clínica+Multidisciplinar/@-32.036856,-52.1019436,17z/data=!3m1!4b1!4m6!3m5!1s0x95119d8dcdd89ebb:0x9454a52f7c4ee862!8m2!3d-32.036856!4d-52.1019436!16s%2Fg%2F11smvh8lg6?entry=ttu&g_ep=EgoyMDI1MDgxMS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener noreferrer">
+                                    <i data-lucide="map-pin"></i>
+                                    <span>Rua General Canabarro, 458 - Bairro Centro, Rio Grande, RS</span>
+                                </a>
+                            </div>
+                            <div class="contact-detail-item">
+                                <a class="contato__link" href="https://api.whatsapp.com/send/?phone=5553991281500&text=Olá+gostaria+de+saber+sobre+atendimentos.&type=phone_number&app_absent=0" target="_blank" rel="noopener noreferrer">
+                                    <i data-lucide="phone"></i>
+                                    <span>(53) 99128-1500</span>
+                                </a>
+                            </div>
+                            <div class="contact-detail-item">
+                                <a class="contato__link" href="mailto:clinicarecriar.rg@gmail.com">
+                                    <i data-lucide="mail"></i>
+                                    <span>clinicarecriar.rg@gmail.com</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="contact-form-wrapper">
+                        <h3>Envie uma Mensagem</h3>
+                        <form class="contact-form" action="#" method="POST">
+                            <div class="form-group">
+                                <label for="name">Nome</label>
+                                <input type="text" id="name" name="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">E-mail</label>
+                                <input type="email" id="email" name="email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="message">Mensagem</label>
+                                <textarea id="message" name="message" rows="4" required></textarea>
+                            </div>
+                            <button type="submit" class="cta-button form-submit-button">
+                                Enviar
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <img src="/img/Logo recriar.png" alt="Logo Clínica Recriar" class="logo-img footer-logo" onerror="this.onerror=null;this.src='https://placehold.co/200x50/FFFFFF/333333?text=Recriar';">
+                    <p>Cuidado integrado para uma vida plena.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Navegação</h4>
+                    <ul>
+                        <li><a href="#sobre">Sobre</a></li>
+                        <li><a href="#servicos">Serviços</a></li>
+                        <li><a href="#equipe">Equipe</a></li>
+                        <li><a href="#contato">Contato</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Contato</h4>
+                    <ul>
+                        <li>Rua General Canabarro, 458</li>
+                        <li>(53) 99128-1500</li>
+                        <li>clinicarecriar.rg@gmail.com</li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Siga-nos</h4>
+                    <div class="social-links">
+                        <a href="https://www.facebook.com/clinicarecriarrg"><i data-lucide="facebook"></i></a>
+                        <a href="https://www.instagram.com/clinicarecriarrg/" target="_blank"><i data-lucide="instagram"></i></a> 
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2022 Clínica Recriar. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // --- Mobile Menu Logic ---
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('is-open');
+        });
+
+        // Close mobile menu when a link is clicked
+        document.querySelectorAll('#mobile-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.remove('is-open');
+            });
+        });
+        
+        // --- Header Scroll Effect ---
+        const header = document.getElementById('header');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+    </script>
+
+</body>
+</html>
+
