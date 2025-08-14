@@ -11,6 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="/img/Logo recriar.png">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script type="text/javascript" src="jss/instafeed.min.js"></script>
 </head>
 
 <body>
@@ -368,6 +369,16 @@
                 </div>
             </div>
         </section>
+        <!-- Instagram Section -->
+        <section class="secao-instagram">
+            <h2>Nos Siga no Instagram</h2>
+
+            <div id="instafeed"></div>
+
+            <a href="https://www.instagram.com/clinicarecriarrg" target="_blank" class="botao-instagram">
+             Ver mais no Instagram
+            </a>
+        </section>
 
         <!-- Contact Section -->
         <section id="contato" class="section section-alt">
@@ -397,29 +408,8 @@
                             </div>
                         </div>
                     </div>
-                    <div class="contact-form-wrapper">
-                        <h3>Envie uma Mensagem</h3>
-                        <form class="contact-form" action="#" method="POST">
-                            <div class="form-group">
-                                <label for="name">Nome</label>
-                                <input type="text" id="name" name="name" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="email">E-mail</label>
-                                <input type="email" id="email" name="email" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="message">Mensagem</label>
-                                <textarea id="message" name="message" rows="4" required></textarea>
-                            </div>
-                            <button type="submit" class="cta-button form-submit-button">
-                                Enviar
-                            </button>
-                        </form>
-                    </div>
                 </div>
             </div>
-        </section>
     </main>
 
     <!-- Footer -->
@@ -489,6 +479,29 @@
                 header.classList.remove('scrolled');
             }
         });
+    </script>
+
+    <script type="text/javascript">
+        var feed = new Instafeed({
+        // ⚠️ **AÇÃO NECESSÁRIA:** Cole o seu Access Token aqui!
+        accessToken: 'IGAAKu6wq4LUNBZAE95VzZATVzdjNktLVlI2SmdVTHNrakhQSjNtdkx4SWNnRVA1V1EyT1hkS1hMSEFya1MtbndnanNvS0VNU2ZASNWJvNENjX1hHS3VrWlozU1VrNmUySWU2TWZAFTHZAkaXVIOG05cm5GRm9ZAbFRBQ2tMSHYwWER6bwZDZD',
+                    
+        // Pega as mídias do usuário dono do token
+        get: 'user', 
+                    
+        // Limita a 6 publicações
+        limit: 6,
+                    
+        // O target deve ser o ID do container que criamos no HTML
+          target: 'instafeed', 
+
+        // O template define como cada foto será mostrada no HTML.
+        // Aqui, cada imagem é um link para o post original.
+           template: '<a href="{{link}}" target="_blank"><img title="{{caption}}" src="{{image}}" /></a>'
+        });
+
+        // Roda o script!
+         feed.run();
     </script>
 
 </body>
