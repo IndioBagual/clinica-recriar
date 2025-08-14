@@ -1,17 +1,14 @@
- .secao-instagram {
-            background-color: var(--color-white);
-            text-align: center;
-            padding: 60px 20px;
-        }
+.secao-instagram {
+background-color: var(--color-white);
+text-align: center;
+ padding: 60px 20px;
+}
 
-        .secao-instagram h2 {
-            font-size: 28px;
-            color: #5d5d5a;
-            margin-bottom: 25px;
-            font-weight: normal;
-        }
+.secao-instagram h2 {
+margin-bottom: 1.5em;
+}
 
-        /* Estilos para a galeria que o Instafeed.js vai criar */
+/* Estilos para a galeria que o Instafeed.js vai criar */
         #instafeed {
             display: grid;
             /* Cria 3 colunas em telas maiores, e vai se ajustando para telas menores */
