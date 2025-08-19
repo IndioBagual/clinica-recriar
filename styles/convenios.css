@@ -21,3 +21,26 @@
     filter: grayscale(0%);
     transform: scale(1.1);
 }
+.convenios-grid {
+    display: grid;
+    /* Adapta o número de colunas ao tamanho da tela */
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 2rem;
+    align-items: center;
+    justify-items: center;
+    max-width: 960px;
+    margin: 0 auto;
+}
+
+.convenio-logo {
+    max-width: 120px;
+    /* Efeito de escala de cinza para um visual uniforme */
+    filter: grayscale(100%);
+    transition: all 0.3s ease;
+}
+
+.convenio-logo:hover {
+    /* Remove a escala de cinza e aumenta o logo ao passar o mouse */
+    filter: grayscale(0%);
+    transform: scale(1.1);
+}

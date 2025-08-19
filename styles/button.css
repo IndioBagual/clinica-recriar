@@ -37,3 +37,43 @@
     background-color: var(--color-accent-dark);
 }
 
+
+.cta-button {
+    display: inline-block;
+    color: var(--color-white);
+    font-weight: 700;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    box-shadow: var(--shadow-md);
+    transition: all 0.3s ease;
+}
+
+.cta-button.header-cta {
+    background-color: var(--color-accent);
+}
+.cta-button.header-cta:hover {
+    background-color: var(--color-accent-dark);
+    transform: scale(1.05);
+}
+
+.cta-button.hero-cta {
+    background-color: var(--color-primary);
+    padding: 1rem 2rem;
+    box-shadow: var(--shadow-xl);
+}
+.cta-button.hero-cta:hover {
+    background-color: var(--color-primary-dark);
+    transform: scale(1.05);
+}
+
+.form-submit-button {
+    background-color: var(--color-accent);
+    width: 100%;
+    border: none;
+    cursor: pointer;
+}
+.form-submit-button:hover {
+    background-color: var(--color-accent-dark);
+}
+

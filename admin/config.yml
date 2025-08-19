@@ -33,3 +33,38 @@ collections:
       - {label: "Título do Serviço", name: "title", widget: "string"}
       - {label: "Descrição Curta", name: "description", widget: "text"}
       - {label: "Ícone (ex: 'fa-brain')", name: "icon", widget: "string"}
+# Arquivo de configuração do Decap CMS
+
+# Backend: define como o CMS se conecta ao seu repositório Git
+backend:
+  name: git-gateway # Usa o Git Gateway da Netlify para autenticação
+  branch: main # O nome do seu branch principal (pode ser 'master')
+
+# Localização das mídias (imagens, etc.)
+media_folder: "/img" # Caminho para onde as imagens enviadas serão salvas
+public_folder: "/img" # Caminho público para acessar as imagens
+
+# Coleções: Define os tipos de conteúdo que você pode editar
+collections:
+  # Exemplo 1: Uma coleção para editar configurações gerais da página
+  - name: "paginas" # Nome da coleção (uso interno)
+    label: "Páginas" # Como a coleção vai aparecer no menu do painel
+    files:
+      - file: "_data/home.yml" # Onde o conteúdo será salvo
+        label: "Página Inicial"
+        name: "home"
+        fields:
+          - {label: "Título Principal", name: "titulo_principal", widget: "string"}
+          - {label: "Subtítulo", name: "subtitulo", widget: "string"}
+          - {label: "Texto do Botão", name: "texto_botao", widget: "string"}
+
+  # Exemplo 2: Uma coleção para gerenciar os serviços
+  - name: "servicos" # Nome da coleção
+    label: "Serviços" # Nome no menu
+    folder: "_data/servicos/" # Onde os arquivos de cada serviço serão salvos
+    create: true # Permite criar novos serviços
+    slug: "{{slug}}" # Gera o nome do arquivo a partir do título
+    fields:
+      - {label: "Título do Serviço", name: "title", widget: "string"}
+      - {label: "Descrição Curta", name: "description", widget: "text"}
+      - {label: "Ícone (ex: 'fa-brain')", name: "icon", widget: "string"}
