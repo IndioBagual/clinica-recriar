@@ -34,9 +34,8 @@
     margin-bottom: 0.75rem;
 }
 
-
 /* ---------------------------------- */
-/* SERVICE CARDS             */
+/* SERVICE CARDS (CORREÇÃO APLICADA)  */
 /* ---------------------------------- */
 
 .service-card {
@@ -45,109 +44,42 @@
     box-shadow: var(--shadow-lg);
     overflow: hidden;
     transition: all 0.3s ease;
+    display: flex; /* Garante que o card se estique com o conteúdo */
 }
+
 .service-card:hover {
     transform: translateY(-0.5rem);
-}
-
-.service-card > div { /* Inner padding */
-    padding: 2rem;
-}
-
-.service-icon {
-    color: var(--color-primary);
-}
-.service-icon i {
-    width: 2.5rem;
-    height: 2.5rem;
-    margin-top: 1rem;
-}
-
-.service-title {
-    font-size: 1.25rem;
-    font-weight: 700;
-    margin: 0 1rem;
-}   
-
-.servico__texto {
-    font-size: 0.8rem;
-    margin: 1rem;
-}
-
-
-.feature-card {
-    text-align: center;
-    padding: 2rem;
-    background-color: var(--color-background);
-    border-radius: 1rem; /* rounded-2xl */
-    box-shadow: var(--shadow-sm);
-    transition: all 0.3s ease;
-}
-
-.feature-card:hover {
     box-shadow: var(--shadow-xl);
-    transform: scale(1.05);
 }
 
-.feature-icon-wrapper {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 4rem;
-    height: 4rem;
-    margin-bottom: 1.5rem;
-    border-radius: 50%;
-    background-color: #E6F6F5;
-    color: var(--color-primary);
-}
-.feature-icon-wrapper i {
-    width: 2rem;
-    height: 2rem;
-}
-
-.feature-title {
-    font-size: 1.25rem;
-    font-weight: 700;
-    margin-bottom: 0.75rem;
-}
-
-
-/* ---------------------------------- */
-/* SERVICE CARDS             */
-/* ---------------------------------- */
-
-.service-card {
-    background-color: var(--color-white);
-    border-radius: 1rem;
-    box-shadow: var(--shadow-lg);
-    overflow: hidden;
-    transition: all 0.3s ease;
-}
-.service-card:hover {
-    transform: translateY(-0.5rem);
-}
-
-.service-card > div { /* Inner padding */
-    padding: 2rem;
+/* Este seletor foi ajustado para ser mais específico */
+.service-card > div {
+    padding: 2.5rem 2rem; /* Aumentei o padding vertical */
+    display: flex;
+    flex-direction: column; /* Organiza o conteúdo em coluna */
+    align-items: center; /* Centraliza tudo no card */
+    text-align: center;
+    width: 100%; /* Garante que o conteúdo ocupe todo o card */
 }
 
 .service-icon {
     color: var(--color-primary);
 }
+
 .service-icon i {
-    width: 2.5rem;
-    height: 2.5rem;
-    margin-top: 1rem;
+    width: 3rem;   /* Ícone um pouco maior */
+    height: 3rem;
+    margin-bottom: 1.5rem; /* Espaço maior abaixo do ícone */
 }
 
 .service-title {
-    font-size: 1.25rem;
+    font-size: 1.3rem;
     font-weight: 700;
-    margin: 0 1rem;
+    margin-bottom: 1rem;
 }   
 
 .servico__texto {
-    font-size: 0.8rem;
-    margin: 1rem;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--color-text-light);
 }
-
