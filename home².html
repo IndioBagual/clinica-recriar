@@ -23,6 +23,22 @@
         gtag('js', new Date());
         gtag('config', 'G-6GT8FRV5GG');
     </script>
+<style>
+        /* Estilo exclusivo para centralizar serviços nesta unidade */
+        .grid-centralizado {
+            display: flex !important; /* Substitui o Grid por Flexbox */
+            justify-content: center;  /* Centraliza horizontalmente */
+            flex-wrap: wrap;          /* Permite quebra de linha em telas pequenas */
+            gap: 2.5rem;              /* Mantém o espaçamento original */
+        }
+
+        /* Garante que os cards tenham um tamanho bonito e uniforme */
+        .grid-centralizado .service-card {
+            width: 100%;
+            max-width: 350px; /* Limita a largura para ficar parecido com o original */
+            flex: 1 1 300px;  /* Permite flexibilidade */
+        }
+    </style>
 </head>
 <body>
     <header id="header" class="main-header">
@@ -114,7 +130,7 @@
                     <h2 class="section-title">Nossos Serviços</h2>
                     <p class="section-subtitle">Oferecemos diversos serviços para todas as faixas etárias.</p>
                 </div>
-                <div class="services-grid">
+                <div class="services-grid grid-centralizado">
                     <div class="service-card" data-aos="fade-up" data-aos-delay="100">
                         <div>
                             <div class="service-icon">
