@@ -1,0 +1,137 @@
+/* recriar/styles/gateway.css */
+
+:root {
+    --color-primary: #00A79D;
+    --color-primary-dark: #008075;
+    --color-text: #374151;
+    --color-white: #ffffff;
+    --color-background: #f9fafb;
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--color-background);
+    background-image: url('../img/frente.jpg'); /* Imagem de fundo sutil com sobreposição */
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+/* Sobreposição para escurecer/clarear a imagem de fundo e dar leitura */
+body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.9); /* Fundo branco translúcido */
+    z-index: 1;
+}
+
+.gateway-container {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    width: 100%;
+    max-width: 900px;
+    padding: 2rem;
+}
+
+.gateway-logo {
+    width: 250px;
+    margin-bottom: 2rem;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.gateway-title {
+    font-size: 2rem;
+    color: var(--color-text);
+    margin-bottom: 0.5rem;
+    font-weight: 800;
+}
+
+.gateway-subtitle {
+    font-size: 1.1rem;
+    color: var(--color-primary);
+    margin-bottom: 3rem;
+    font-weight: 500;
+}
+
+.units-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+}
+
+@media (min-width: 768px) {
+    .units-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* Estilo dos Cartões de Unidade */
+.unit-card {
+    background-color: var(--color-white);
+    padding: 3rem 2rem;
+    border-radius: 1rem;
+    text-decoration: none;
+    color: var(--color-text);
+    box-shadow: var(--shadow-lg);
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.unit-card:hover {
+    transform: translateY(-10px);
+    border-color: var(--color-primary);
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+}
+
+.unit-icon {
+    width: 4rem;
+    height: 4rem;
+    color: var(--color-primary);
+    margin-bottom: 1rem;
+}
+
+.unit-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-primary-dark);
+}
+
+.unit-address {
+    font-size: 0.9rem;
+    color: #6b7280;
+    max-width: 200px;
+    margin: 0 auto;
+}
+
+.btn-enter {
+    margin-top: 1rem;
+    padding: 0.5rem 1.5rem;
+    background-color: var(--color-primary);
+    color: white;
+    border-radius: 2rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
