@@ -23,14 +23,13 @@
             theme: {
                 extend: {
                     colors: {
-                        // Cores extraídas do seu style.css original
                         brand: {
                             light: '#00c4b8',
-                            DEFAULT: '#00A79D', // Cor primária
+                            DEFAULT: '#00A79D', // Verde principal
                             dark: '#008075',
                         },
                         accent: {
-                            DEFAULT: '#FF7F50', // Cor de destaque (botões)
+                            DEFAULT: '#FF7F50', // Laranja
                             dark: '#FF6347',
                         },
                         dark: '#1f2937',
@@ -53,12 +52,11 @@
     </script>
 
     <style>
-        /* Pequenos ajustes que o Tailwind CDN puro às vezes precisa */
         .scrolled {
             background-color: rgba(255, 255, 255, 0.95) !important;
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
         }
-        /* Estilo para garantir que as imagens do Instafeed fiquem quadradas/ajustadas */
+        /* Ajuste para imagens quadradas no Instafeed */
         #instafeed a { display: block; overflow: hidden; border-radius: 0.5rem; }
         #instafeed a:hover { transform: scale(1.05); transition: transform 0.3s; }
         #instafeed img { width: 100%; height: 100%; object-fit: cover; aspect-ratio: 1/1; }
@@ -211,7 +209,7 @@
             <div class="container mx-auto px-6">
                 <div class="text-center mb-12" data-aos="fade-up">
                     <h2 class="text-4xl font-extrabold text-brand-dark mb-4">Conheça Nossa Equipe</h2>
-                    <p class="text-lg text-gray-500 max-w-3xl mx-auto">Profissionais dedicados e apaixonados pelo que fazem.</p>
+                    <p class="text-lg text-gray-500 max-w-3xl mx-auto">Profissionais dedicados e apaixonados pelo que fazem, prontos para acolher você.</p>
                 </div>
 
                 <div id="filtro-equipe" class="flex flex-wrap justify-center gap-3 mb-12" data-aos="fade-up" data-aos-delay="100">
@@ -224,7 +222,8 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 team-grid">
-                    <a href="pages/andreia.html" class="team-member-link block hover:scale-105 transition-transform duration-300 group" data-profissao="Psicóloga" data-aos="zoom-in" data-aos-delay="50">
+                    
+                    <a href="pages/andreia.html" class="team-member-link block hover:scale-105 transition-transform duration-300 group" data-profissao="Psicóloga" data-aos="zoom-in">
                         <div class="text-center p-6 bg-white rounded-2xl hover:shadow-xl transition-shadow border border-transparent hover:border-gray-100">
                             <img src="img/Andreia.jpg" alt="Foto da Psicóloga Andreia" class="w-48 h-48 mx-auto rounded-full object-cover shadow-lg mb-6 group-hover:ring-4 group-hover:ring-brand/30 transition-all">
                             <h3 class="text-xl font-bold text-gray-800">Andreia Aparecido</h3>
@@ -233,7 +232,7 @@
                         </div>
                     </a>
 
-                    <a href="pages/alex.html" class="team-member-link block hover:scale-105 transition-transform duration-300 group" data-profissao="Psiquiatra" data-aos="zoom-in" data-aos-delay="100">
+                    <a href="pages/alex.html" class="team-member-link block hover:scale-105 transition-transform duration-300 group" data-profissao="Psiquiatra" data-aos="zoom-in">
                         <div class="text-center p-6 bg-white rounded-2xl hover:shadow-xl transition-shadow border border-transparent hover:border-gray-100">
                             <img src="img/Alex.jpg" alt="Foto do Psiquiatra Alex" class="w-48 h-48 mx-auto rounded-full object-cover shadow-lg mb-6 group-hover:ring-4 group-hover:ring-brand/30 transition-all">
                             <h3 class="text-xl font-bold text-gray-800">Alex Krambech</h3>
@@ -242,7 +241,7 @@
                         </div>
                     </a>
 
-                    <a href="pages/amanda.html" class="team-member-link block hover:scale-105 transition-transform duration-300 group" data-profissao="Psicopedagoga" data-aos="zoom-in" data-aos-delay="150">
+                    <a href="pages/amanda.html" class="team-member-link block hover:scale-105 transition-transform duration-300 group" data-profissao="Psicopedagoga" data-aos="zoom-in">
                         <div class="text-center p-6 bg-white rounded-2xl hover:shadow-xl transition-shadow border border-transparent hover:border-gray-100">
                             <img src="img/Amanda.png" alt="Foto da Psicopedagoga Amanda" class="w-48 h-48 mx-auto rounded-full object-cover shadow-lg mb-6 group-hover:ring-4 group-hover:ring-brand/30 transition-all">
                             <h3 class="text-xl font-bold text-gray-800">Amanda Carvalho Diniz</h3>
@@ -251,7 +250,7 @@
                         </div>
                     </a>
 
-                    <a href="pages/angelica.html" class="team-member-link block hover:scale-105 transition-transform duration-300 group" data-profissao="Psicóloga" data-aos="zoom-in" data-aos-delay="200">
+                    <a href="pages/angelica.html" class="team-member-link block hover:scale-105 transition-transform duration-300 group" data-profissao="Psicóloga" data-aos="zoom-in">
                         <div class="text-center p-6 bg-white rounded-2xl hover:shadow-xl transition-shadow border border-transparent hover:border-gray-100">
                             <img src="img/Angélica.png" alt="Foto da Psicóloga Angélica" class="w-48 h-48 mx-auto rounded-full object-cover shadow-lg mb-6 group-hover:ring-4 group-hover:ring-brand/30 transition-all">
                             <h3 class="text-xl font-bold text-gray-800">Angélica Escobar</h3>
@@ -260,7 +259,7 @@
                         </div>
                     </a>
 
-                    <a href="pages/bruna.html" class="team-member-link block hover:scale-105 transition-transform duration-300 group" data-profissao="Psicóloga" data-aos="zoom-in" data-aos-delay="250">
+                    <a href="pages/bruna.html" class="team-member-link block hover:scale-105 transition-transform duration-300 group" data-profissao="Psicóloga" data-aos="zoom-in">
                         <div class="text-center p-6 bg-white rounded-2xl hover:shadow-xl transition-shadow border border-transparent hover:border-gray-100">
                             <img src="img/Bruna.png" alt="Foto da Psicóloga Bruna" class="w-48 h-48 mx-auto rounded-full object-cover shadow-lg mb-6 group-hover:ring-4 group-hover:ring-brand/30 transition-all">
                             <h3 class="text-xl font-bold text-gray-800">Bruna Benitez Calmon</h3>
@@ -269,7 +268,7 @@
                         </div>
                     </a>
 
-                    <a href="pages/elizangela.html" class="team-member-link block hover:scale-105 transition-transform duration-300 group" data-profissao="Psicóloga" data-aos="zoom-in" data-aos-delay="300">
+                    <a href="pages/elizangela.html" class="team-member-link block hover:scale-105 transition-transform duration-300 group" data-profissao="Psicóloga" data-aos="zoom-in">
                         <div class="text-center p-6 bg-white rounded-2xl hover:shadow-xl transition-shadow border border-transparent hover:border-gray-100">
                             <img src="img/Elizangela.png" alt="Foto da Psicóloga Elizangela" class="w-48 h-48 mx-auto rounded-full object-cover shadow-lg mb-6 group-hover:ring-4 group-hover:ring-brand/30 transition-all">
                             <h3 class="text-xl font-bold text-gray-800">Elizangela Rodrigues</h3>
@@ -279,26 +278,155 @@
                     </a>
 
                     <a href="pages/gabriel.html" class="team-member-link block hover:scale-105 transition-transform duration-300 group" data-profissao="Psicólogo" data-aos="zoom-in">
-                        <div class="text-center p-6 bg-white rounded-2xl hover:shadow-xl transition-shadow">
-                            <img src="img/Gabriel.jpg" alt="Foto do Psicólogo Gabriel" class="w-48 h-48 mx-auto rounded-full object-cover shadow-lg mb-6">
+                        <div class="text-center p-6 bg-white rounded-2xl hover:shadow-xl transition-shadow border border-transparent hover:border-gray-100">
+                            <img src="img/Gabriel.jpg" alt="Foto do Psicólogo Gabriel" class="w-48 h-48 mx-auto rounded-full object-cover shadow-lg mb-6 group-hover:ring-4 group-hover:ring-brand/30 transition-all">
                             <h3 class="text-xl font-bold text-gray-800">Gabriel Noguez Costa</h3>
                             <p class="text-brand font-medium">Psicólogo</p>
+                            <p class="text-sm text-gray-400">CRP - 07/39486</p>
                         </div>
                     </a>
-                    
+
+                    <a href="pages/isadora.html" class="team-member-link block hover:scale-105 transition-transform duration-300 group" data-profissao="Psicóloga" data-aos="zoom-in">
+                        <div class="text-center p-6 bg-white rounded-2xl hover:shadow-xl transition-shadow border border-transparent hover:border-gray-100">
+                            <img src="img/Isadora.jpg" alt="Foto da Psicóloga Isadora" class="w-48 h-48 mx-auto rounded-full object-cover shadow-lg mb-6 group-hover:ring-4 group-hover:ring-brand/30 transition-all">
+                            <h3 class="text-xl font-bold text-gray-800">Isadora Donati Netto</h3>
+                            <p class="text-brand font-medium">Psicóloga</p>
+                            <p class="text-sm text-gray-400">CRP - 07/39592</p>
+                        </div>
+                    </a>
+
+                    <a href="pages/jeniffer.html" class="team-member-link block hover:scale-105 transition-transform duration-300 group" data-profissao="Psicóloga" data-aos="zoom-in">
+                        <div class="text-center p-6 bg-white rounded-2xl hover:shadow-xl transition-shadow border border-transparent hover:border-gray-100">
+                            <img src="img/Jeniffer.jpg" alt="Foto da Psicóloga Jeniffer" class="w-48 h-48 mx-auto rounded-full object-cover shadow-lg mb-6 group-hover:ring-4 group-hover:ring-brand/30 transition-all">
+                            <h3 class="text-xl font-bold text-gray-800">Jeniffer Lackman</h3>
+                            <p class="text-brand font-medium">Psicóloga</p>
+                            <p class="text-sm text-gray-400">CRP - 07/35344</p>
+                        </div>
+                    </a>
+
+                    <a href="pages/jessicacarolina.html" class="team-member-link block hover:scale-105 transition-transform duration-300 group" data-profissao="Nutricionista" data-aos="zoom-in">
+                        <div class="text-center p-6 bg-white rounded-2xl hover:shadow-xl transition-shadow border border-transparent hover:border-gray-100">
+                            <img src="img/JessicaCarollina.jpg" alt="Foto da Nutricionista Jéssica Carollina" class="w-48 h-48 mx-auto rounded-full object-cover shadow-lg mb-6 group-hover:ring-4 group-hover:ring-brand/30 transition-all">
+                            <h3 class="text-xl font-bold text-gray-800">Jéssica Carollina</h3>
+                            <p class="text-brand font-medium">Nutricionista</p>
+                            <p class="text-sm text-gray-400">CRN2 - 17163</p>
+                        </div>
+                    </a>
+
+                    <a href="pages/jessica.html" class="team-member-link block hover:scale-105 transition-transform duration-300 group" data-profissao="Psicóloga" data-aos="zoom-in">
+                        <div class="text-center p-6 bg-white rounded-2xl hover:shadow-xl transition-shadow border border-transparent hover:border-gray-100">
+                            <img src="img/Jéssica.png" alt="Foto da Psicóloga Jéssica" class="w-48 h-48 mx-auto rounded-full object-cover shadow-lg mb-6 group-hover:ring-4 group-hover:ring-brand/30 transition-all">
+                            <h3 class="text-xl font-bold text-gray-800">Jéssica Santos</h3>
+                            <p class="text-brand font-medium">Psicóloga</p>
+                            <p class="text-sm text-gray-400">CRP - 07/31234</p>
+                        </div>
+                    </a>
+
+                    <a href="pages/joana.html" class="team-member-link block hover:scale-105 transition-transform duration-300 group" data-profissao="Psicóloga" data-aos="zoom-in">
+                        <div class="text-center p-6 bg-white rounded-2xl hover:shadow-xl transition-shadow border border-transparent hover:border-gray-100">
+                            <img src="img/Joana.jpg" alt="Foto da Psicóloga Joana" class="w-48 h-48 mx-auto rounded-full object-cover shadow-lg mb-6 group-hover:ring-4 group-hover:ring-brand/30 transition-all">
+                            <h3 class="text-xl font-bold text-gray-800">Joana Lima</h3>
+                            <p class="text-brand font-medium">Psicóloga</p>
+                            <p class="text-sm text-gray-400">CRP - 07/43298</p>
+                        </div>
+                    </a>
+
+                    <a href="pages/juliana.html" class="team-member-link block hover:scale-105 transition-transform duration-300 group" data-profissao="Psicóloga" data-aos="zoom-in">
+                        <div class="text-center p-6 bg-white rounded-2xl hover:shadow-xl transition-shadow border border-transparent hover:border-gray-100">
+                            <img src="img/Juliana.jpg" alt="Foto da Psicóloga Juliana" class="w-48 h-48 mx-auto rounded-full object-cover shadow-lg mb-6 group-hover:ring-4 group-hover:ring-brand/30 transition-all">
+                            <h3 class="text-xl font-bold text-gray-800">Juliana Maia</h3>
+                            <p class="text-brand font-medium">Psicóloga</p>
+                            <p class="text-sm text-gray-400">CRP - 07/42044</p>
+                        </div>
+                    </a>
+
+                    <a href="pages/liliane.html" class="team-member-link block hover:scale-105 transition-transform duration-300 group" data-profissao="Psicóloga" data-aos="zoom-in">
+                        <div class="text-center p-6 bg-white rounded-2xl hover:shadow-xl transition-shadow border border-transparent hover:border-gray-100">
+                            <img src="img/Liliane.jpg" alt="Foto da Psicóloga Liliane" class="w-48 h-48 mx-auto rounded-full object-cover shadow-lg mb-6 group-hover:ring-4 group-hover:ring-brand/30 transition-all">
+                            <h3 class="text-xl font-bold text-gray-800">Liliane Albino</h3>
+                            <p class="text-brand font-medium">Psicóloga</p>
+                            <p class="text-sm text-gray-400">CRP - 07/33205</p>
+                        </div>
+                    </a>
+
+                    <a href="pages/liziane.html" class="team-member-link block hover:scale-105 transition-transform duration-300 group" data-profissao="Psicopedagoga" data-aos="zoom-in">
+                        <div class="text-center p-6 bg-white rounded-2xl hover:shadow-xl transition-shadow border border-transparent hover:border-gray-100">
+                            <img src="img/Liziane².jpg" alt="Foto da Psicopedagoga Liziane" class="w-48 h-48 mx-auto rounded-full object-cover shadow-lg mb-6 group-hover:ring-4 group-hover:ring-brand/30 transition-all">
+                            <h3 class="text-xl font-bold text-gray-800">Liziane de Ávila</h3>
+                            <p class="text-brand font-medium">Psicopedagoga</p>
+                            <p class="text-sm text-gray-400">CFEP - 2401278</p>
+                        </div>
+                    </a>
+
+                    <a href="pages/liziane2.html" class="team-member-link block hover:scale-105 transition-transform duration-300 group" data-profissao="Psicóloga" data-aos="zoom-in">
+                        <div class="text-center p-6 bg-white rounded-2xl hover:shadow-xl transition-shadow border border-transparent hover:border-gray-100">
+                            <img src="img/Liziane.png" alt="Foto da Psicóloga Liziane Paiva" class="w-48 h-48 mx-auto rounded-full object-cover shadow-lg mb-6 group-hover:ring-4 group-hover:ring-brand/30 transition-all">
+                            <h3 class="text-xl font-bold text-gray-800">Liziane Paiva</h3>
+                            <p class="text-brand font-medium">Psicóloga</p>
+                            <p class="text-sm text-gray-400">CRP - 07/31902</p>
+                        </div>
+                    </a>
+
+                    <a href="pages/maiza.html" class="team-member-link block hover:scale-105 transition-transform duration-300 group" data-profissao="Psicóloga" data-aos="zoom-in">
+                        <div class="text-center p-6 bg-white rounded-2xl hover:shadow-xl transition-shadow border border-transparent hover:border-gray-100">
+                            <img src="img/Maiza.jpg" alt="Foto da Psicóloga Maiza" class="w-48 h-48 mx-auto rounded-full object-cover shadow-lg mb-6 group-hover:ring-4 group-hover:ring-brand/30 transition-all">
+                            <h3 class="text-xl font-bold text-gray-800">Maiza Vanzelote</h3>
+                            <p class="text-brand font-medium">Psicóloga</p>
+                            <p class="text-sm text-gray-400">CRP - 07/31953</p>
+                        </div>
+                    </a>
+
                     <a href="pages/marcia.html" class="team-member-link block hover:scale-105 transition-transform duration-300 group" data-profissao="Nutricionista" data-aos="zoom-in">
-                        <div class="text-center p-6 bg-white rounded-2xl hover:shadow-xl transition-shadow">
-                            <img src="img/Marcia.png" alt="Foto da Nutricionista Marcia" class="w-48 h-48 mx-auto rounded-full object-cover shadow-lg mb-6">
+                        <div class="text-center p-6 bg-white rounded-2xl hover:shadow-xl transition-shadow border border-transparent hover:border-gray-100">
+                            <img src="img/Marcia.png" alt="Foto da Nutricionista Márcia" class="w-48 h-48 mx-auto rounded-full object-cover shadow-lg mb-6 group-hover:ring-4 group-hover:ring-brand/30 transition-all">
                             <h3 class="text-xl font-bold text-gray-800">Márcia Furtado</h3>
                             <p class="text-brand font-medium">Nutricionista</p>
+                            <p class="text-sm text-gray-400">CRN - 19815D</p>
                         </div>
                     </a>
-                    
+
+                    <a href="pages/mariana.html" class="team-member-link block hover:scale-105 transition-transform duration-300 group" data-profissao="Psicóloga" data-aos="zoom-in">
+                        <div class="text-center p-6 bg-white rounded-2xl hover:shadow-xl transition-shadow border border-transparent hover:border-gray-100">
+                            <img src="img/Mariana.png" alt="Foto da Psicóloga Mariana" class="w-48 h-48 mx-auto rounded-full object-cover shadow-lg mb-6 group-hover:ring-4 group-hover:ring-brand/30 transition-all">
+                            <h3 class="text-xl font-bold text-gray-800">Mariana Barros</h3>
+                            <p class="text-brand font-medium">Psicóloga</p>
+                            <p class="text-sm text-gray-400">CRP - 07/39172</p>
+                        </div>
+                    </a>
+
+                    <a href="pages/nathalia.html" class="team-member-link block hover:scale-105 transition-transform duration-300 group" data-profissao="Psicóloga" data-aos="zoom-in">
+                        <div class="text-center p-6 bg-white rounded-2xl hover:shadow-xl transition-shadow border border-transparent hover:border-gray-100">
+                            <img src="img/Nathalia.png" alt="Foto da Psicóloga Nathalia" class="w-48 h-48 mx-auto rounded-full object-cover shadow-lg mb-6 group-hover:ring-4 group-hover:ring-brand/30 transition-all">
+                            <h3 class="text-xl font-bold text-gray-800">Nathalia Oliveira</h3>
+                            <p class="text-brand font-medium">Psicóloga</p>
+                            <p class="text-sm text-gray-400">CRP - 07/39159</p>
+                        </div>
+                    </a>
+
+                    <a href="pages/tatiane.html" class="team-member-link block hover:scale-105 transition-transform duration-300 group" data-profissao="Psicóloga" data-aos="zoom-in">
+                        <div class="text-center p-6 bg-white rounded-2xl hover:shadow-xl transition-shadow border border-transparent hover:border-gray-100">
+                            <img src="img/Tatiane.png" alt="Foto da Psicóloga Tatiane" class="w-48 h-48 mx-auto rounded-full object-cover shadow-lg mb-6 group-hover:ring-4 group-hover:ring-brand/30 transition-all">
+                            <h3 class="text-xl font-bold text-gray-800">Tatiane Viana</h3>
+                            <p class="text-brand font-medium">Psicóloga</p>
+                            <p class="text-sm text-gray-400">CRP - 07/33665</p>
+                        </div>
+                    </a>
+
+                    <a href="pages/thais.html" class="team-member-link block hover:scale-105 transition-transform duration-300 group" data-profissao="Psicóloga" data-aos="zoom-in">
+                        <div class="text-center p-6 bg-white rounded-2xl hover:shadow-xl transition-shadow border border-transparent hover:border-gray-100">
+                            <img src="img/Thais.png" alt="Foto da Psicóloga Thais" class="w-48 h-48 mx-auto rounded-full object-cover shadow-lg mb-6 group-hover:ring-4 group-hover:ring-brand/30 transition-all">
+                            <h3 class="text-xl font-bold text-gray-800">Thais Medeiros</h3>
+                            <p class="text-brand font-medium">Psicóloga</p>
+                            <p class="text-sm text-gray-400">CRP - 07/31270</p>
+                        </div>
+                    </a>
+
                     <a href="pages/thays.html" class="team-member-link block hover:scale-105 transition-transform duration-300 group" data-profissao="Fonoaudióloga" data-aos="zoom-in">
-                        <div class="text-center p-6 bg-white rounded-2xl hover:shadow-xl transition-shadow">
-                            <img src="img/Thays Amanda.png" alt="Foto da Fonoaudióloga Thays" class="w-48 h-48 mx-auto rounded-full object-cover shadow-lg mb-6">
+                        <div class="text-center p-6 bg-white rounded-2xl hover:shadow-xl transition-shadow border border-transparent hover:border-gray-100">
+                            <img src="img/Thays Amanda.png" alt="Foto da Fonoaudióloga Thays Amanda" class="w-48 h-48 mx-auto rounded-full object-cover shadow-lg mb-6 group-hover:ring-4 group-hover:ring-brand/30 transition-all">
                             <h3 class="text-xl font-bold text-gray-800">Thays Amanda</h3>
                             <p class="text-brand font-medium">Fonoaudióloga</p>
+                            <p class="text-sm text-gray-400">CRFa - 7-1766-9</p>
                         </div>
                     </a>
 
@@ -310,7 +438,7 @@
             <div class="container mx-auto px-6" data-aos="fade-up">
                 <div class="text-center mb-12">
                     <h2 class="text-4xl font-extrabold text-brand-dark mb-4">Convênios Atendidos</h2>
-                    <p class="text-lg text-gray-500">Confira a lista de convênios que atendemos.</p>
+                    <p class="text-lg text-gray-500">Confira a lista de convênios que atendemos e agende sua consulta com mais facilidade.</p>
                 </div>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-8 justify-items-center items-center max-w-4xl mx-auto">
                     <img src="/img/unimed.jpg" alt="Unimed" class="max-w-[120px] grayscale hover:grayscale-0 hover:scale-110 transition-all duration-300">
@@ -338,7 +466,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
                     <div class="text-left" data-aos="fade-right">
                         <h2 class="text-4xl font-extrabold text-brand-dark mb-6">Pronto para Recomeçar?</h2>
-                        <p class="text-xl text-gray-500 mb-8">Entre em contato conosco para agendar sua primeira consulta. Estamos aqui para ouvir você.</p>
+                        <p class="text-xl text-gray-500 mb-8">Entre em contato conosco para agendar sua primeira consulta. Estamos aqui para ouvir você e ajudar em sua jornada de bem-estar.</p>
                         
                         <div class="flex flex-col gap-6">
                             <a href="https://www.google.com/maps/place/Recriar+Clínica+Multidisciplinar/@-32.036856,-52.1019436,17z/data=!3m1!4b1!4m6!3m5!1s0x95119d8dcdd89ebb:0x9454a52f7c4ee862!8m2!3d-32.036856!4d-52.1019436!16s%2Fg%2F11smvh8lg6?entry=ttu&g_ep=EgoyMDI1MDgxMS4wIKXMDSoASAFQAw%3D%3D" target="_blank" class="flex items-center gap-4 text-gray-700 hover:text-brand transition-colors group">
@@ -359,7 +487,7 @@
                             <a href="https://api.whatsapp.com/send/?phone=5553991281500" target="_blank" class="bg-brand hover:bg-brand-dark text-white font-bold py-4 px-8 rounded-lg shadow-xl inline-block hover:scale-105 transition-all">Agendar Consulta</a>
                         </div>
                     </div>
-                    </div>
+                </div>
             </div>
         </section>
     </main>
@@ -398,7 +526,7 @@
                 </div>
             </div>
             <div class="border-t border-gray-700 mt-12 pt-8 text-center text-gray-500">
-                <p>&copy; 2022 Clínica Recriar. Todos os direitos reservados.</p>
+                <p>© 2022 Clínica Recriar. Todos os direitos reservados.</p>
             </div>
         </div>
     </footer>
@@ -416,12 +544,11 @@
         // Renderizar ícones
         lucide.createIcons();
 
-        // Lógica do Menu Mobile (Adaptada para Tailwind)
+        // Menu Mobile
         const mobileMenuButton = document.getElementById('mobile-menu-button');
         const mobileMenu = document.getElementById('mobile-menu');
 
         mobileMenuButton.addEventListener('click', () => {
-            // Alterna entre hidden e block (display do Tailwind)
             mobileMenu.classList.toggle('hidden');
         });
 
@@ -431,17 +558,17 @@
             });
         });
         
-        // Efeito de Scroll no Header
+        // Scroll Header
         const header = document.getElementById('header');
         window.addEventListener('scroll', () => {
             if (window.scrollY > 50) {
-                header.classList.add('scrolled'); // Classe auxiliar no CSS customizado
+                header.classList.add('scrolled');
             } else {
                 header.classList.remove('scrolled');
             }
         });
 
-        // Lógica de Filtro da Equipe (Adaptada para classes Tailwind)
+        // Filtro da Equipe
         document.addEventListener('DOMContentLoaded', function () {
             const filterContainer = document.querySelector('#filtro-equipe');
             if (filterContainer) {
@@ -464,18 +591,16 @@
                         teamMembers.forEach(function (member) {
                             const profession = member.getAttribute('data-profissao');
                             if (filterValue === 'all' || profession === filterValue) {
-                                member.classList.remove('hidden'); // Tailwind hidden
-                                member.classList.add('block'); // Tailwind block
-                                // Reativa a animação AOS se necessário
+                                member.classList.remove('hidden');
+                                member.classList.add('block');
                                 member.setAttribute('data-aos', 'zoom-in');
                             } else {
                                 member.classList.remove('block');
                                 member.classList.add('hidden');
-                                member.removeAttribute('data-aos'); // Evita bugs de animação em elementos ocultos
+                                member.removeAttribute('data-aos');
                             }
                         });
                         
-                        // Recalcula layout do AOS após filtrar
                         setTimeout(() => AOS.refresh(), 100);
                     }
                 });
@@ -484,7 +609,6 @@
     </script>
     
     <script type="text/javascript">
-        // Instafeed Mantido
         var feed = new Instafeed({
             accessToken: 'IGAAKu6wq4LUNBZAE95VzZATVzdjNktLVlI2SmdVTHNrakhQSjNtdkx4SWNnRVA1V1EyT1hkS1hMSEFya1MtbndnanNvS0VNU2ZASNWJvNENjX1hHS3VrWlozU1VrNmUySWU2TWZAFTHZAkaXVIOG05cm5GRm9ZAbFRBQ2tMSHYwWER6bwZDZD',
             get: 'user', 

@@ -1,155 +1,157 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-br" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Alex Krambech - Psiquiatra | Clínica Recriar</title>
     
-    <link rel="stylesheet" href="/styles/reset.css">
-    <link rel="stylesheet" href="/styles/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="/img/Logo recriar.png">
+    
     <script src="https://unpkg.com/lucide@latest"></script>
-            <!-- Google tag (gtag.js) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { DEFAULT: '#00A79D', dark: '#008075' },
+                        accent: { DEFAULT: '#FF7F50', dark: '#FF6347' },
+                        dark: '#1f2937',
+                        light: '#f9fafb',
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-6GT8FRV5GG"></script>
     <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-
-    gtag('config', 'G-6GT8FRV5GG');
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-6GT8FRV5GG');
     </script>
-    
-    </head>
+</head>
+<body class="font-sans text-gray-700 bg-light antialiased selection:bg-brand selection:text-white flex flex-col min-h-screen">
 
-<body>
-    <header id="header" class="main-header">
-        <div class="container header-container">
-            <a href="/home.html" class="logo"> <img src="/img/Logo recriar.png" alt="Logo Clínica Recriar" class="logo-img">
+    <header id="header" class="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md shadow-sm py-3 transition-all">
+        <div class="container mx-auto px-6 flex justify-between items-center">
+            <a href="/home.html" class="block">
+                <img src="/img/Logo recriar.png" alt="Logo Clínica Recriar" class="h-10 md:h-12">
             </a>
-            <nav class="desktop-nav">
-                <a href="/home.html#sobre" class="nav-link">Sobre Nós</a>
-                <a href="/home.html#servicos" class="nav-link">Serviços</a>
-                <a href="/home.html#equipe" class="nav-link">Equipe</a>
-                <a href="/home.html#convenios" class="nav-link">Convênios</a>
-                <a href="/home.html#contato" class="nav-link">Contato</a>
+            <nav class="hidden lg:flex items-center gap-8">
+                <a href="/home.html#sobre" class="text-gray-500 font-medium hover:text-brand transition-colors">Sobre Nós</a>
+                <a href="/home.html#servicos" class="text-gray-500 font-medium hover:text-brand transition-colors">Serviços</a>
+                <a href="/home.html#equipe" class="text-gray-500 font-medium hover:text-brand transition-colors">Equipe</a>
+                <a href="/home.html#convenios" class="text-gray-500 font-medium hover:text-brand transition-colors">Convênios</a>
+                <a href="/home.html#contato" class="text-gray-500 font-medium hover:text-brand transition-colors">Contato</a>
             </nav>
-            <a href="/home.html#contato" class="cta-button header-cta">
+            <a href="/home.html#contato" class="hidden lg:inline-block bg-accent hover:bg-accent-dark text-white font-bold py-2 px-6 rounded-lg shadow-md hover:scale-105 transition-all">
                 Agendar Consulta
             </a>
-            <button id="mobile-menu-button" class="mobile-menu-toggle">
-                <i data-lucide="menu"></i>
+            <button id="mobile-menu-button" class="lg:hidden text-gray-700 hover:text-brand">
+                <i data-lucide="menu" class="w-8 h-8"></i>
             </button>
         </div>
-        <div id="mobile-menu" class="mobile-menu">
-            <nav class="mobile-nav-links">
-                <a href="/home.html#sobre" class="nav-link">Sobre Nós</a>
-                <a href="/home.html#servicos" class="nav-link">Serviços</a>
-                <a href="/home.html#equipe" class="nav-link">Equipe</a>
-                <a href="/home.html#convenios" class="nav-link">Convênios</a>
-                <a href="/home.html#contato" class="nav-link">Contato</a>
+        <div id="mobile-menu" class="hidden bg-white border-t border-gray-200 absolute w-full left-0 top-full shadow-lg">
+            <nav class="flex flex-col items-center gap-4 py-6">
+                <a href="/home.html#sobre" class="text-gray-600 hover:text-brand">Sobre Nós</a>
+                <a href="/home.html#servicos" class="text-gray-600 hover:text-brand">Serviços</a>
+                <a href="/home.html#equipe" class="text-gray-600 hover:text-brand">Equipe</a>
+                <a href="/home.html#convenios" class="text-gray-600 hover:text-brand">Convênios</a>
+                <a href="/home.html#contato" class="text-gray-600 hover:text-brand">Contato</a>
             </nav>
         </div>
     </header>
 
-    <main>
-        <section class="profile-section">
-            <div class="container profile-container">
-                <div class="profile-image-container">
-                    <img src="/img/Alex.jpg" alt="Foto do Psiquiatra Alex" class="profile-photo">
+    <main class="flex-grow pt-32 pb-20 px-6">
+        <section class="container mx-auto max-w-5xl">
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden p-8 md:p-12 flex flex-col md:flex-row gap-10 items-start">
+                
+                <div class="w-full md:w-1/3 flex justify-center md:justify-start">
+                    <img src="/img/Alex.jpg" alt="Foto do Psiquiatra Alex" class="w-64 h-64 md:w-80 md:h-80 rounded-full object-cover border-[5px] border-brand shadow-xl">
                 </div>
                 
-                <div class="profile-details">
-                    <h1 class="profile-name">Alex Krambech</h1>
-                    <p class="profile-role">Psiquiatra | CRM - 52232</p>
-
-                    <div class="profile-bio">
-                        <h2 class="profile-section-title">Sobre Mim</h2>
-                        <p>
-                            Médico formado pela Universidade Federal do Rio Grande do Norte, médico militar pela Marinha do Brasil entre 2016 e 2024, Curso de Aperfeiçoamento em Psiquiatria (equivalente à residência médica / 03 anos de formação) para Oficiais Médicos do Corpo de Saúde da Marinha, Título de Especialista em Psiquiatria pela Associação Brasileira de Psiquiatria 
-                        </p>
+                <div class="w-full md:w-2/3 space-y-8">
+                    <div>
+                        <h1 class="text-4xl md:text-5xl font-extrabold text-dark mb-2">Alex Krambech</h1>
+                        <p class="text-xl font-bold text-brand uppercase tracking-wide">Psiquiatra | CRM - 52232</p>
                     </div>
 
-                    <div class="profile-specialties">
-                        <h2 class="profile-section-title">Especialidades</h2>
-                        <ul>
+                    <div>
+                        <h2 class="text-2xl font-bold text-brand-dark border-b-2 border-brand/30 pb-2 mb-4">Sobre Mim</h2>
+                        <div class="text-gray-600 leading-relaxed text-lg space-y-4">
+                            <p>Médico formado pela Universidade Federal do Rio Grande do Norte, médico militar pela Marinha do Brasil entre 2016 e 2024, Curso de Aperfeiçoamento em Psiquiatria (equivalente à residência médica / 03 anos de formação) para Oficiais Médicos do Corpo de Saúde da Marinha, Título de Especialista em Psiquiatria pela Associação Brasileira de Psiquiatria</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h2 class="text-2xl font-bold text-brand-dark border-b-2 border-brand/30 pb-2 mb-4">Especialidades</h2>
+                        <ul class="list-disc pl-5 space-y-2 text-gray-600 text-lg marker:text-brand">
                             <li>Psiquiatra</li>
                             <li>Atendimento para crianças, adolescentes e Adultos</li>
                             <li>Especialista em Psiquiatra pela ABP</li>
                         </ul>
                     </div>
 
-                    <div class="profile-cta">
-                         <a href="https://api.whatsapp.com/send/?phone=5553999078030&text=Olá+gostaria+de+marcar+atendimento+com+o+Dr+Alex.&type=phone_number&app_absent=0" target="_blank" class="cta-button hero-cta">Agendar Consulta</a>
+                    <div class="pt-4">
+                        <a href="https://api.whatsapp.com/send/?phone=5553999078030&text=Olá+gostaria+de+marcar+atendimento+com+o+Dr+Alex.&type=phone_number&app_absent=0" target="_blank" class="inline-block bg-brand hover:bg-brand-dark text-white font-bold py-4 px-8 rounded-lg shadow-lg hover:scale-105 transition-transform text-center w-full md:w-auto">
+                            Agendar Consulta
+                        </a>
                     </div>
                 </div>
             </div>
         </section>
     </main>
     
-    <footer class="main-footer">
-        <div class="container">
-            <div class="footer-grid">
-                <div class="footer-col">
-                    <img src="/img/Logo recriar.png" alt="Logo Clínica Recriar" class="logo-img footer-logo" onerror="this.onerror=null;this.src='https://placehold.co/200x50/FFFFFF/333333?text=Recriar';">
-                    <p>Cuidado integrado para uma vida plena.</p>
+    <footer class="bg-gray-800 text-white py-12 border-t border-gray-700">
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div class="space-y-4">
+                    <img src="/img/Logo recriar.png" alt="Logo" class="h-10 brightness-0 invert opacity-80">
+                    <p class="text-gray-400 text-sm">Cuidado integrado para uma vida plena.</p>
                 </div>
-                <div class="footer-col">
-                    <h4>Navegação</h4>
-                    <ul>
-                        <li><a href="/home.html#sobre">Sobre</a></li>
-                        <li><a href="/home.html#servicos">Serviços</a></li>
-                        <li><a href="/home.html#equipe">Equipe</a></li>
-                        <li><a href="/home.html#convenios">Convênios</a></li>
-                        <li><a href="/home.html#contato">Contato</a></li>
+                <div>
+                    <h4 class="text-lg font-bold mb-4 text-white">Navegação</h4>
+                    <ul class="space-y-2 text-gray-400 text-sm">
+                        <li><a href="/home.html#sobre" class="hover:text-brand-light transition">Sobre</a></li>
+                        <li><a href="/home.html#servicos" class="hover:text-brand-light transition">Serviços</a></li>
+                        <li><a href="/home.html#equipe" class="hover:text-brand-light transition">Equipe</a></li>
+                        <li><a href="/home.html#contato" class="hover:text-brand-light transition">Contato</a></li>
                     </ul>
                 </div>
-                <div class="footer-col">
-                    <h4>Contato</h4>
-                    <ul>
+                <div>
+                    <h4 class="text-lg font-bold mb-4 text-white">Contato</h4>
+                    <ul class="space-y-2 text-gray-400 text-sm">
                         <li>Rua General Canabarro, 458</li>
                         <li>(53) 99128-1500</li>
                         <li>clinicarecriar.rg@gmail.com</li>
                     </ul>
                 </div>
-                <div class="footer-col">
-                    <h4>Siga-nos</h4>
-                    <div class="social-links">
-                        <a href="https://www.facebook.com/clinicarecriarrg"><i data-lucide="facebook"></i></a>
-                        <a href="https://www.instagram.com/clinicarecriarrg/" target="_blank"><i data-lucide="instagram"></i></a> 
+                <div>
+                    <h4 class="text-lg font-bold mb-4 text-white">Siga-nos</h4>
+                    <div class="flex gap-4">
+                        <a href="https://www.facebook.com/clinicarecriarrg" class="text-gray-400 hover:text-white"><i data-lucide="facebook"></i></a>
+                        <a href="https://www.instagram.com/clinicarecriarrg/" target="_blank" class="text-gray-400 hover:text-white"><i data-lucide="instagram"></i></a>
                     </div>
                 </div>
             </div>
-            <div class="footer-bottom">
+            <div class="mt-10 pt-6 border-t border-gray-700 text-center text-gray-500 text-sm">
                 <p>&copy; 2022 Clínica Recriar. Todos os direitos reservados.</p>
             </div>
         </div>
     </footer>
 
     <script>
-        // Scripts do menu e header (iguais ao index.html)
         lucide.createIcons();
-        const mobileMenuButton = document.getElementById('mobile-menu-button');
-        const mobileMenu = document.getElementById('mobile-menu');
-        mobileMenuButton.addEventListener('click', () => {
-            mobileMenu.classList.toggle('is-open');
-        });
-        document.querySelectorAll('#mobile-menu a').forEach(link => {
-            link.addEventListener('click', () => {
-                mobileMenu.classList.remove('is-open');
-            });
-        });
-        const header = document.getElementById('header');
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 50) {
-                header.classList.add('scrolled');
-            } else {
-                header.classList.remove('scrolled');
-            }
-        });
+        const btn = document.getElementById('mobile-menu-button');
+        const menu = document.getElementById('mobile-menu');
+        btn.addEventListener('click', () => menu.classList.toggle('hidden'));
     </script>
-
 </body>
 </html>
