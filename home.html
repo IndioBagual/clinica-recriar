@@ -1,11 +1,10 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-br" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clínica Recriar</title>
-    <link rel="stylesheet" href="styles/reset.css">
-    <link rel="stylesheet" href="styles/style.css">
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -14,7 +13,36 @@
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     
     <script src="https://unpkg.com/lucide@latest"></script>
+    
     <script type="text/javascript" src="jss/instafeed.min.js"></script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        // Cores extraídas do seu style.css original
+                        brand: {
+                            light: '#00c4b8',
+                            DEFAULT: '#00A79D', // Cor primária
+                            dark: '#008075',
+                        },
+                        accent: {
+                            DEFAULT: '#FF7F50', // Cor de destaque (botões)
+                            dark: '#FF6347',
+                        },
+                        dark: '#1f2937',
+                        light: '#f9fafb',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
 
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-6GT8FRV5GG"></script>
     <script>
@@ -23,462 +51,354 @@
         gtag('js', new Date());
         gtag('config', 'G-6GT8FRV5GG');
     </script>
+
+    <style>
+        /* Pequenos ajustes que o Tailwind CDN puro às vezes precisa */
+        .scrolled {
+            background-color: rgba(255, 255, 255, 0.95) !important;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+        /* Estilo para garantir que as imagens do Instafeed fiquem quadradas/ajustadas */
+        #instafeed a { display: block; overflow: hidden; border-radius: 0.5rem; }
+        #instafeed a:hover { transform: scale(1.05); transition: transform 0.3s; }
+        #instafeed img { width: 100%; height: 100%; object-fit: cover; aspect-ratio: 1/1; }
+    </style>
 </head>
-<body>
-    <header id="header" class="main-header">
-        <div class="container header-container">
-            <a href="#" class="logo">
-                <img src="/img/Logo recriar.png" alt="Logo Clínica Recriar" class="logo-img" onerror="this.onerror=null;this.src='https://placehold.co/200x50/00A79D/FFFFFF?text=Recriar';">
+<body class="font-sans text-gray-700 bg-light antialiased selection:bg-brand selection:text-white">
+
+    <header id="header" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-white/80 backdrop-blur-md shadow-sm py-3">
+        <div class="container mx-auto px-6 flex justify-between items-center">
+            <a href="#" class="block">
+                <img src="/img/Logo recriar.png" alt="Logo Clínica Recriar" class="h-10 md:h-12" onerror="this.onerror=null;this.src='https://placehold.co/200x50/00A79D/FFFFFF?text=Recriar';">
             </a>
-            <nav class="desktop-nav">
-                <a href="#sobre" class="nav-link">Sobre Nós</a>
-                <a href="#servicos" class="nav-link">Serviços</a>
-                <a href="#equipe" class="nav-link">Equipe</a>
-                <a href="#convenios" class="nav-link">Convênios</a>
-                <a href="#contato" class="nav-link">Contato</a>
+            
+            <nav class="hidden lg:flex items-center gap-8">
+                <a href="#sobre" class="text-gray-500 font-medium hover:text-brand transition-colors">Sobre Nós</a>
+                <a href="#servicos" class="text-gray-500 font-medium hover:text-brand transition-colors">Serviços</a>
+                <a href="#equipe" class="text-gray-500 font-medium hover:text-brand transition-colors">Equipe</a>
+                <a href="#convenios" class="text-gray-500 font-medium hover:text-brand transition-colors">Convênios</a>
+                <a href="#contato" class="text-gray-500 font-medium hover:text-brand transition-colors">Contato</a>
             </nav>
-            <a href="#contato" class="cta-button header-cta">
+
+            <a href="#contato" class="hidden lg:inline-block bg-accent hover:bg-accent-dark text-white font-bold py-3 px-6 rounded-lg shadow-md hover:scale-105 transition-all duration-300">
                 Agendar Consulta
             </a>
-            <button id="mobile-menu-button" class="mobile-menu-toggle">
-                <i data-lucide="menu"></i>
+
+            <button id="mobile-menu-button" class="lg:hidden text-gray-700 hover:text-brand focus:outline-none">
+                <i data-lucide="menu" class="w-8 h-8"></i>
             </button>
         </div>
-        <div id="mobile-menu" class="mobile-menu">
-            <nav class="mobile-nav-links">
-                <a href="#sobre" class="nav-link">Sobre Nós</a>
-                <a href="#servicos" class="nav-link">Serviços</a>
-                <a href="#equipe" class="nav-link">Equipe</a>
-                <a href="#convenios" class="nav-link">Convênios</a>
-                <a href="#contato" class="nav-link">Contato</a>
+
+        <div id="mobile-menu" class="hidden bg-white border-t border-gray-200">
+            <nav class="flex flex-col items-center gap-4 py-6">
+                <a href="#sobre" class="text-gray-600 font-medium hover:text-brand">Sobre Nós</a>
+                <a href="#servicos" class="text-gray-600 font-medium hover:text-brand">Serviços</a>
+                <a href="#equipe" class="text-gray-600 font-medium hover:text-brand">Equipe</a>
+                <a href="#convenios" class="text-gray-600 font-medium hover:text-brand">Convênios</a>
+                <a href="#contato" class="text-gray-600 font-medium hover:text-brand">Contato</a>
+                <a href="#contato" class="mt-2 bg-accent text-white font-bold py-2 px-6 rounded-lg">Agendar Consulta</a>
             </nav>
         </div>
     </header>
 
     <main>
-        <section id="home" class="hero-section" style="background-image: url(img/frente.jpg);">
-            <div class="hero-gradient">
-                <div class="container">
-                    <div class="hero-content">
-                        <span class="hero-subtitle" data-aos="fade-up" data-aos-delay="100">Clínica Recriar</span>
-                        <h1 class="hero-title" data-aos="fade-up" data-aos-delay="200">
-                            Atendimento prestado de forma Multidisciplinar entre diversas áreas 
-                        </h1>
-                        <p class="hero-text" data-aos="fade-up" data-aos-delay="300">
-                            Na Clínica Recriar, temos profissionais capacitados em diversas áreas, como Psicologia, Nutrição, Psicopedagogia e Fonoaudiologia.
-                        </p>
-                        <a href="#contato" class="cta-button hero-cta" data-aos="fade-up" data-aos-delay="400">
-                            Fale Conosco
-                        </a>
+        <section id="home" class="relative min-h-screen flex items-center pt-24 bg-cover bg-center bg-no-repeat" style="background-image: url(img/frente.jpg);">
+            <div class="absolute inset-0 bg-gradient-to-r from-white via-white/90 to-transparent"></div>
+            
+            <div class="container mx-auto px-6 relative z-10">
+                <div class="w-full lg:w-1/2 py-12">
+                    <span class="block text-brand font-semibold uppercase tracking-wider mb-2" data-aos="fade-up" data-aos-delay="100">Clínica Recriar</span>
+                    <h1 class="text-4xl md:text-6xl font-extrabold text-dark leading-tight mb-6" data-aos="fade-up" data-aos-delay="200">
+                        Atendimento prestado de forma Multidisciplinar entre diversas áreas 
+                    </h1>
+                    <p class="text-lg md:text-xl text-gray-500 mb-8 leading-relaxed" data-aos="fade-up" data-aos-delay="300">
+                        Na Clínica Recriar, temos profissionais capacitados em diversas áreas, como Psicologia, Nutrição, Psicopedagogia e Fonoaudiologia.
+                    </p>
+                    <a href="#contato" class="inline-block bg-brand hover:bg-brand-dark text-white font-bold py-4 px-8 rounded-lg shadow-xl hover:scale-105 transition-all duration-300" data-aos="fade-up" data-aos-delay="400">
+                        Fale Conosco
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section id="sobre" class="py-20 bg-white">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-16" data-aos="fade-up">
+                    <h2 class="text-4xl font-extrabold text-brand-dark mb-4">Nossa Abordagem Multidisciplinar</h2>
+                    <p class="text-lg text-gray-500 max-w-3xl mx-auto">
+                        Acreditamos que o atendimento Multidisciplinar auxilia em diversos contextos de nossas vidas, trabalhando e unindo profissionais em um só local.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="bg-light p-8 rounded-2xl text-center shadow-sm hover:shadow-xl hover:scale-105 transition-all duration-300" data-aos="fade-up" data-aos-delay="100">
+                        <div class="inline-flex items-center justify-center w-16 h-16 bg-[#E6F6F5] text-brand rounded-full mb-6">
+                            <i data-lucide="users-2" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3 text-dark">Cuidado Integrado</h3>
+                        <p class="text-gray-600">Profissionais de diferentes áreas colaboram para garantir que todos os aspectos da sua saúde sejam atendidos.</p>
+                    </div>
+                    <div class="bg-light p-8 rounded-2xl text-center shadow-sm hover:shadow-xl hover:scale-105 transition-all duration-300" data-aos="fade-up" data-aos-delay="200">
+                        <div class="inline-flex items-center justify-center w-16 h-16 bg-[#E6F6F5] text-brand rounded-full mb-6">
+                            <i data-lucide="clipboard-list" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3 text-dark">Atendimento Focalizado</h3>
+                        <p class="text-gray-600">São realizados atendimentos focados no paciente, para auxiliar suas necessidades especificas.</p>
+                    </div>
+                    <div class="bg-light p-8 rounded-2xl text-center shadow-sm hover:shadow-xl hover:scale-105 transition-all duration-300" data-aos="fade-up" data-aos-delay="300">
+                        <div class="inline-flex items-center justify-center w-16 h-16 bg-[#E6F6F5] text-brand rounded-full mb-6">
+                            <i data-lucide="heart-pulse" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3 text-dark">Foco no Bem-Estar</h3>
+                        <p class="text-gray-600">Nosso objetivo é além de estarmos tratando a sáude, é trazermos comodidade e bom atendimento.</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section id="sobre" class="section">
-            <div class="container">
-                <div class="section-header" data-aos="fade-up">
-                    <h2 class="section-title">Nossa Abordagem Multidisciplinar</h2>
-                    <p class="section-subtitle">Acreditamos que o atendimento Multidisciplinar auxilia em diversos contextos de nossas vidas, trabalhando e unindo profissionais 
-                        em um só local para melhor conveniencia e contato em equipe.</p>
+        <section id="servicos" class="py-20 bg-light">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-16" data-aos="fade-up">
+                    <h2 class="text-4xl font-extrabold text-brand-dark mb-4">Nossos Serviços</h2>
+                    <p class="text-lg text-gray-500 max-w-3xl mx-auto">Oferecemos diversos serviços para todas as faixas etárias.</p>
                 </div>
-                <div class="features-grid">
-                    <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
-                        <div class="feature-icon-wrapper">
-                            <i data-lucide="users-2"></i>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
+                    <div class="bg-white rounded-2xl shadow-lg hover:-translate-y-2 hover:shadow-xl transition-all duration-300 overflow-hidden h-full flex flex-col" data-aos="fade-up" data-aos-delay="100">
+                        <div class="p-8 text-center flex-1 flex flex-col items-center">
+                            <div class="text-brand mb-6">
+                                <i data-lucide="brain-circuit" class="w-12 h-12"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold mb-4 text-dark">Psicologia</h3>
+                            <p class="text-gray-500 leading-relaxed">Cuidamos da sua saúde mental e emocional, oferecendo um caminho para o autoconhecimento e o bem-estar.</p>
                         </div>
-                        <h3 class="feature-title">Cuidado Integrado</h3>
-                        <p>Profissionais de diferentes áreas colaboram para garantir que todos os aspectos da sua saúde sejam atendidos.</p>
                     </div>
-                    <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
-                        <div class="feature-icon-wrapper">
-                            <i data-lucide="clipboard-list"></i>
+
+                    <div class="bg-white rounded-2xl shadow-lg hover:-translate-y-2 hover:shadow-xl transition-all duration-300 overflow-hidden h-full flex flex-col" data-aos="fade-up" data-aos-delay="200">
+                        <div class="p-8 text-center flex-1 flex flex-col items-center">
+                            <div class="text-brand mb-6">
+                                <i data-lucide="puzzle" class="w-12 h-12"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold mb-4 text-dark">Psicopedagogia</h3>
+                            <p class="text-gray-500 leading-relaxed">Transformamos dificuldades em conquistas, potencializando o processo de aprendizagem em todas as idades.</p>
                         </div>
-                        <h3 class="feature-title">Atendimento Focalizado</h3>
-                        <p>São realizados atendimentos focados no paciente, para auxiliar suas necessidades especificas.</p>
                     </div>
-                    <div class="feature-card" data-aos="fade-up" data-aos-delay="300">
-                        <div class="feature-icon-wrapper">
-                            <i data-lucide="heart-pulse"></i>
+
+                    <div class="bg-white rounded-2xl shadow-lg hover:-translate-y-2 hover:shadow-xl transition-all duration-300 overflow-hidden h-full flex flex-col" data-aos="fade-up" data-aos-delay="300">
+                        <div class="p-8 text-center flex-1 flex flex-col items-center">
+                            <div class="text-brand mb-6">
+                                <i data-lucide="leaf" class="w-12 h-12"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold mb-4 text-dark">Nutrição</h3>
+                            <p class="text-gray-500 leading-relaxed">Guiamos você a uma relação saudável com a comida através de planos alimentares personalizados.</p>
                         </div>
-                        <h3 class="feature-title">Foco no Bem-Estar</h3>
-                        <p>Nosso objetivo é além de estarmos tratando a sáude, é trazermos comodidade e bom atendimento para diferenciar o cenário atual.</p>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-lg hover:-translate-y-2 hover:shadow-xl transition-all duration-300 overflow-hidden h-full flex flex-col" data-aos="fade-up" data-aos-delay="400">
+                        <div class="p-8 text-center flex-1 flex flex-col items-center">
+                            <div class="text-brand mb-6">
+                                <i data-lucide="speech" class="w-12 h-12"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold mb-4 text-dark">Fonoaudiologia</h3>
+                            <p class="text-gray-500 leading-relaxed">Aprimoramos a comunicação humana, atuando na reabilitação da fala, voz, audição e deglutição.</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section id="servicos" class="section section-alt">
-            <div class="container">
-                <div class="section-header" data-aos="fade-up">
-                    <h2 class="section-title">Nossos Serviços</h2>
-                    <p class="section-subtitle">Oferecemos diversos serviços para todas as faixas etárias.</p>
+        <section id="equipe" class="py-20 bg-white">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12" data-aos="fade-up">
+                    <h2 class="text-4xl font-extrabold text-brand-dark mb-4">Conheça Nossa Equipe</h2>
+                    <p class="text-lg text-gray-500 max-w-3xl mx-auto">Profissionais dedicados e apaixonados pelo que fazem.</p>
                 </div>
-                <div class="services-grid">
-                    <div class="service-card" data-aos="fade-up" data-aos-delay="100">
-                        <div>
-                            <div class="service-icon">
-                                <i data-lucide="brain-circuit"></i>
-                            </div>
-                            <h3 class="service-title">Psicologia</h3>
-                            <p class="servico__texto">Cuidamos da sua saúde mental e emocional, oferecendo um caminho para o autoconhecimento e o bem-estar.</p>
-                        </div>
-                    </div>
-                    <div class="service-card" data-aos="fade-up" data-aos-delay="200">
-                        <div>
-                            <div class="service-icon">
-                                <i data-lucide="brain-circuit"></i>
-                            </div>
-                            <h3 class="service-title">Psicopedagogia</h3>
-                            <p class="servico__texto">Transformamos dificuldades em conquistas, potencializando o processo de aprendizagem em todas as idades.</p>
-                        </div>
-                    </div>
-                    <div class="service-card" data-aos="fade-up" data-aos-delay="300">
-                        <div>
-                            <div class="service-icon">
-                                <i data-lucide="leaf"></i>
-                            </div>
-                            <h3 class="service-title">Nutrição</h3>
-                            <p class="servico__texto">Guiamos você a uma relação saudável com a comida através de planos alimentares personalizados para seus objetivos.</p>
-                        </div>
-                    </div>
-                    <div class="service-card" data-aos="fade-up" data-aos-delay="400">
-                        <div>
-                            <div class="service-icon">
-                                <i data-lucide="speech"></i>
-                            </div>
-                            <h3 class="service-title">Fonoaudiologia</h3>
-                            <p class="servico__texto">Aprimoramos a comunicação humana, atuando na reabilitação da fala, voz, audição e deglutição.</p>
-                        </div>
-                    </div>
+
+                <div id="filtro-equipe" class="flex flex-wrap justify-center gap-3 mb-12" data-aos="fade-up" data-aos-delay="100">
+                    <button class="filtro-btn active bg-brand text-white border border-brand px-6 py-2 rounded-lg font-semibold transition-all shadow-md" data-filter="all">Mostrar Todos</button>
+                    <button class="filtro-btn bg-transparent text-brand border border-brand px-6 py-2 rounded-lg font-semibold hover:bg-brand hover:text-white transition-all" data-filter="Psicóloga">Psicologia</button>
+                    <button class="filtro-btn bg-transparent text-brand border border-brand px-6 py-2 rounded-lg font-semibold hover:bg-brand hover:text-white transition-all" data-filter="Psiquiatra">Psiquiatria</button>
+                    <button class="filtro-btn bg-transparent text-brand border border-brand px-6 py-2 rounded-lg font-semibold hover:bg-brand hover:text-white transition-all" data-filter="Psicopedagoga">Psicopedagogia</button>
+                    <button class="filtro-btn bg-transparent text-brand border border-brand px-6 py-2 rounded-lg font-semibold hover:bg-brand hover:text-white transition-all" data-filter="Nutricionista">Nutrição</button>
+                    <button class="filtro-btn bg-transparent text-brand border border-brand px-6 py-2 rounded-lg font-semibold hover:bg-brand hover:text-white transition-all" data-filter="Fonoaudióloga">Fonoaudiologia</button>
                 </div>
-            </div>
-        </section>
-        <section id="equipe" class="section">
-            <div class="container">
-                <div class="section-header" data-aos="fade-up">
-                    <h2 class="section-title">Conheça Nossa Equipe</h2>
-                    <p class="section-subtitle">Profissionais dedicados e apaixonados pelo que fazem, prontos para acolher você.</p>
-                </div>
-                <div id="filtro-equipe" class="filtro-container" data-aos="fade-up" data-aos-delay="100">
-                    <button class="filtro-btn active" data-filter="all">Mostrar Todos</button>
-                    <button class="filtro-btn" data-filter="Psicóloga">Psicologia</button>
-                    <button class="filtro-btn" data-filter="Psiquiatra">Psiquiatria</button>
-                    <button class="filtro-btn" data-filter="Psicopedagoga">Psicopedagogia</button>
-                    <button class="filtro-btn" data-filter="Nutricionista">Nutrição</button>
-                    <button class="filtro-btn" data-filter="Fonoaudióloga">Fonoaudiologia</button>
-                </div>
-                <div class="team-grid">
-                    <a href="pages/andreia.html" class="team-member-link" data-profissao="Psicóloga" data-aos="zoom-in" data-aos-delay="50">
-                        <div class="team-member">
-                            <img src="img/Andreia.jpg" alt="Foto da Psicóloga Andreia" class="team-member-photo">
-                            <h3 class="team-member-name">Andreia Aparecido</h3>
-                            <p class="team-member-role">Psicóloga</p>
-                            <p class="team-member-role">CRP - 07/30835</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 team-grid">
+                    <a href="pages/andreia.html" class="team-member-link block hover:scale-105 transition-transform duration-300 group" data-profissao="Psicóloga" data-aos="zoom-in" data-aos-delay="50">
+                        <div class="text-center p-6 bg-white rounded-2xl hover:shadow-xl transition-shadow border border-transparent hover:border-gray-100">
+                            <img src="img/Andreia.jpg" alt="Foto da Psicóloga Andreia" class="w-48 h-48 mx-auto rounded-full object-cover shadow-lg mb-6 group-hover:ring-4 group-hover:ring-brand/30 transition-all">
+                            <h3 class="text-xl font-bold text-gray-800">Andreia Aparecido</h3>
+                            <p class="text-brand font-medium">Psicóloga</p>
+                            <p class="text-sm text-gray-400">CRP - 07/30835</p>
                         </div>
                     </a>
-                    <a href="pages/alex.html" class="team-member-link" data-profissao="Psiquiatra" data-aos="zoom-in" data-aos-delay="100">
-                        <div class="team-member">
-                            <img src="img/Alex.jpg" alt="Foto do Psiquiatra Alex" class="team-member-photo">
-                            <h3 class="team-member-name">Alex Krambech</h3>
-                            <p class="team-member-role">Psiquiatra</p>
-                            <p class="team-member-role">CRM - 52232 </p>
+
+                    <a href="pages/alex.html" class="team-member-link block hover:scale-105 transition-transform duration-300 group" data-profissao="Psiquiatra" data-aos="zoom-in" data-aos-delay="100">
+                        <div class="text-center p-6 bg-white rounded-2xl hover:shadow-xl transition-shadow border border-transparent hover:border-gray-100">
+                            <img src="img/Alex.jpg" alt="Foto do Psiquiatra Alex" class="w-48 h-48 mx-auto rounded-full object-cover shadow-lg mb-6 group-hover:ring-4 group-hover:ring-brand/30 transition-all">
+                            <h3 class="text-xl font-bold text-gray-800">Alex Krambech</h3>
+                            <p class="text-brand font-medium">Psiquiatra</p>
+                            <p class="text-sm text-gray-400">CRM - 52232</p>
                         </div>
                     </a>
-                    <a href="pages/amanda.html" class="team-member-link" data-profissao="Psicopedagoga" data-aos="zoom-in" data-aos-delay="150">
-                        <div class="team-member">
-                            <img src="img/Amanda.png" alt="Foto da Psicopedagoga Amanda" class="team-member-photo">
-                            <h3 class="team-member-name">Amanda Carvalho Diniz</h3>
-                            <p class="team-member-role">Psicopedagoga</p>
-                            <p class="team-member-role">CFEP - 22004379</p>
+
+                    <a href="pages/amanda.html" class="team-member-link block hover:scale-105 transition-transform duration-300 group" data-profissao="Psicopedagoga" data-aos="zoom-in" data-aos-delay="150">
+                        <div class="text-center p-6 bg-white rounded-2xl hover:shadow-xl transition-shadow border border-transparent hover:border-gray-100">
+                            <img src="img/Amanda.png" alt="Foto da Psicopedagoga Amanda" class="w-48 h-48 mx-auto rounded-full object-cover shadow-lg mb-6 group-hover:ring-4 group-hover:ring-brand/30 transition-all">
+                            <h3 class="text-xl font-bold text-gray-800">Amanda Carvalho Diniz</h3>
+                            <p class="text-brand font-medium">Psicopedagoga</p>
+                            <p class="text-sm text-gray-400">CFEP - 22004379</p>
                         </div>
                     </a>
-                    <a href="pages/angelica.html" class="team-member-link" data-profissao="Psicóloga" data-aos="zoom-in" data-aos-delay="200">
-                        <div class="team-member">
-                            <img src="img/Angélica.png" alt="Foto da Psicóloga Angélica" class="team-member-photo">
-                            <h3 class="team-member-name">Angélica Escobar</h3>
-                            <p class="team-member-role">Psicóloga</p>
-                            <p class="team-member-role">CRP - 07/34948</p>
+
+                    <a href="pages/angelica.html" class="team-member-link block hover:scale-105 transition-transform duration-300 group" data-profissao="Psicóloga" data-aos="zoom-in" data-aos-delay="200">
+                        <div class="text-center p-6 bg-white rounded-2xl hover:shadow-xl transition-shadow border border-transparent hover:border-gray-100">
+                            <img src="img/Angélica.png" alt="Foto da Psicóloga Angélica" class="w-48 h-48 mx-auto rounded-full object-cover shadow-lg mb-6 group-hover:ring-4 group-hover:ring-brand/30 transition-all">
+                            <h3 class="text-xl font-bold text-gray-800">Angélica Escobar</h3>
+                            <p class="text-brand font-medium">Psicóloga</p>
+                            <p class="text-sm text-gray-400">CRP - 07/34948</p>
                         </div>
                     </a>
-                    <a href="pages/bruna.html" class="team-member-link" data-profissao="Psicóloga" data-aos="zoom-in" data-aos-delay="250">
-                        <div class="team-member">
-                            <img src="img/Bruna.png" alt="Foto da Psicóloga Bruna" class="team-member-photo">
-                            <h3 class="team-member-name">Bruna Benitez Calmon</h3>
-                            <p class="team-member-role">Psicóloga</p>
-                            <p class="team-member-role">CRP - 07/33341</p>
+
+                    <a href="pages/bruna.html" class="team-member-link block hover:scale-105 transition-transform duration-300 group" data-profissao="Psicóloga" data-aos="zoom-in" data-aos-delay="250">
+                        <div class="text-center p-6 bg-white rounded-2xl hover:shadow-xl transition-shadow border border-transparent hover:border-gray-100">
+                            <img src="img/Bruna.png" alt="Foto da Psicóloga Bruna" class="w-48 h-48 mx-auto rounded-full object-cover shadow-lg mb-6 group-hover:ring-4 group-hover:ring-brand/30 transition-all">
+                            <h3 class="text-xl font-bold text-gray-800">Bruna Benitez Calmon</h3>
+                            <p class="text-brand font-medium">Psicóloga</p>
+                            <p class="text-sm text-gray-400">CRP - 07/33341</p>
                         </div>
                     </a>
-                    <a href="pages/elizangela.html" class="team-member-link" data-profissao="Psicóloga" data-aos="zoom-in" data-aos-delay="300">
-                        <div class="team-member">
-                            <img src="img/Elizangela.png" alt="Foto da Psicóloga Elizangela" class="team-member-photo">
-                            <h3 class="team-member-name">Elizangela Rodrigues Matheus da Rosa</h3>
-                            <p class="team-member-role">Psicóloga</p>
-                            <p class="team-member-role">CRP - 07/31693</p>
+
+                    <a href="pages/elizangela.html" class="team-member-link block hover:scale-105 transition-transform duration-300 group" data-profissao="Psicóloga" data-aos="zoom-in" data-aos-delay="300">
+                        <div class="text-center p-6 bg-white rounded-2xl hover:shadow-xl transition-shadow border border-transparent hover:border-gray-100">
+                            <img src="img/Elizangela.png" alt="Foto da Psicóloga Elizangela" class="w-48 h-48 mx-auto rounded-full object-cover shadow-lg mb-6 group-hover:ring-4 group-hover:ring-brand/30 transition-all">
+                            <h3 class="text-xl font-bold text-gray-800">Elizangela Rodrigues</h3>
+                            <p class="text-brand font-medium">Psicóloga</p>
+                            <p class="text-sm text-gray-400">CRP - 07/31693</p>
                         </div>
                     </a>
-                    <a href="pages/gabriel.html" class="team-member-link" data-profissao="Psicólogo" data-aos="zoom-in" data-aos-delay="400">
-                        <div class="team-member">
-                            <img src="img/Gabriel.jpg" alt="Foto do Psicólogo Gabriel" class="team-member-photo">
-                            <h3 class="team-member-name">Gabriel Noguez Costa</h3>
-                            <p class="team-member-role">Psicólogo</p>
-                            <p class="team-member-role">CRP - 07/39486</p>
-                        </div>
-                    </a>
-                    <a href="pages/isadora.html" class="team-member-link" data-profissao="Psicóloga" data-aos="zoom-in" data-aos-delay="450">
-                        <div class="team-member">
-                            <img src="img/Isadora.jpg" alt="Foto da Psicóloga Isadora" class="team-member-photo">
-                            <h3 class="team-member-name">Isadora Donati Netto</h3>
-                            <p class="team-member-role">Psicóloga</p>
-                            <p class="team-member-role">CRP - 07/39592</p>
-                        </div>
-                    </a>
-                    <a href="pages/jeniffer.html" class="team-member-link" data-profissao="Psicóloga" data-aos="zoom-in" data-aos-delay="500">
-                        <div class="team-member">
-                            <img src="img/Jeniffer.jpg" alt="Foto da Psicóloga Jeniffer" class="team-member-photo">
-                            <h3 class="team-member-name">Jeniffer Lackman de Castro Feijó</h3>
-                            <p class="team-member-role">Psicóloga</p>
-                            <p class="team-member-role">CRP - 07/35344</p>
-                        </div>
-                    </a>
-                    <a href="pages/jessicacarolina.html" class="team-member-link" data-profissao="Nutricionista" data-aos="zoom-in" data-aos-delay="550">
-                        <div class="team-member">
-                            <img src="img/JessicaCarollina.jpg" alt="Foto da Nutricionista Jéssica Carollina" class="team-member-photo">
-                            <h3 class="team-member-name">Jéssica Carollina</h3>
-                            <p class="team-member-role">Nutricionista</p>
-                            <p class="team-member-role">CRN2 - 17163</p>
-                        </div>
-                    </a>
-                    <a href="pages/jessica.html" class="team-member-link" data-profissao="Psicóloga" data-aos="zoom-in" data-aos-delay="600">
-                        <div class="team-member">
-                            <img src="img/Jéssica.png" alt="Foto da Psicóloga Jéssica" class="team-member-photo">
-                            <h3 class="team-member-name">Jéssica Souza dos Santos</h3>
-                            <p class="team-member-role">Psicóloga</p>
-                            <p class="team-member-role">CRP - 07/31234</p>
-                        </div>
-                    </a>
-                    <a href="pages/joana.html" class="team-member-link" data-profissao="Psicóloga" data-aos="zoom-in" data-aos-delay="650">
-                        <div class="team-member">
-                            <img src="img/Joana.jpg" alt="Foto da Psicóloga Joana" class="team-member-photo">
-                            <h3 class="team-member-name">Joana da Rosa de Lima</h3>
-                            <p class="team-member-role">Psicóloga</p>
-                            <p class="team-member-role">CRP - 07/43298</p>
-                        </div>
-                    </a>
-                    <a href="pages/juliana.html" class="team-member-link" data-profissao="Psicóloga" data-aos="zoom-in" data-aos-delay="700">
-                        <div class="team-member">
-                            <img src="img/Juliana.jpg" alt="Foto da Psicóloga Juliana" class="team-member-photo">
-                            <h3 class="team-member-name">Juliana Maia</h3>
-                            <p class="team-member-role">Psicóloga</p>
-                            <p class="team-member-role">CRP - 07/42044</p>
-                        </div>
-                    </a>
-                    <a href="pages/liliane.html" class="team-member-link" data-profissao="Psicóloga" data-aos="zoom-in" data-aos-delay="750">
-                        <div class="team-member">
-                            <img src="img/Liliane.jpg" alt="Foto da Psicóloga Liliane" class="team-member-photo">
-                            <h3 class="team-member-name">Liliane Albino Francisco</h3>
-                            <p class="team-member-role">Psicóloga</p>
-                            <p class="team-member-role">CRP -  07/33205</p>
+
+                    <a href="pages/gabriel.html" class="team-member-link block hover:scale-105 transition-transform duration-300 group" data-profissao="Psicólogo" data-aos="zoom-in">
+                        <div class="text-center p-6 bg-white rounded-2xl hover:shadow-xl transition-shadow">
+                            <img src="img/Gabriel.jpg" alt="Foto do Psicólogo Gabriel" class="w-48 h-48 mx-auto rounded-full object-cover shadow-lg mb-6">
+                            <h3 class="text-xl font-bold text-gray-800">Gabriel Noguez Costa</h3>
+                            <p class="text-brand font-medium">Psicólogo</p>
                         </div>
                     </a>
                     
-                    <!---
-                    <a href="pages/manutencao.html" class="team-member-link" data-profissao="Psicopedagoga" data-aos="zoom-in" data-aos-delay="800">
-                        <div class="team-member">
-                            <img src="img/Liziane².jpg" alt="Foto da Psicopedagoga Liziane" class="team-member-photo">
-                            <h3 class="team-member-name">Liziane de Ávila Gonçalves</h3>
-                            <p class="team-member-role">Psicopedagoga</p>
-                            <p class="team-member-role">CFEP - 2401278</p>
+                    <a href="pages/marcia.html" class="team-member-link block hover:scale-105 transition-transform duration-300 group" data-profissao="Nutricionista" data-aos="zoom-in">
+                        <div class="text-center p-6 bg-white rounded-2xl hover:shadow-xl transition-shadow">
+                            <img src="img/Marcia.png" alt="Foto da Nutricionista Marcia" class="w-48 h-48 mx-auto rounded-full object-cover shadow-lg mb-6">
+                            <h3 class="text-xl font-bold text-gray-800">Márcia Furtado</h3>
+                            <p class="text-brand font-medium">Nutricionista</p>
                         </div>
                     </a>
-                    <a href="pages/manutencao.html" class="team-member-link" data-profissao="Psicóloga" data-aos="zoom-in" data-aos-delay="850">
-                        <div class="team-member">
-                            <img src="img/Liziane.png" alt="Foto da Psicóloga Liziane" class="team-member-photo">
-                            <h3 class="team-member-name">Liziane Paiva Souza Duran</h3>
-                            <p class="team-member-role">Psicóloga</p>
-                            <p class="team-member-role">CRP - 07/31902</p>
-                        </div>
-                    </a>
-                    !-->
-
-                    <a href="pages/maiza.html" class="team-member-link" data-profissao="Psicóloga" data-aos="zoom-in" data-aos-delay="900">
-                        <div class="team-member">
-                            <img src="img/Maiza.jpg" alt="Foto da Psicóloga Maiza" class="team-member-photo">
-                            <h3 class="team-member-name">Maiza Vanzelote</h3>
-                            <p class="team-member-role">Psicóloga</p>
-                            <p class="team-member-role">CRP - 07/31953</p>
-                        </div>
-                    </a>
-                    <a href="pages/marcia.html" class="team-member-link" data-profissao="Nutricionista" data-aos="zoom-in" data-aos-delay="950">
-                        <div class="team-member">
-                            <img src="img/Marcia.png" alt="Foto da Nutricionista Márcia" class="team-member-photo">
-                            <h3 class="team-member-name">Márcia Furtado</h3>
-                            <p class="team-member-role">Nutricionista</p>
-                            <p class="team-member-role">CRN - 19815D</p>
-                        </div>
-                    </a>
-                    <a href="pages/mariana.html" class="team-member-link" data-profissao="Psicóloga" data-aos="zoom-in" data-aos-delay="1000">
-                        <div class="team-member">
-                            <img src="img/Mariana.png" alt="Foto da Psicóloga Mariana" class="team-member-photo">
-                            <h3 class="team-member-name">Mariana Selagem Barros</h3>
-                            <p class="team-member-role">Psicóloga</p>
-                            <p class="team-member-role">CRP - 07/39172</p>
+                    
+                    <a href="pages/thays.html" class="team-member-link block hover:scale-105 transition-transform duration-300 group" data-profissao="Fonoaudióloga" data-aos="zoom-in">
+                        <div class="text-center p-6 bg-white rounded-2xl hover:shadow-xl transition-shadow">
+                            <img src="img/Thays Amanda.png" alt="Foto da Fonoaudióloga Thays" class="w-48 h-48 mx-auto rounded-full object-cover shadow-lg mb-6">
+                            <h3 class="text-xl font-bold text-gray-800">Thays Amanda</h3>
+                            <p class="text-brand font-medium">Fonoaudióloga</p>
                         </div>
                     </a>
 
-                    <!---
-                    <a href="pages/manutencao.html" class="team-member-link" data-profissao="Fonoaudióloga" data-aos="zoom-in" data-aos-delay="1050">
-                        <div class="team-member">
-                            <img src="img/Milena.png" alt="Foto da Fonoaudióloga Milena" class="team-member-photo">
-                            <h3 class="team-member-name">Milena de Souza</h3>
-                            <p class="team-member-role">Fonoaudióloga</p>
-                            <p class="team-member-role">CRFa 7-14017-4</p>
-                        </div>
-                    </a>
-                    <a href="pages/manutencao.html" class="team-member-link" data-profissao="Fonoaudióloga" data-aos="zoom-in" data-aos-delay="1100">
-                        <div class="team-member">
-                            <img src="img/branco.jpg" alt="Foto da Fonoaudióloga Natasha" class="team-member-photo">
-                            <h3 class="team-member-name">Natasha Leoni</h3>
-                            <p class="team-member-role">Fonoaudióloga</p>
-                            <p class="team-member-role">CRFa 7-11456-5</p>
-                        </div>
-                    </a>
-
-                    --->
-
-                    <a href="pages/nathalia.html" class="team-member-link" data-profissao="Psicóloga" data-aos="zoom-in" data-aos-delay="1150">
-                        <div class="team-member">
-                            <img src="img/Nathalia.png" alt="Foto da Psicóloga Nathalia " class="team-member-photo">
-                            <h3 class="team-member-name">Nathalia Cruz Oliveira</h3>
-                            <p class="team-member-role">Psicóloga</p>
-                            <p class="team-member-role">CRP - 07/39159</p>
-                        </div>
-                    </a>
-                    <a href="pages/tatiane.html" class="team-member-link" data-profissao="Psicóloga" data-aos="zoom-in" data-aos-delay="1200">
-                        <div class="team-member">
-                            <img src="img/Tatiane.png" alt="Foto da Psicóloga Tatiane" class="team-member-photo">
-                            <h3 class="team-member-name">Tatiane Carreiros Viana</h3>
-                            <p class="team-member-role">Psicóloga</p>
-                            <p class="team-member-role">CRP - 07/33665</p>
-                        </div>
-                    </a>
-                    <a href="pages/thais.html" class="team-member-link" data-profissao="Psicóloga" data-aos="zoom-in" data-aos-delay="1250">
-                        <div class="team-member">
-                            <img src="img/Thais.png" alt="Foto da Psicóloga Thais" class="team-member-photo">
-                            <h3 class="team-member-name">Thais Silva Medeiros</h3>
-                            <p class="team-member-role">Psicóloga</p>
-                            <p class="team-member-role">CRP - 07/31270</p>
-                        </div>
-                    </a>
-                    <a href="pages/thays.html" class="team-member-link" data-profissao="Fonoaudióloga" data-aos="zoom-in" data-aos-delay="1300">
-                        <div class="team-member">
-                            <img src="img/Thays Amanda.png" alt="Foto da Fonoaudióloga Thays" class="team-member-photo">
-                            <h3 class="team-member-name">Thays Amanda Ribeiro Santos</h3>
-                            <p class="team-member-role">Fonoaudióloga</p>
-                            <p class="team-member-role">CRFa - 7-1766-9</p>
-                        </div>
-                    </a>
                 </div>
             </div>
         </section>
 
-        <section id="convenios" class="section section-alt">
-            <div class="container" data-aos="fade-up">
-                <div class="section-header">
-                    <h2 class="section-title">Convênios Atendidos</h2>
-                    <p class="section-subtitle">Confira a lista de convênios que atendemos e agende sua consulta com mais facilidade.</p>
+        <section id="convenios" class="py-20 bg-light">
+            <div class="container mx-auto px-6" data-aos="fade-up">
+                <div class="text-center mb-12">
+                    <h2 class="text-4xl font-extrabold text-brand-dark mb-4">Convênios Atendidos</h2>
+                    <p class="text-lg text-gray-500">Confira a lista de convênios que atendemos.</p>
                 </div>
-                <div class="convenios-grid">
-                    <img src="/img/unimed.jpg" alt="Logo Unimed" class="convenio-logo" data-aos="zoom-in" data-aos-delay="50">
-                    <img src="/img/ccg.png" alt="Logo Centro Clínico Gaúcho 2" class="convenio-logo" data-aos="zoom-in" data-aos-delay="100">
-                    <img src="/img/cabergs.png" alt="Logo Cabergs Saúde" class="convenio-logo" data-aos="zoom-in" data-aos-delay="150">
-                    <img src="/img/doctorclin.png" alt="Logo DoctorClin" class="convenio-logo" data-aos="zoom-in" data-aos-delay="200">
-                    <img src="/img/sulamerica.png" alt="Logo SulAmérica Saúde" class="convenio-logo" data-aos="zoom-in" data-aos-delay="250">
-                    <img src="/img/postalsaude.png" alt="Logo Postal Saúde" class="convenio-logo" data-aos="zoom-in" data-aos-delay="300">
-                    <img src="/img/Fusex.png" alt="Logo FUSEX (Fundo de Saúde do Exército)" class="convenio-logo" data-aos="zoom-in" data-aos-delay="350">
-                    <img src="/img/FUSMA.png" alt="Logo FUSMA (Fundo de Saúde da Marinha)" class="convenio-logo" data-aos="zoom-in" data-aos-delay="400">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-8 justify-items-center items-center max-w-4xl mx-auto">
+                    <img src="/img/unimed.jpg" alt="Unimed" class="max-w-[120px] grayscale hover:grayscale-0 hover:scale-110 transition-all duration-300">
+                    <img src="/img/ccg.png" alt="CCG" class="max-w-[120px] grayscale hover:grayscale-0 hover:scale-110 transition-all duration-300">
+                    <img src="/img/cabergs.png" alt="Cabergs" class="max-w-[120px] grayscale hover:grayscale-0 hover:scale-110 transition-all duration-300">
+                    <img src="/img/doctorclin.png" alt="DoctorClin" class="max-w-[120px] grayscale hover:grayscale-0 hover:scale-110 transition-all duration-300">
+                    <img src="/img/sulamerica.png" alt="SulAmérica" class="max-w-[120px] grayscale hover:grayscale-0 hover:scale-110 transition-all duration-300">
+                    <img src="/img/postalsaude.png" alt="Postal Saúde" class="max-w-[120px] grayscale hover:grayscale-0 hover:scale-110 transition-all duration-300">
+                    <img src="/img/Fusex.png" alt="Fusex" class="max-w-[120px] grayscale hover:grayscale-0 hover:scale-110 transition-all duration-300">
+                    <img src="/img/FUSMA.png" alt="FUSMA" class="max-w-[120px] grayscale hover:grayscale-0 hover:scale-110 transition-all duration-300">
                 </div>
             </div>
         </section>
 
-        <section id="instagram" class="secao-instagram">
-            <h2 class="section-title" data-aos="fade-up">Nos Siga no Instagram</h2>
-            <div id="instafeed" data-aos="fade-up" data-aos-delay="100"></div>
-            <a href="https://www.instagram.com/clinicarecriarrg" target="_blank" class="botao-instagram" data-aos="fade-up" data-aos-delay="200">
+        <section id="instagram" class="py-20 bg-white text-center">
+            <h2 class="text-4xl font-extrabold text-brand-dark mb-10" data-aos="fade-up">Nos Siga no Instagram</h2>
+            <div id="instafeed" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-w-5xl mx-auto mb-10 px-4" data-aos="fade-up" data-aos-delay="100"></div>
+            <a href="https://www.instagram.com/clinicarecriarrg" target="_blank" class="inline-block border border-gray-400 text-gray-600 font-bold py-3 px-8 rounded-lg hover:bg-gray-600 hover:text-white transition-colors" data-aos="fade-up" data-aos-delay="200">
              Ver mais no Instagram
             </a>
         </section>
 
-        <section id="contato" class="section section-alt">
-            <div class="container">
-                <div class="contact-grid">
-                    <div class="contact-info" data-aos="fade-right">
-                        <h2 class="section-title">Pronto para Recomeçar?</h2>
-                        <p class="contact-text">Entre em contato conosco para agendar sua primeira consulta. Estamos aqui para ouvir você e ajudar em sua jornada de bem-estar.</p>
-                        <div class="contact-details">
-                            <div class="contact-detail-item" data-aos="fade-right" data-aos-delay="100">
-                                <a class="contato__link"href="https://www.google.com/maps/place/Recriar+Clínica+Multidisciplinar/@-32.036856,-52.1019436,17z/data=!3m1!4b1!4m6!3m5!1s0x95119d8dcdd89ebb:0x9454a52f7c4ee862!8m2!3d-32.036856!4d-52.1019436!16s%2Fg%2F11smvh8lg6?entry=ttu&g_ep=EgoyMDI1MDgxMS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener noreferrer">
-                                    <i data-lucide="map-pin"></i>
-                                    <span>Rua General Canabarro, 458 - Bairro Centro, Rio Grande, RS</span>
-                                </a>
-                            </div>
-                            <div class="contact-detail-item" data-aos="fade-right" data-aos-delay="200">
-                                <a class="contato__link" href="https://api.whatsapp.com/send/?phone=5553991281500&text=Olá+gostaria+de+saber+sobre+atendimentos.&type=phone_number&app_absent=0" target="_blank" rel="noopener noreferrer">
-                                    <img src="img/Whatsapp.png" class="contact-img">
-                                    <span>(53) 99128-1500</span>
-                                </a>
-                            </div>
-                            <div class="contact-detail-item" data-aos="fade-right" data-aos-delay="300">
-                                <a class="contato__link" href="mailto:clinicarecriar.rg@gmail.com">
-                                    <i data-lucide="mail"></i>
-                                    <span>clinicarecriar.rg@gmail.com</span>
-                                </a>
-                            </div>
-                            <div class="profile-cta" data-aos="fade-right" data-aos-delay="400">
-                                <a href="https://api.whatsapp.com/send/?phone=5553991281500&text=Olá,+gostaria+de+marcar+atendimento!.&type=phone_number&app_absent=0" target="_blank" class="cta-button hero-cta">Agendar Consulta</a>
-                            </div>
+        <section id="contato" class="py-20 bg-light">
+            <div class="container mx-auto px-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+                    <div class="text-left" data-aos="fade-right">
+                        <h2 class="text-4xl font-extrabold text-brand-dark mb-6">Pronto para Recomeçar?</h2>
+                        <p class="text-xl text-gray-500 mb-8">Entre em contato conosco para agendar sua primeira consulta. Estamos aqui para ouvir você.</p>
+                        
+                        <div class="flex flex-col gap-6">
+                            <a href="https://www.google.com/maps/place/Recriar+Clínica+Multidisciplinar/@-32.036856,-52.1019436,17z/data=!3m1!4b1!4m6!3m5!1s0x95119d8dcdd89ebb:0x9454a52f7c4ee862!8m2!3d-32.036856!4d-52.1019436!16s%2Fg%2F11smvh8lg6?entry=ttu&g_ep=EgoyMDI1MDgxMS4wIKXMDSoASAFQAw%3D%3D" target="_blank" class="flex items-center gap-4 text-gray-700 hover:text-brand transition-colors group">
+                                <i data-lucide="map-pin" class="w-6 h-6 text-brand group-hover:scale-110 transition-transform"></i>
+                                <span>Rua General Canabarro, 458 - Centro, Rio Grande, RS</span>
+                            </a>
+                            <a href="https://api.whatsapp.com/send/?phone=5553991281500" target="_blank" class="flex items-center gap-4 text-gray-700 hover:text-brand transition-colors group">
+                                <img src="img/Whatsapp.png" class="w-6 h-6 group-hover:scale-110 transition-transform">
+                                <span>(53) 99128-1500</span>
+                            </a>
+                            <a href="mailto:clinicarecriar.rg@gmail.com" class="flex items-center gap-4 text-gray-700 hover:text-brand transition-colors group">
+                                <i data-lucide="mail" class="w-6 h-6 text-brand group-hover:scale-110 transition-transform"></i>
+                                <span>clinicarecriar.rg@gmail.com</span>
+                            </a>
+                        </div>
+
+                        <div class="mt-10">
+                            <a href="https://api.whatsapp.com/send/?phone=5553991281500" target="_blank" class="bg-brand hover:bg-brand-dark text-white font-bold py-4 px-8 rounded-lg shadow-xl inline-block hover:scale-105 transition-all">Agendar Consulta</a>
                         </div>
                     </div>
-                </div>
+                    </div>
             </div>
         </section>
     </main>
 
-    <footer class="main-footer">
-        <div class="container">
-            <div class="footer-grid">
-                <div class="footer-col" data-aos="fade-up" data-aos-delay="50">
-                    <img src="/img/Logo recriar.png" alt="Logo Clínica Recriar" class="logo-img footer-logo" onerror="this.onerror=null;this.src='https://placehold.co/200x50/FFFFFF/333333?text=Recriar';">
-                    <p>Cuidado integrado para uma vida plena.</p>
+    <footer class="bg-gray-800 text-white py-16">
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+                <div data-aos="fade-up" data-aos-delay="50">
+                    <img src="/img/Logo recriar.png" alt="Logo Clínica Recriar" class="h-12 mb-4 brightness-0 invert" onerror="this.onerror=null;this.src='https://placehold.co/200x50/FFFFFF/333333?text=Recriar';">
+                    <p class="text-gray-400">Cuidado integrado para uma vida plena.</p>
                 </div>
-                <div class="footer-col" data-aos="fade-up" data-aos-delay="100">
-                    <h4>Navegação</h4>
-                    <ul>
-                        <li><a href="#sobre">Sobre</a></li>
-                        <li><a href="#servicos">Serviços</a></li>
-                        <li><a href="#equipe">Equipe</a></li>
-                        <li><a href="#convenios">Convênios</a></li>
-                        <li><a href="#contato">Contato</a></li>
+                <div data-aos="fade-up" data-aos-delay="100">
+                    <h4 class="text-lg font-bold mb-4">Navegação</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#sobre" class="hover:text-white transition-colors">Sobre</a></li>
+                        <li><a href="#servicos" class="hover:text-white transition-colors">Serviços</a></li>
+                        <li><a href="#equipe" class="hover:text-white transition-colors">Equipe</a></li>
+                        <li><a href="#convenios" class="hover:text-white transition-colors">Convênios</a></li>
+                        <li><a href="#contato" class="hover:text-white transition-colors">Contato</a></li>
                     </ul>
                 </div>
-                <div class="footer-col" data-aos="fade-up" data-aos-delay="150">
-                    <h4>Contato</h4>
-                    <ul>
+                <div data-aos="fade-up" data-aos-delay="150">
+                    <h4 class="text-lg font-bold mb-4">Contato</h4>
+                    <ul class="space-y-2 text-gray-400">
                         <li>Rua General Canabarro, 458</li>
                         <li>(53) 99128-1500</li>
                         <li>clinicarecriar.rg@gmail.com</li>
                     </ul>
                 </div>
-                <div class="footer-col" data-aos="fade-up" data-aos-delay="200">
-                    <h4>Siga-nos</h4>
-                    <div class="social-links">
-                        <a href="https://www.facebook.com/clinicarecriarrg"><i data-lucide="facebook"></i></a>
-                        <a href="https://www.instagram.com/clinicarecriarrg/" target="_blank"><i data-lucide="instagram"></i></a>
+                <div data-aos="fade-up" data-aos-delay="200">
+                    <h4 class="text-lg font-bold mb-4">Siga-nos</h4>
+                    <div class="flex gap-4">
+                        <a href="https://www.facebook.com/clinicarecriarrg" class="text-gray-400 hover:text-white transition-colors"><i data-lucide="facebook"></i></a>
+                        <a href="https://www.instagram.com/clinicarecriarrg/" target="_blank" class="text-gray-400 hover:text-white transition-colors"><i data-lucide="instagram"></i></a>
                     </div>
                 </div>
             </div>
-            <div class="footer-bottom">
-                <p>© 2022 Clínica Recriar. Todos os direitos reservados.</p>
+            <div class="border-t border-gray-700 mt-12 pt-8 text-center text-gray-500">
+                <p>&copy; 2022 Clínica Recriar. Todos os direitos reservados.</p>
             </div>
         </div>
     </footer>
@@ -486,53 +406,77 @@
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     
     <script>
-        // 3. Inicialização da biblioteca AOS
+        // Inicialização do AOS
         AOS.init({
             duration: 800,
             once: true,
             offset: 100,
         });
         
-        // --- SCRIPTS EXISTENTES ---
+        // Renderizar ícones
         lucide.createIcons();
 
+        // Lógica do Menu Mobile (Adaptada para Tailwind)
         const mobileMenuButton = document.getElementById('mobile-menu-button');
         const mobileMenu = document.getElementById('mobile-menu');
+
         mobileMenuButton.addEventListener('click', () => {
-            mobileMenu.classList.toggle('is-open');
+            // Alterna entre hidden e block (display do Tailwind)
+            mobileMenu.classList.toggle('hidden');
         });
+
         document.querySelectorAll('#mobile-menu a').forEach(link => {
             link.addEventListener('click', () => {
-                mobileMenu.classList.remove('is-open');
+                mobileMenu.classList.add('hidden');
             });
         });
         
+        // Efeito de Scroll no Header
         const header = document.getElementById('header');
         window.addEventListener('scroll', () => {
             if (window.scrollY > 50) {
-                header.classList.add('scrolled');
+                header.classList.add('scrolled'); // Classe auxiliar no CSS customizado
             } else {
                 header.classList.remove('scrolled');
             }
         });
 
+        // Lógica de Filtro da Equipe (Adaptada para classes Tailwind)
         document.addEventListener('DOMContentLoaded', function () {
             const filterContainer = document.querySelector('#filtro-equipe');
             if (filterContainer) {
                 const teamMembers = document.querySelectorAll('.team-grid .team-member-link');
+                
                 filterContainer.addEventListener('click', function (event) {
                     if (event.target.classList.contains('filtro-btn')) {
-                        filterContainer.querySelector('.active').classList.remove('active');
-                        event.target.classList.add('active');
+                        // Remove estilo ativo de todos
+                        filterContainer.querySelectorAll('.filtro-btn').forEach(btn => {
+                            btn.classList.remove('bg-brand', 'text-white', 'shadow-md');
+                            btn.classList.add('bg-transparent', 'text-brand');
+                        });
+
+                        // Adiciona estilo ativo no clicado
+                        event.target.classList.remove('bg-transparent', 'text-brand');
+                        event.target.classList.add('bg-brand', 'text-white', 'shadow-md');
+
                         const filterValue = event.target.getAttribute('data-filter');
+                        
                         teamMembers.forEach(function (member) {
                             const profession = member.getAttribute('data-profissao');
                             if (filterValue === 'all' || profession === filterValue) {
-                                member.style.display = 'block';
+                                member.classList.remove('hidden'); // Tailwind hidden
+                                member.classList.add('block'); // Tailwind block
+                                // Reativa a animação AOS se necessário
+                                member.setAttribute('data-aos', 'zoom-in');
                             } else {
-                                member.style.display = 'none';
+                                member.classList.remove('block');
+                                member.classList.add('hidden');
+                                member.removeAttribute('data-aos'); // Evita bugs de animação em elementos ocultos
                             }
                         });
+                        
+                        // Recalcula layout do AOS após filtrar
+                        setTimeout(() => AOS.refresh(), 100);
                     }
                 });
             }
@@ -540,12 +484,13 @@
     </script>
     
     <script type="text/javascript">
+        // Instafeed Mantido
         var feed = new Instafeed({
             accessToken: 'IGAAKu6wq4LUNBZAE95VzZATVzdjNktLVlI2SmdVTHNrakhQSjNtdkx4SWNnRVA1V1EyT1hkS1hMSEFya1MtbndnanNvS0VNU2ZASNWJvNENjX1hHS3VrWlozU1VrNmUySWU2TWZAFTHZAkaXVIOG05cm5GRm9ZAbFRBQ2tMSHYwWER6bwZDZD',
             get: 'user', 
             limit: 6,
             target: 'instafeed', 
-            template: '<a href="{{link}}" target="_blank"><img title="{{caption}}" src="{{image}}" /></a>'
+            template: '<a href="{{link}}" target="_blank"><img title="{{caption}}" src="{{image}}" class="rounded-lg shadow-sm hover:shadow-md transition-all" /></a>'
         });
         feed.run();
     </script>
