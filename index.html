@@ -11,9 +11,31 @@
     
     <link rel="icon" type="image/png" href="img/Logo recriar.png">
     
-    <link rel="stylesheet" href="styles/gateway.css">
-    
     <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            DEFAULT: '#00A79D', // Verde Principal
+                            dark: '#008075',
+                        },
+                        text: {
+                            DEFAULT: '#374151',
+                            light: '#6b7280',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
     
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-6GT8FRV5GG"></script>
     <script>
@@ -23,32 +45,57 @@
         gtag('config', 'G-6GT8FRV5GG');
     </script>
 </head>
-<body>
+<body class="font-sans antialiased h-screen w-full overflow-hidden relative">
 
-    <div class="gateway-container">
-        <img src="img/Logo recriar.png" alt="Clínica Recriar" class="gateway-logo">
+    <div class="absolute inset-0 bg-cover bg-center z-0" style="background-image: url('img/frente.jpg');">
+        <div class="absolute inset-0 bg-white/90 backdrop-blur-sm"></div>
+    </div>
+
+    <div class="relative z-10 flex flex-col items-center justify-center h-full w-full px-4 sm:px-6">
         
-        <h1 class="gateway-title">Bem-vindo à Recriar</h1>
-        <p class="gateway-subtitle">Selecione a unidade desejada para atendimento:</p>
+        <div class="text-center mb-12 max-w-2xl mx-auto">
+            <img src="img/Logo recriar.png" alt="Clínica Recriar" class="w-64 mx-auto mb-8 drop-shadow-sm">
+            
+            <h1 class="text-3xl md:text-4xl font-extrabold text-gray-800 mb-2">Bem-vindo à Recriar</h1>
+            <p class="text-lg md:text-xl font-medium text-brand">Selecione a unidade desejada para atendimento:</p>
+        </div>
 
-        <div class="units-grid">
-            <a href="home.html" class="unit-card">
-                <div class="unit-icon">
-                    <i data-lucide="map-pin"></i>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
+            
+            <a href="home.html" class="group bg-white p-10 rounded-2xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 border-2 border-transparent hover:border-brand flex flex-col items-center text-center gap-4">
+                <div class="text-brand group-hover:scale-110 transition-transform duration-300">
+                    <i data-lucide="map-pin" class="w-16 h-16"></i>
                 </div>
-                <span class="unit-name">Unidade Canabarro</span>
-                <p class="unit-address">Rua General Canabarro, 458<br>Centro, Rio Grande - RS</p>
-                <span class="btn-enter">Acessar Unidade</span>
+                
+                <span class="text-2xl font-bold text-brand-dark group-hover:text-brand transition-colors">Unidade Canabarro</span>
+                
+                <p class="text-gray-500 text-sm leading-relaxed max-w-[200px]">
+                    Rua General Canabarro, 458<br>
+                    Centro, Rio Grande - RS
+                </p>
+                
+                <span class="mt-4 px-6 py-2 bg-brand text-white rounded-full font-bold text-sm shadow-md group-hover:bg-brand-dark transition-colors">
+                    Acessar Unidade
+                </span>
             </a>
 
-            <a href="home².html" class="unit-card">
-                <div class="unit-icon">
-                    <i data-lucide="building-2"></i>
+            <a href="home².html" class="group bg-white p-10 rounded-2xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 border-2 border-transparent hover:border-brand flex flex-col items-center text-center gap-4">
+                <div class="text-brand group-hover:scale-110 transition-transform duration-300">
+                    <i data-lucide="building-2" class="w-16 h-16"></i>
                 </div>
-                <span class="unit-name">Unidade Abreu</span>
-                <p class="unit-address">Rua General Abreu, 52<br> Cidade Nova, Rio Grande - RS</p>
-                <span class="btn-enter">Acessar Unidade</span>
+                
+                <span class="text-2xl font-bold text-brand-dark group-hover:text-brand transition-colors">Unidade Abreu</span>
+                
+                <p class="text-gray-500 text-sm leading-relaxed max-w-[200px]">
+                    Rua General Abreu, 52<br>
+                    Cidade Nova, Rio Grande - RS
+                </p>
+                
+                <span class="mt-4 px-6 py-2 bg-brand text-white rounded-full font-bold text-sm shadow-md group-hover:bg-brand-dark transition-colors">
+                    Acessar Unidade
+                </span>
             </a>
+
         </div>
     </div>
 
