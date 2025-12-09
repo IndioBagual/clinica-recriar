@@ -10,7 +10,7 @@ export default function Home() {
   return (
     <Layout unidade="Canabarro">
       <Head>
-        <title>Clínica Recriar - Unidade Canabarro</title>
+        <title>Unidade Canabarro | Clínica Recriar</title>
       </Head>
 
       {/* Hero Section (Banner Principal) */}

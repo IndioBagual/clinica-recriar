@@ -10,7 +10,7 @@ export default function UnidadeAbreu() {
   return (
     <Layout unidade="Abreu">
       <Head>
-        <title>Clínica Recriar - Unidade Abreu</title>
+        <title>Unidade Abreu | Clínica Recriar</title>
       </Head>
 
       {/* Hero Section (Banner Principal) */}
@@ -20,7 +20,7 @@ export default function UnidadeAbreu() {
             <div className="w-full lg:w-1/2 py-12">
                 <span className="block text-brand font-semibold uppercase tracking-wider mb-2">Clínica Recriar</span>
                 <h1 className="text-4xl md:text-6xl font-extrabold text-dark leading-tight mb-6">
-                    Atendimento prestado de forma Multidisciplinar
+                    Unidade Abreu: Atendimento Multidisciplinar
                 </h1>
                 <p className="text-lg md:text-xl text-gray-500 mb-8 leading-relaxed">
                     Na Clínica Recriar, temos profissionais capacitados em diversas áreas, como Psicologia, Nutrição, Psicopedagogia e Fonoaudiologia.
@@ -35,8 +35,13 @@ export default function UnidadeAbreu() {
       {/* Componentes Modulares */}
       <SectionSobre />
       <SectionServicos />
+      
+      {/* AQUI ESTÁ O SEGREDO: Passamos "Abreu" para filtrar a equipe corretamente */}
       <TeamSection unidadeAtual="Abreu" />
+      
       <SectionConvenios />
+      
+      {/* Contato com endereço do Abreu */}
       <SectionContato unidade="Abreu" />
 
     </Layout>
