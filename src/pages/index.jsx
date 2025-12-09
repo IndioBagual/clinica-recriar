@@ -6,7 +6,7 @@ export default function Welcome() {
   
   // 🔒 CONTROLE DE ACESSO:
   // Mude para "true" quando quiser liberar o acesso à Unidade Abreu
-  const ABREU_ATIVO = true; 
+  const ABREU_ATIVO = false; 
 
   return (
     // CORREÇÃO: Removemos 'h-screen' e 'overflow-hidden' para permitir rolagem
