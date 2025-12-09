@@ -9,19 +9,22 @@ export default function Welcome() {
   const ABREU_ATIVO = false; 
 
   return (
-    <div className="relative h-screen w-full overflow-hidden font-sans">
+    // CORREÇÃO: Removemos 'h-screen' e 'overflow-hidden' para permitir rolagem
+    <div className="relative min-h-screen w-full font-sans">
       <Head>
         <title>Bem-vindo | Clínica Recriar</title>
       </Head>
 
-      {/* Background */}
-      <div className="absolute inset-0 bg-cover bg-center z-0" style={{ backgroundImage: 'url(/img/frente.jpg)' }}>
+      {/* Background FIXO: Assim ele não "acaba" quando você rola a página */}
+      <div className="fixed inset-0 bg-cover bg-center z-0" style={{ backgroundImage: 'url(/img/frente.jpg)' }}>
         <div className="absolute inset-0 bg-white/90 backdrop-blur-sm"></div>
       </div>
 
-      <div className="relative z-10 flex flex-col items-center justify-center h-full w-full px-4 sm:px-6">
+      {/* Conteúdo com 'min-h-screen' para centralizar, mas permitindo crescer */}
+      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen w-full px-4 sm:px-6 py-12">
         
         <div className="text-center mb-12 max-w-2xl mx-auto">
+          {/* Logo */}
           <img src="/img/Logo recriar.png" alt="Clínica Recriar" className="w-64 mx-auto mb-8 drop-shadow-sm" />
           
           <h1 className="text-3xl md:text-4xl font-extrabold text-gray-800 mb-2">Bem-vindo à Recriar</h1>
@@ -51,7 +54,7 @@ export default function Welcome() {
             {/* --- CARTÃO 2: UNIDADE ABREU (Condicional) --- */}
             {ABREU_ATIVO ? (
               
-              /* VERSÃO ATIVA (Link Colorido) */
+              /* VERSÃO ATIVA */
               <Link href="/unidade-abreu" className="group bg-white p-10 rounded-2xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 border-2 border-transparent hover:border-brand flex flex-col items-center text-center gap-4">
                   <div className="text-brand group-hover:scale-110 transition-transform duration-300">
                       <Building2 className="w-16 h-16" />
@@ -68,17 +71,16 @@ export default function Welcome() {
 
             ) : (
 
-              /* VERSÃO BLOQUEADA (Cinza com Faixa) */
+              /* VERSÃO BLOQUEADA */
               <div className="relative bg-white p-10 rounded-2xl shadow-lg border-2 border-gray-100 flex flex-col items-center text-center gap-4 overflow-hidden">
                   
-                  {/* A Faixa "Novidades em Breve" */}
+                  {/* Faixa "Novidades em Breve" */}
                   <div className="absolute inset-0 z-20 bg-white/60 backdrop-blur-[2px] flex items-center justify-center cursor-not-allowed">
                       <div className="bg-yellow-400 text-yellow-900 font-black px-8 py-3 transform -rotate-12 shadow-xl border-y-4 border-yellow-500 text-lg uppercase tracking-widest select-none">
                           Novidades em Breve
                       </div>
                   </div>
 
-                  {/* Conteúdo "Desativado" (Cinza) */}
                   <div className="text-gray-300">
                       <Building2 className="w-16 h-16" />
                   </div>
