@@ -1,7 +1,7 @@
 import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
-import Layout from '.././components/Layout';
+import Layout from '../../components/Layout';
 import { profissionais } from '../../data/profissionais';
 import { useRouter } from 'next/router';
 
