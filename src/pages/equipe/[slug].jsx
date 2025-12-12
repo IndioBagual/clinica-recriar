@@ -20,7 +20,7 @@ export default function PerfilProfissional({ profissional }) {
         <div className="text-center py-20">
           <h1 className="text-2xl font-bold text-gray-700">Profissional não encontrado</h1>
           <Link href="/#equipe" className="text-brand hover:underline mt-4 block">
-            Voltar para a equipa
+            Voltar para a equipe
           </Link>
         </div>
       </Layout>
