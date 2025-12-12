@@ -5,14 +5,14 @@ export default function SectionContato({ unidade = 'Canabarro' }) {
   const dados = {
     Canabarro: {
       endereco: 'Rua General Canabarro, 458 - Centro, Rio Grande, RS',
-      mapaLink: 'https://maps.app.goo.gl/seuLinkCanabarro', // Link para abrir no App
+      mapaLink: 'https://maps.app.goo.gl/odPYnVCdnARF4PCH9', // Link para abrir no App
       // URL de Embed do Google Maps para a Rua General Canabarro, 458
       mapaSrc: "https://maps.google.com/maps?q=Rua%20General%20Canabarro%2C%20458%20-%20Centro%2C%20Rio%20Grande%20-%20RS&t=&z=15&ie=UTF8&iwloc=&output=embed",
       whatsapp: '5553991281500'
     },
     Abreu: {
       endereco: 'Rua General Abreu, 52 - Bairro Cidade Nova, Rio Grande, RS',
-      mapaLink: 'https://maps.app.goo.gl/seuLinkAbreu', // Link para abrir no App
+      mapaLink: 'https://maps.app.goo.gl/AMDchxDPA7D3r5Y27', // Link para abrir no App
       // URL de Embed do Google Maps para a Rua General Abreu, 52
       mapaSrc: "https://maps.google.com/maps?q=Rua%20General%20Abreu%2C%2052%20-%20Bairro%20Cidade%20Nova%2C%20Rio%20Grande%20-%20RS&t=&z=15&ie=UTF8&iwloc=&output=embed",
       whatsapp: '5553991281500'
