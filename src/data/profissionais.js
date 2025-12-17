@@ -214,7 +214,7 @@ export const profissionais = [
     cargo: "Psicóloga",
     registro: "CRP - 07/35344",
     foto: "/img/Jeniffer.jpg",
-    unidades: ["Canabarro"],
+    unidades: ["Canabarro"], 
     bio: [
       "Prazer, meu nome é Jeniffer Lackman. Psicóloga clínica e atuo no atendimento psicológico de crianças, adolescentes e adultos.",
       "Minha prática é baseada na escuta acolhedora, no respeito à individualidade e no compromisso com o cuidado emocional em cada fase da vida."
@@ -440,7 +440,7 @@ export const profissionais = [
     cargo: "Psicóloga",
     registro: "CRP 07/23804",
     foto: "/img/melani.jpeg",
-    unidades: ["Canabarro"],
+    unidades: ["Canabarro", "Abreu"], 
     bio: [
       "Sou Mélani França, psicóloga (CRP 07/23804) dedicada ao cuidado integral de crianças, adolescentes e adultos. Minha atuação é guiada pela escuta sensível, responsabilidade ética e compromisso com o desenvolvimento emocional de cada paciente.",
       "Possuo pós-graduação em Avaliação Psicológica e Psicodiagnóstico, Terapia Cognitivo-Comportamental, Psicologia Hospitalar e da Saúde, e sou pós-graduanda em Análise Comportamental Aplicada ao Autismo (ABA)."
