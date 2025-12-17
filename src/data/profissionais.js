@@ -107,7 +107,7 @@ export const profissionais = [
     foto: "/img/dyulia.jpeg",
     unidades: ["Abreu"],
     bio: [
-      "Olá sou Dyulia Barbosa, formada em psicóloga, atuando com adolescentes e adultos, especialmente mulheres.",
+      "Olá sou Dyulia Barbosa, psicóloga clínica, atuando com adolescentes e adultos, especialmente mulheres.",
       "Desenvolvo um trabalho clínico voltado à escuta qualificada, acolhimento e compreensão da singularidade de cada sujeito.",
       "Sou pós-graduanda em Psicopatologia e Psicanálise, aprimorando continuamente meu olhar."
     ],
