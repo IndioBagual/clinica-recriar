@@ -85,7 +85,7 @@ export const profissionais = [
     cargo: "Psicóloga",
     registro: "CRP - 07/33341",
     foto: "/img/Bruna.png",
-    unidades: ["Canabarro"],
+    unidades: ["Abreu"],
     bio: [
       "Olá, meu nome é Bruna Calmon, sou Psicóloga e trabalho com a abordagem Terapia Cognitivo-Comportamental (TCC).",
       "Atendo adultos que desejam compreender melhor seus pensamentos, emoções e comportamentos, construindo caminhos mais saudáveis para lidar com os desafios da vida.",
@@ -100,30 +100,11 @@ export const profissionais = [
     whatsapp: "5553991281500"
   },
   {
-    slug: "dyulia-barbosa",
-    nome: "Dyulia Barbosa",
-    cargo: "Psicóloga",
-    registro: "CRP 07/44724",
-    foto: "/img/dyulia.jpeg",
-    unidades: ["Abreu"],
-    bio: [
-      "Olá sou Dyulia Barbosa, psicóloga clínica, atuando com adolescentes e adultos, especialmente mulheres.",
-      "Desenvolvo um trabalho clínico voltado à escuta qualificada, acolhimento e compreensão da singularidade de cada sujeito.",
-      "Sou pós-graduanda em Psicopatologia e Psicanálise, aprimorando continuamente meu olhar."
-    ],
-    especialidades: [
-      "Atendimento para Adolescentes e Adultos",
-      "Saúde da Mulher",
-      "Psicanálise"
-    ],
-    whatsapp: "5553991281500"
-  },
-  {
     slug: "eliane-magnus",
     nome: "Eliane Magnus",
     cargo: "Psicóloga",
-    registro: "CRP - 07/ (Pendente)",
-    foto: "/img/eliane.jpeg",
+    registro: "CRP - 07/43402",
+    foto: "/img/Eliane.jpeg",
     unidades: ["Abreu"],
     bio: [
       "Olá, sou Eliane Magnus. (Texto da bio pendente de atualização)"
@@ -139,7 +120,7 @@ export const profissionais = [
     cargo: "Psicóloga",
     registro: "CRP - 07/31693",
     foto: "/img/Elizangela.png",
-    unidades: ["Canabarro"],
+    unidades: ["Abreu"],
     bio: [
       "Sou Elizangela Rodrigues, Psicóloga Clínica, atuando no atendimento de adolescentes e adultos. Minha prática é guiada pela escuta atenta e pela compreensão profunda das experiências que moldam cada indivíduo.",
       "Desde que me dediquei ao trabalho clínico, aprendi que escutar vai além de ouvir palavras. É acolher com afeto e respeito a singularidade que compõe a história de cada pessoa."
@@ -158,7 +139,7 @@ export const profissionais = [
     cargo: "Psicólogo",
     registro: "CRP - 07/39486",
     foto: "/img/Gabriel.jpg",
-    unidades: ["Canabarro"],
+    unidades: ["Abreu"],
     bio: [
       "Olá! Me chamo Gabriel Noguez Costa e sou psicólogo clínico.",
       "A partir da criação de um bom vínculo entre terapeuta e paciente, busco recuperar a autonomia dos pacientes, podendo retomar as rédeas da sua própria vida e também a espontaneidade."
@@ -250,7 +231,7 @@ export const profissionais = [
     cargo: "Psicóloga",
     registro: "CRP - 07/31234",
     foto: "/img/Jéssica.png",
-    unidades: ["Canabarro"],
+    unidades: ["Abreu"],
     bio: [
       "Olá, sou a Jéssica Santos, formada em Psicologia pela Faculdade Anhanguera. Sou pós-graduada em Neuropsicologia, Dependência Química, Saúde Mental, Psicopatologia e Atenção Psicossocial.",
       "Minha abordagem é a Psicanálise, e atendo adolescentes e adultos, tanto no presencial quanto no online."

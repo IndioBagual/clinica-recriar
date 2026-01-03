@@ -27,8 +27,14 @@ export default function PerfilProfissional({ profissional }) {
     );
   }
 
+  // Define a unidade principal (pega a primeira da lista ou define Canabarro como padrão)
+  const unidadePrincipal = profissional.unidades && profissional.unidades.length > 0 
+    ? profissional.unidades[0] 
+    : 'Canabarro';
+
   return (
-    <Layout>
+    // Passamos a unidade para o Layout, que repassará para o Footer e Header
+    <Layout unidade={unidadePrincipal}>
       <Head>
         <title>{`${profissional.nome} - ${profissional.cargo} | Clínica Recriar`}</title>
         <meta name="description" content={`Saiba mais sobre ${profissional.nome}, ${profissional.cargo} na Clínica Recriar.`} />
