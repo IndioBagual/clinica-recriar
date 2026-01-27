@@ -1,24 +1,5 @@
 export const profissionais = [
   {
-    slug: "alex-krambech",
-    nome: "Alex Krambech",
-    cargo: "Psiquiatra",
-    registro: "CRM - 52232",
-    foto: "/img/Alex.jpg",
-    unidades: ["Canabarro"],
-    bio: [
-      "Médico formado pela Universidade Federal do Rio Grande do Norte, médico militar pela Marinha do Brasil entre 2016 e 2024.",
-      "Curso de Aperfeiçoamento em Psiquiatria (equivalente à residência médica / 03 anos de formação) para Oficiais Médicos do Corpo de Saúde da Marinha.",
-      "Título de Especialista em Psiquiatria pela Associação Brasileira de Psiquiatria."
-    ],
-    especialidades: [
-      "Psiquiatria",
-      "Atendimento para crianças, adolescentes e Adultos",
-      "Especialista em Psiquiatra pela ABP"
-    ],
-    whatsapp: "5553999078030" // Notei que este número é diferente dos outros
-  },
-  {
     slug: "amanda-diniz",
     nome: "Amanda Carvalho Diniz",
     cargo: "Psicopedagoga",
@@ -107,10 +88,12 @@ export const profissionais = [
     foto: "/img/Eliane.jpeg",
     unidades: ["Abreu"],
     bio: [
-      "Olá, sou Eliane Magnus. (Texto da bio pendente de atualização)"
+      "Me chamo, Eliane Acosta Saizer Magnus sou Psicóloga Clínica– CRP 07/43402, Psicóloga clínica com pós-graduação em Terapia Cognitivo-Comportamental (TCC), abordagem baseada em evidências científicas. Atua no atendimento de crianças, adultos e idosos, oferecendo acompanhamento psicológico focado na compreensão e modificação de pensamentos, emoções e comportamentos disfuncionais. Meu trabalho é pautado na escuta qualificada, no respeito à singularidade de cada pessoa e no fortalecimento da autonomia emocional, auxiliando o paciente a compreender seus pensamentos, emoções e comportamentos, promovendo mudanças consistentes e duradouras."
     ],
     especialidades: [
-      "Especialidade a definir"
+      "TCC",
+      "ABA",
+      "Atendimento para Crianças, Adolescentes, Adultos e Idosos"
     ],
     whatsapp: "5553991281500"
   },
@@ -262,26 +245,6 @@ export const profissionais = [
       "Especialização em Nutrição Aplicada à Saúde da Mulher",
       "Capacitação em Terapia Nutricional Aplicada ao Emagrecimento",
       "Atendimento para mulheres de todas as idades e crianças"
-    ],
-    whatsapp: "5553991281500"
-  },
-  {
-    slug: "joana-lima",
-    nome: "Joana Lima",
-    cargo: "Psicóloga",
-    registro: "CRP 07/43298",
-    foto: "/img/Joana.jpg",
-    unidades: ["Canabarro"],
-    bio: [
-      "Psicóloga formada pela Universidade Federal do Rio Grande (FURG). Sou apaixonada por autoconhecimento e desenvolvimento humano.",
-      "Nos meus atendimentos, utilizo a Terapia Cognitivo-Comportamental (TCC).",
-      "Atuo com acolhimento, escuta ativa e sem julgamentos. Aqui, cada emoção é respeitada, com empatia e seriedade."
-    ],
-    especialidades: [
-      "Terapia Cognitivo Comportamental (TCC)",
-      "Atendimento de adolescentes e Adultos",
-      "Especialista em orientação e gestão de carreiras",
-      "Pós graduada em Psicologia Organizacional"
     ],
     whatsapp: "5553991281500"
   },
