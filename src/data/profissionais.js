@@ -1,5 +1,22 @@
 export const profissionais = [
   {
+    slug: "aline-rodrigues",
+    nome: "Aline de Souza Rodrigues",
+    cargo: "Psicóloga",
+    registro: "CRP - 07/41675",
+    foto: "/img/Aline.jpeg",
+    unidades: ["Abreu"],
+    bio: [
+      "Olá, meu nome é Aline de Souza Rodrigues, sou psicóloga, e atuo a partir da abordagem humanista. Meu trabalho tem como foco, auxiliar o paciente a desenvolver autoconhecimento, onde possibilita reconhecer suas capacidades, e fortalecer sua autonomia. A partir do seu próprio potencial, buscamos caminhos de crescimento e transformação, para lidar com desafios, construir uma vida com mais equilíbrio, autenticidade e bem-estar."
+    ],
+    especialidades: [
+      "Psicologia Humanista com Abordagem Centrada na Pessoa",
+      "Atendimento para Adolescentes e Adultos",
+      "Neuropsicologia",
+    ],
+    whatsapp: "5553991281500"
+  }, 
+  {
     slug: "amanda-diniz",
     nome: "Amanda Carvalho Diniz",
     cargo: "Psicopedagoga",
@@ -86,7 +103,7 @@ export const profissionais = [
     cargo: "Psicóloga",
     registro: "CRP - 07/43402",
     foto: "/img/Eliane.jpeg",
-    unidades: ["Abreu"],
+    unidades: ["Abreu", "Canabarro"],
     bio: [
       "Me chamo, Eliane Acosta Saizer Magnus sou Psicóloga Clínica– CRP 07/43402, Psicóloga clínica com pós-graduação em Terapia Cognitivo-Comportamental (TCC), abordagem baseada em evidências científicas. Atua no atendimento de crianças, adultos e idosos, oferecendo acompanhamento psicológico focado na compreensão e modificação de pensamentos, emoções e comportamentos disfuncionais. Meu trabalho é pautado na escuta qualificada, no respeito à singularidade de cada pessoa e no fortalecimento da autonomia emocional, auxiliando o paciente a compreender seus pensamentos, emoções e comportamentos, promovendo mudanças consistentes e duradouras."
     ],
@@ -286,6 +303,23 @@ export const profissionais = [
     whatsapp: "5553991281500"
   },
   {
+    slug: "litierry-martins",
+    nome: "Litierry Xavier Martins",
+    cargo: "Nutricionista",
+    registro: "CRN - 20169D",
+    foto: "/img/Litierry.jpeg",
+    unidades: ["Canabarro", "Abreu"],
+    bio: [
+      "Sou nutricionista clínico, formado pela Universidade Federal de Pelotas (UFPel), especialista em Nutrição Oncológica e Terapia Nutricional. Atuo com base em evidências científicas, aliando conhecimento técnico, empatia e respeito à individualidade de cada paciente."
+    ],
+    especialidades: [
+      "Terapia Nutricional",
+      "Nutrição Oncológica",
+      "Atendimento para Crianças, Adolescentes e Adultos"
+    ],
+    whatsapp: "5553991281500"
+  },
+  /*{
     slug: "liziane-goncalves",
     nome: "Liziane de Ávila Gonçalves",
     cargo: "Psicopedagoga",
@@ -316,7 +350,7 @@ export const profissionais = [
       "Psicoterapia"
     ],
     whatsapp: "5553991281500"
-  },
+  },*/
   {
     slug: "maiza-vanzelote",
     nome: "Maiza Vanzelote",
