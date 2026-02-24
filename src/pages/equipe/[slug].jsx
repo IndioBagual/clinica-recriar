@@ -51,12 +51,6 @@ export default function PerfilProfissional({ profissional }) {
                 src={profissional.foto} 
                 alt={`Foto de ${profissional.nome}`} 
                 fill
-                /* AQUI ESTÁ A SOLUÇÃO: 
-                  Adicionámos a class "object-top".
-                  - rounded-full: cria o formato circular.
-                  - object-cover: faz a imagem preencher o espaço sem distorcer.
-                  - object-top: foca na parte superior da imagem, evitando cortar as cabeças.
-                */
                 className="rounded-full object-cover object-top border-[5px] border-brand shadow-xl"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />

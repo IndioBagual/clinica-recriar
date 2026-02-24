@@ -63,7 +63,7 @@ export default function TeamSection({ unidadeAtual }) {
                       src={prof.foto} 
                       alt={`Foto de ${prof.nome}`}
                       fill
-                      className="rounded-full object-cover shadow-lg group-hover:ring-4 group-hover:ring-brand/30 transition-all"
+                      className="rounded-full object-cover object-top shadow-lg group-hover:ring-4 group-hover:ring-brand/30 transition-all"
                     />
                   </div>
                   <h3 className="text-xl font-bold text-gray-800">{prof.nome}</h3>
