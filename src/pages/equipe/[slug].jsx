@@ -20,7 +20,7 @@ export default function PerfilProfissional({ profissional }) {
         <div className="text-center py-20">
           <h1 className="text-2xl font-bold text-gray-700">Profissional não encontrado</h1>
           <Link href="/#equipe" className="text-brand hover:underline mt-4 block">
-            Voltar para a equipe
+            Voltar para a equipa
           </Link>
         </div>
       </Layout>
@@ -51,7 +51,13 @@ export default function PerfilProfissional({ profissional }) {
                 src={profissional.foto} 
                 alt={`Foto de ${profissional.nome}`} 
                 fill
-                className="rounded-full object-cover border-[5px] border-brand shadow-xl"
+                /* AQUI ESTÁ A SOLUÇÃO: 
+                  Adicionámos a class "object-top".
+                  - rounded-full: cria o formato circular.
+                  - object-cover: faz a imagem preencher o espaço sem distorcer.
+                  - object-top: foca na parte superior da imagem, evitando cortar as cabeças.
+                */
+                className="rounded-full object-cover object-top border-[5px] border-brand shadow-xl"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
             </div>
