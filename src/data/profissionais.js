@@ -266,6 +266,24 @@ export const profissionais = [
     whatsapp: "5553991281500"
   },
   {
+    slug: "juliana-carrir",
+    nome: "Juliana Carrir Diniz Zanella",
+    cargo: "Psicóloga",
+    registro: "CRP - 07/35077",
+    foto: "/img/Juliana².jpeg",
+    unidades: ["Canabarro"],
+    bio: [
+      "Olá! Sou Juliana Carrir Diniz Zanella, psicóloga clínica formada pela Universidade Federal do Rio Grande (FURG). Acredito que o aprendizado contínuo é fundamental para oferecer o melhor cuidado aos meus pacientes. Por isso, sou pós-graduada em Análise do Comportamento Aplicada (ABA) e pós-graduanda em Neuropsicologia pela FACUVALE, além de realizar especialização em Terapia Cognitivo-Comportamental (TCC) pela Academia do TCC. Atualmente, dedico meus estudos ao aprofundamento no espectro autista e desenvolvimento infantil através das formações 'Simplificando o Autismo', 'ABA em Casa', 'TEA na Escola' e 'Comunicação Alternativa (CAA)'.        Será um prazer acompanhar você nessa jornada de desenvolvimento e bem-estar.",
+    ],
+    especialidades: [
+      "Terapia de orientação psicanalítica",
+      "Atendimento de crianças, adolescentes e adultos",
+      "Abordagem TCC (Terapia Cognitivo-Comportamental)",
+      "Especialização em ABA (Análise do Comportamento Aplicada)",
+    ],
+    whatsapp: "5553991281500"
+  },
+  {
     slug: "juliana-maia",
     nome: "Juliana Maia",
     cargo: "Psicóloga",
@@ -319,19 +337,21 @@ export const profissionais = [
     ],
     whatsapp: "5553991281500"
   },
-  /*{
+  {
     slug: "liziane-goncalves",
-    nome: "Liziane de Ávila Gonçalves",
+    nome: "Liziane Gonçalves Pereira",
     cargo: "Psicopedagoga",
     registro: "CFEP - 2401278",
     foto: "/img/Liziane².jpg",
     unidades: ["Canabarro"],
     bio: [
-      "Sou Liziane de Ávila Gonçalves, Psicopedagoga. (Bio em atualização)"
+      "Olá! Sou Liziane, Pedagoga e Psicopedagoga com especialização nas áreas Institucional, Clínica e Educação Especial. Minha trajetória começou no Magistério e hoje dedico minha carreira a transformar o aprendizado de crianças através de um olhar atento e especializado. Como Acompanhante Terapêutica (AT) em ABA, uno a ciência e o afeto para oferecer um suporte individualizado, focado na autonomia e no desenvolvimento integral de cada paciente. Acredito que cada criança possui um ritmo único e meu papel é construir as ferramentas necessárias para que ela alcance seu máximo potencial."
     ],
     especialidades: [
       "Atendimento para Crianças",
-      "Psicopedagogia Clínica"
+      "Formação em ABA",
+      "Acompanhante Terapêutica (AT)",
+      "Especialização em Psicopedagogia Clínica, Institucional e Educação Especial"
     ],
     whatsapp: "5553991281500"
   },
@@ -343,14 +363,14 @@ export const profissionais = [
     foto: "/img/Liziane.png",
     unidades: ["Canabarro"],
     bio: [
-      "Sou Liziane Paiva, Psicóloga. (Bio em atualização)"
+      "Olá, sou a Liziane Paiva formada em Psicologia pela Anhanguera Rio Grande (2017), trabalho com adolescentes e adultos em contexto clínico, com abordagem psicanalítica. Apaixonada por ajudar pessoas a entenderem melhor si mesmas e promover saúde mental."
     ],
     especialidades: [
       "Atendimento para Adolescentes e Adultos",
-      "Psicoterapia"
+      "Abordagem Psicanalítica"
     ],
     whatsapp: "5553991281500"
-  },*/
+  },
   {
     slug: "maiza-vanzelote",
     nome: "Maiza Vanzelote",
