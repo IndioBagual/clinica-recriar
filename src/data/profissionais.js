@@ -98,6 +98,26 @@ export const profissionais = [
     whatsapp: "5553991281500"
   },
   {
+    slug: "eduarda-posser",
+    nome: "Eduarda Posser Machado",
+    cargo: "Fonoaudióloga",
+    registro: "CRFa - 7-11358",
+    foto: "/img/Eduarda.heic", 
+    unidades: ["Canabarro"],
+    bio: [
+      "Olá, sou Eduarda Posser Machado, fonoaudióloga formada pela Universidade Federal de Santa Maria, com formação complementar nas áreas de Comunicação Alternativa e Aumentativa (CAA), intervenção precoce, motricidade orofacial, aprendizagem e teste da linguinha. Possuo experiência no atendimento de pacientes com Transtorno do Espectro Autista (TEA), atuação baseada em princípios da Análise do Comportamento Aplicada (ABA), além de trabalhar com transtorno fonológico e processamento auditivo central. Busco uma prática acolhedora, baseada em evidências, promovendo o desenvolvimento da comunicação e qualidade de vida dos meus pacientes."
+    ],
+    especialidades: [
+      "Linguagem",
+      "Fala",
+      "Motricidade Orofacial",
+      "Comunicação Alternativa e Aumentativa (CAA)",
+      "Aprendizagem",
+      "Transtornos do Neurodesenvolvimento"
+    ],
+    whatsapp: "5553991281500"
+  },
+  {
     slug: "eliane-magnus",
     nome: "Eliane Magnus",
     cargo: "Psicóloga",
@@ -203,25 +223,6 @@ export const profissionais = [
     especialidades: [
       "Terapia de Orientação Analítica - Psicanálise",
       "Atendimento para Crianças, Adolescentes e Adultos"
-    ],
-    whatsapp: "5553991281500"
-  },
-  {
-    slug: "jesline-cantos",
-    nome: "Jesline Borges Cantos",
-    cargo: "Psicóloga",
-    registro: "CRP 07/43628",
-    foto: "/img/Jesline.jpeg",
-    unidades: ["Abreu"],
-    bio: [
-      "Prazer, sou Jesline, psicóloga pela FURG, também sou bacharel em Teatro pela UFRGS.",
-      "Tomo como partida que toda clínica é e deve ser social, observando o contexto de quem fala. Quando escuto as pessoas que encontro no espaço da terapia isso está ancorado em um referencial teórico psicanalítico.",
-      "Além da base teórica e da postura ética pertinentes da área da Psicologia, minha escuta é atravessada pela Arte e outras áreas do conhecimento que ampliam o olhar da escuta clínica."
-    ],
-    especialidades: [
-      "Psicanálise",
-      "Clínica Social",
-      "Arte e Psicologia"
     ],
     whatsapp: "5553991281500"
   },
