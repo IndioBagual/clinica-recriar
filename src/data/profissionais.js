@@ -102,7 +102,7 @@ export const profissionais = [
     nome: "Eduarda Posser Machado",
     cargo: "Fonoaudióloga",
     registro: "CRFa - 7-11358",
-    foto: "/img/Eduarda.heic", 
+    foto: "/img/eduarda.png", 
     unidades: ["Canabarro"],
     bio: [
       "Olá, sou Eduarda Posser Machado, fonoaudióloga formada pela Universidade Federal de Santa Maria, com formação complementar nas áreas de Comunicação Alternativa e Aumentativa (CAA), intervenção precoce, motricidade orofacial, aprendizagem e teste da linguinha. Possuo experiência no atendimento de pacientes com Transtorno do Espectro Autista (TEA), atuação baseada em princípios da Análise do Comportamento Aplicada (ABA), além de trabalhar com transtorno fonológico e processamento auditivo central. Busco uma prática acolhedora, baseada em evidências, promovendo o desenvolvimento da comunicação e qualidade de vida dos meus pacientes."
