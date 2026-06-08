@@ -22,7 +22,7 @@ export const profissionais = [
     cargo: "Psicopedagoga",
     registro: "CFEP - 22004379",
     foto: "/img/Amanda.png",
-    unidades: ["Canabarro"],
+    unidades: ["Tiradentes"],
     bio: [
       "Olá, Sou Amanda Diniz, Psicopedagoga e mãe atípica. Formada em magistério, graduada em Pedagogia e pós graduada em Neuropsicopedagogia.",
       "Meu trabalho é feito de maneira lúdica, através de jogos e brincadeiras, vou identificando os atrasos, prejuízos e dificuldades.",
@@ -43,7 +43,7 @@ export const profissionais = [
     cargo: "Psicóloga",
     registro: "CRP - 07/30835",
     foto: "/img/Andreia.jpg",
-    unidades: ["Canabarro"],
+    unidades: ["Tiradentes"],
     bio: [
       "Olá sou Andréia Aparecido, responsável técnica da clínica recriar, sou formada em Psicologia e também Formada em música, utilizo recursos musicais dentro de meus atendimentos psicológicos.",
       "Também sou especialista e tenho capacitações em TEA, TDAH e Síndrome de Down.",
@@ -64,7 +64,7 @@ export const profissionais = [
     cargo: "Psicóloga",
     registro: "CRP - 07/34948",
     foto: "/img/Angélica.png",
-    unidades: ["Canabarro"],
+    unidades: ["Tiradentes"],
     bio: [
       "Olá, Sou a Psicóloga Angélica Escobar, além da Psicologia sou graduada em Letras. Com pós-graduação em Terapia Cognitivo-Comportamental, Neuropsicologia, ABA – Análise do Comportamento, Psicologia Hospitalar e Psicologia Organizacional.",
       "Meu propósito é oferecer um espaço de acolhimento, escuta ativa e estratégias baseadas em evidências científicas, ajudando cada pessoa a ressignificar suas experiências, fortalecer recursos internos e encontrar caminhos mais saudáveis para viver."
@@ -103,7 +103,7 @@ export const profissionais = [
     cargo: "Fonoaudióloga",
     registro: "CRFa - 7-11358",
     foto: "/img/eduarda.png", 
-    unidades: ["Canabarro"],
+    unidades: ["Tiradentes"],
     bio: [
       "Olá, sou Eduarda Posser Machado, fonoaudióloga formada pela Universidade Federal de Santa Maria, com formação complementar nas áreas de Comunicação Alternativa e Aumentativa (CAA), intervenção precoce, motricidade orofacial, aprendizagem e teste da linguinha. Possuo experiência no atendimento de pacientes com Transtorno do Espectro Autista (TEA), atuação baseada em princípios da Análise do Comportamento Aplicada (ABA), além de trabalhar com transtorno fonológico e processamento auditivo central. Busco uma prática acolhedora, baseada em evidências, promovendo o desenvolvimento da comunicação e qualidade de vida dos meus pacientes."
     ],
@@ -123,7 +123,7 @@ export const profissionais = [
     cargo: "Psicóloga",
     registro: "CRP - 07/43402",
     foto: "/img/Eliane.jpeg",
-    unidades: ["Abreu", "Canabarro"],
+    unidades: ["Abreu", "Tiradentes"],
     bio: [
       "Me chamo, Eliane Acosta Saizer Magnus sou Psicóloga Clínica– CRP 07/43402, Psicóloga clínica com pós-graduação em Terapia Cognitivo-Comportamental (TCC), abordagem baseada em evidências científicas. Atua no atendimento de crianças, adultos e idosos, oferecendo acompanhamento psicológico focado na compreensão e modificação de pensamentos, emoções e comportamentos disfuncionais. Meu trabalho é pautado na escuta qualificada, no respeito à singularidade de cada pessoa e no fortalecimento da autonomia emocional, auxiliando o paciente a compreender seus pensamentos, emoções e comportamentos, promovendo mudanças consistentes e duradouras."
     ],
@@ -177,7 +177,7 @@ export const profissionais = [
     cargo: "Psicóloga",
     registro: "CRP - 07/39592",
     foto: "/img/Isadora.jpg",
-    unidades: ["Canabarro"],
+    unidades: ["Tiradentes"],
     bio: [
       "Olá sou Psicóloga Isadora Donati, atendo adolescentes a partir de 12 anos e adultos, com foco em transtornos ansiosos e dificuldades nas relações.",
       "Trabalho com Terapia Cognitivo-Comportamental (TCC) e técnicas da terapia sistêmica familiar, sempre prezando por um vínculo terapêutico sólido e acolhedor."
@@ -215,7 +215,7 @@ export const profissionais = [
     cargo: "Psicóloga",
     registro: "CRP - 07/35344",
     foto: "/img/Jeniffer.jpg",
-    unidades: ["Canabarro"], 
+    unidades: ["Tiradentes"], 
     bio: [
       "Prazer, meu nome é Jeniffer Lackman. Psicóloga clínica e atuo no atendimento psicológico de crianças, adolescentes e adultos.",
       "Minha prática é baseada na escuta acolhedora, no respeito à individualidade e no compromisso com o cuidado emocional em cada fase da vida."
@@ -252,7 +252,7 @@ export const profissionais = [
     cargo: "Nutricionista",
     registro: "CRN2 - 17163",
     foto: "/img/JessicaCarollina.jpg",
-    unidades: ["Canabarro"],
+    unidades: ["Tiradentes"],
     bio: [
       "Muito prazer! Me chamo Jéssica Schiatti, sou nutricionista e mestra em nutrição e alimentos pela Universidade Federal de Pelotas.",
       "Sou pós-graduada em nutrição aplicada à saúde da mulher e trabalho com reeducação alimentar, emagrecimento saudável, desempenho físico, hipertrofia e dietoterapia.",
@@ -272,7 +272,7 @@ export const profissionais = [
     cargo: "Psicóloga",
     registro: "CRP - 07/35077",
     foto: "/img/Juliana².jpeg",
-    unidades: ["Canabarro"],
+    unidades: ["Tiradentes"],
     bio: [
       "Olá! Sou Juliana Carrir Diniz Zanella, psicóloga clínica formada pela Universidade Federal do Rio Grande (FURG). Acredito que o aprendizado contínuo é fundamental para oferecer o melhor cuidado aos meus pacientes. Por isso, sou pós-graduada em Análise do Comportamento Aplicada (ABA) e pós-graduanda em Neuropsicologia pela FACUVALE, além de realizar especialização em Terapia Cognitivo-Comportamental (TCC) pela Academia do TCC. Atualmente, dedico meus estudos ao aprofundamento no espectro autista e desenvolvimento infantil através das formações 'Simplificando o Autismo', 'ABA em Casa', 'TEA na Escola' e 'Comunicação Alternativa (CAA)'.        Será um prazer acompanhar você nessa jornada de desenvolvimento e bem-estar.",
     ],
@@ -290,7 +290,7 @@ export const profissionais = [
     cargo: "Psicóloga",
     registro: "CRP - 07/42044",
     foto: "/img/Juliana.jpg",
-    unidades: ["Canabarro"],
+    unidades: ["Tiradentes"],
     bio: [
       "Olá, prazer! Me chamo Juliana, sou psicóloga formada pela Faculdade Anhanguera de Rio Grande e trabalho com a abordagem psicanalítica.",
       "Acredito em um processo terapêutico de empatia, cuidado, conforto e segurança pra dizer o que passa na sua mente e no seu coração."
@@ -307,7 +307,7 @@ export const profissionais = [
     cargo: "Psicóloga",
     registro: "CRP - 07/33205",
     foto: "/img/Liliane.jpg",
-    unidades: ["Canabarro"],
+    unidades: ["Tiradentes"],
     bio: [
       "Olá, sou Liliane formada em Psicologia pela Universidade Federal de Rio Grande, sou especialista em TEA, TOD, TDAH e Transtorno de Aprendizagem.",
       "Atendo o público geral a partir de 2 anos de idade.",
@@ -327,7 +327,7 @@ export const profissionais = [
     cargo: "Nutricionista",
     registro: "CRN - 20169D",
     foto: "/img/Litierry.jpeg",
-    unidades: ["Canabarro", "Abreu"],
+    unidades: ["Tiradentes", "Abreu"],
     bio: [
       "Sou nutricionista clínico, formado pela Universidade Federal de Pelotas (UFPel), especialista em Nutrição Oncológica e Terapia Nutricional. Atuo com base em evidências científicas, aliando conhecimento técnico, empatia e respeito à individualidade de cada paciente."
     ],
@@ -344,7 +344,7 @@ export const profissionais = [
     cargo: "Psicopedagoga",
     registro: "CFEP - 2401278",
     foto: "/img/Liziane².jpg",
-    unidades: ["Canabarro"],
+    unidades: ["Tiradentes"],
     bio: [
       "Olá! Sou Liziane, Pedagoga e Psicopedagoga com especialização nas áreas Institucional, Clínica e Educação Especial. Minha trajetória começou no Magistério e hoje dedico minha carreira a transformar o aprendizado de crianças através de um olhar atento e especializado. Como Acompanhante Terapêutica (AT) em ABA, uno a ciência e o afeto para oferecer um suporte individualizado, focado na autonomia e no desenvolvimento integral de cada paciente. Acredito que cada criança possui um ritmo único e meu papel é construir as ferramentas necessárias para que ela alcance seu máximo potencial."
     ],
@@ -362,7 +362,7 @@ export const profissionais = [
     cargo: "Psicóloga",
     registro: "CRP - 07/31902",
     foto: "/img/Liziane.png",
-    unidades: ["Canabarro"],
+    unidades: ["Tiradentes"],
     bio: [
       "Olá, sou a Liziane Paiva formada em Psicologia pela Anhanguera Rio Grande (2017), trabalho com adolescentes e adultos em contexto clínico, com abordagem psicanalítica. Apaixonada por ajudar pessoas a entenderem melhor si mesmas e promover saúde mental."
     ],
@@ -378,7 +378,7 @@ export const profissionais = [
     cargo: "Psicóloga",
     registro: "CRP - 07/31953",
     foto: "/img/Maiza.jpg",
-    unidades: ["Canabarro"],
+    unidades: ["Tiradentes"],
     bio: [
       "Olá sou a psicóloga Maiza Vanzelote, possuo especialização em Neuropsicologia e Psicologia Hospitalar.",
       "Atuo com capacitação em avaliação e intervenção em Transtorno de Déficit de Atenção e Hiperatividade (TDAH), psicoterapia e transtornos alimentares.",
@@ -399,7 +399,7 @@ export const profissionais = [
     cargo: "Nutricionista",
     registro: "CRN - 19815D",
     foto: "/img/Marcia.png",
-    unidades: ["Canabarro"],
+    unidades: ["Tiradentes"],
     bio: [
       "Olá sou Márcia Furtado Silveira, formada em Nutrição Clínica pela Faculdade Anhanguera Rio Grande oriunda da primeira turma de Nutrição.",
       "Também formada na área estética com foco na saúde da mulher."
@@ -419,7 +419,7 @@ export const profissionais = [
     cargo: "Psicóloga",
     registro: "CRP - 07/39172",
     foto: "/img/Mariana.png",
-    unidades: ["Canabarro"],
+    unidades: ["Tiradentes"],
     bio: [
       "Olá, me chamo Mariana Barros, sou psicóloga clínica com atuação focada na Terapia Cognitivo Comportamental (TCC).",
       "Acredito que cada pessoa carrega uma história única, e é a partir desse olhar individualizado que construo, junto com você, um espaço de escuta, acolhimento e transformação."
@@ -439,7 +439,7 @@ export const profissionais = [
     cargo: "Psicóloga",
     registro: "CRP 07/23804",
     foto: "/img/melani.jpeg",
-    unidades: ["Canabarro", "Abreu"], 
+    unidades: ["Tiradentes", "Abreu"], 
     bio: [
       "Sou Mélani França, psicóloga (CRP 07/23804) dedicada ao cuidado integral de crianças, adolescentes e adultos. Minha atuação é guiada pela escuta sensível, responsabilidade ética e compromisso com o desenvolvimento emocional de cada paciente.",
       "Possuo pós-graduação em Avaliação Psicológica e Psicodiagnóstico, Terapia Cognitivo-Comportamental, Psicologia Hospitalar e da Saúde, e sou pós-graduanda em Análise Comportamental Aplicada ao Autismo (ABA)."
@@ -457,7 +457,7 @@ export const profissionais = [
     cargo: "Fonoaudióloga",
     registro: "CRFa - (Pendente)",
     foto: "/img/branco.jpg", // Verificar nome correto da foto se existir
-    unidades: ["Canabarro"],
+    unidades: ["Tiradentes"],
     bio: [
       "Bio da Natasha Leoni pendente de atualização."
     ],
@@ -472,7 +472,7 @@ export const profissionais = [
     cargo: "Psicóloga",
     registro: "CRP - 07/39159",
     foto: "/img/Nathalia.png",
-    unidades: ["Canabarro"],
+    unidades: ["Tiradentes"],
     bio: [
       "Olá, sou Nathália Oliveira, psicóloga clínica, com experiência em atendimentos a adultos e idosos.",
       "Tenho uma escuta acolhedora e direcionada, buscando compreender cada paciente dentro de sua singularidade e história de vida.",
@@ -492,7 +492,7 @@ export const profissionais = [
     cargo: "Psicóloga",
     registro: "CRP - 07/33665",
     foto: "/img/Tatiane.png",
-    unidades: ["Canabarro"],
+    unidades: ["Tiradentes"],
     bio: [
       "Olá sou Tatiane Viana, formada em Psicologia desde 2019 pela Faculdade Anhanguera de Rio Grande.",
       "Tenho capacitações em Transtornos do Neurodesenvolvimento como TEA, TDAH, TOD entre outros.",
@@ -512,7 +512,7 @@ export const profissionais = [
     cargo: "Psicóloga",
     registro: "CRP - 07/31270",
     foto: "/img/Thais.png",
-    unidades: ["Canabarro"],
+    unidades: ["Tiradentes"],
     bio: [
       "Olá, eu sou a Thais Medeiros, formanda em Psicologia, com atuação voltada para o atendimento de jovens e adultos.",
       "Tenho como foco compreender e auxiliar no funcionamento cognitivo, emocional e comportamental, com intervenções personalizadas.",
@@ -533,7 +533,7 @@ export const profissionais = [
     cargo: "Fonoaudióloga",
     registro: "CRFa - 7-1766-9",
     foto: "/img/Thays Amanda.png",
-    unidades: ["Canabarro"],
+    unidades: ["Tiradentes"],
     bio: [
       "Olá sou Thays Amanda Santos, Fonoaudióloga Neurofuncional na Clínica Recriar, possuo graduação em Fonoaudiologia desde 2019.",
       "Disponho de três pós-graduações, sendo especialista em Reabilitação neurológica, Disfagia e Fonoaudiologia Intensiva.",
@@ -554,7 +554,7 @@ export const profissionais = [
     cargo: "Terapeuta Ocupacional",
     registro: "CREFITO - 05/28323-TO",
     foto: "/img/victoria.jpeg",
-    unidades: ["Canabarro"],
+    unidades: ["Tiradentes"],
     bio: [
       "Me chamo Victoria, tenho 24 anos e sou formada em Terapia Ocupacional pela Universidade Federal de Pelotas (UFPEL). Sempre fui uma pessoa alegre, simpática e atenciosa. Tenho um carinho muito especial por atender crianças, pois acredito na potência da infância e na importância de intervenções que respeitem o desenvolvimento, a individualidade e o brincar como ferramenta terapêutica. A Terapia Ocupacional é uma profissão incrível, capaz de promover autonomia, independência e qualidade de vida em diferentes fases da vida. Mais do que reabilitar, a Terapia Ocupacional acolhe, adapta, estimula e possibilita. Ser terapeuta ocupacional é, para mim, acreditar no potencial e celebrar cada pequena conquista como uma grande vitória."
     ],

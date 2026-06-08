@@ -1,25 +1,23 @@
 import { MapPin, Phone, Mail } from 'lucide-react';
 
-export default function SectionContato({ unidade = 'Canabarro' }) {
+export default function SectionContato({ unidade = 'Tiradentes' }) {
   // Dados específicos de cada unidade
   const dados = {
-    Canabarro: {
-      endereco: 'Rua General Canabarro, 458 - Centro, Rio Grande, RS',
-      mapaLink: 'https://maps.app.goo.gl/odPYnVCdnARF4PCH9', // Link para abrir no App
-      // URL de Embed do Google Maps para a Rua General Canabarro, 458
-      mapaSrc: "https://maps.google.com/maps?q=Rua%20General%20Canabarro%2C%20458%20-%20Centro%2C%20Rio%20Grande%20-%20RS&t=&z=15&ie=UTF8&iwloc=&output=embed",
+    Tiradentes: {
+      endereco: 'Rua Tiradentes, 20, Rio Grande, Cidade Nova, CEP 96211-080',
+      mapaLink: 'https://maps.app.goo.gl/odPYnVCdnARF4PCH9', // Lembre-se de atualizar com o link novo do Google Maps
+      mapaSrc: "https://maps.google.com/maps?q=Rua%20General%20Canabarro%2C%20458%20-%20Centro%2C%20Rio%20Grande%20-%20RS&t=&z=15&ie=UTF8&iwloc=&output=embed",  // Lembre-se de atualizar com o iframe novo do Google Maps
       whatsapp: '5553991281500'
     },
     Abreu: {
       endereco: 'Rua General Abreu, 52 - Bairro Cidade Nova, Rio Grande, RS',
-      mapaLink: 'https://maps.app.goo.gl/AMDchxDPA7D3r5Y27', // Link para abrir no App
-      // URL de Embed do Google Maps para a Rua General Abreu, 52
+      mapaLink: 'https://maps.app.goo.gl/AMDchxDPA7D3r5Y27', 
       mapaSrc: "https://maps.google.com/maps?q=Rua%20General%20Abreu%2C%2052%20-%20Bairro%20Cidade%20Nova%2C%20Rio%20Grande%20-%20RS&t=&z=15&ie=UTF8&iwloc=&output=embed",
       whatsapp: '5553991281500'
     }
   };
 
-  const infoAtual = dados[unidade] || dados['Canabarro'];
+  const infoAtual = dados[unidade] || dados['Tiradentes'];
 
   return (
     <section id="contato" className="py-20 bg-white">

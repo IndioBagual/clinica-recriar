@@ -1,11 +1,11 @@
 import Link from 'next/link';
 import { Facebook, Instagram, Mail, MapPin, Phone } from 'lucide-react';
 
-export default function Footer({ unidade = 'Canabarro' }) {
+export default function Footer({ unidade = 'Tiradentes' }) {
   // Define o endereço com base na unidade
   const endereco = unidade === 'Abreu' 
     ? 'Rua General Abreu, 52' 
-    : 'Rua General Canabarro, 458';
+    : 'Rua Tiradentes, 20, Rio Grande, Cidade Nova, CEP 96211-080';
 
   return (
     <footer className="bg-gray-800 text-white py-12 border-t border-gray-700">
@@ -14,7 +14,6 @@ export default function Footer({ unidade = 'Canabarro' }) {
           
           {/* Coluna 1: Logo e Slogan */}
           <div className="space-y-4">
-            {/* Nota: Usamos a classe brightness e invert para deixar o logo branco */}
             <img 
               src="/img/Logo recriar.png" 
               alt="Logo Clínica Recriar" 

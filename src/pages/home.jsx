@@ -8,9 +8,9 @@ import SectionContato from '../components/SectionContato';
 
 export default function Home() {
   return (
-    <Layout unidade="Canabarro">
+    <Layout unidade="Tiradentes">
       <Head>
-        <title>Unidade Canabarro | Clínica Recriar</title>
+        <title>Unidade Tiradentes | Clínica Recriar</title>
       </Head>
 
       {/* Hero Section (Banner Principal) */}
@@ -35,9 +35,9 @@ export default function Home() {
       {/* Componentes Modulares */}
       <SectionSobre />
       <SectionServicos />
-      <TeamSection unidadeAtual="Canabarro" />
+      <TeamSection unidadeAtual="Tiradentes" />
       <SectionConvenios />
-      <SectionContato unidade="Canabarro" />
+      <SectionContato unidade="Tiradentes" />
 
     </Layout>
   );
