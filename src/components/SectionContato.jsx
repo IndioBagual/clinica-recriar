@@ -5,8 +5,8 @@ export default function SectionContato({ unidade = 'Tiradentes' }) {
   const dados = {
     Tiradentes: {
       endereco: 'Rua Tiradentes, 20, Rio Grande, Cidade Nova, CEP 96211-080',
-      mapaLink: 'https://maps.app.goo.gl/odPYnVCdnARF4PCH9', // Lembre-se de atualizar com o link novo do Google Maps
-      mapaSrc: "https://maps.google.com/maps?q=Rua%20General%20Canabarro%2C%20458%20-%20Centro%2C%20Rio%20Grande%20-%20RS&t=&z=15&ie=UTF8&iwloc=&output=embed",  // Lembre-se de atualizar com o iframe novo do Google Maps
+      mapaLink: 'https://maps.app.goo.gl/e5gR6cdYBhh336rR6', // Lembre-se de atualizar com o link novo do Google Maps
+      mapaSrc: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d6764.258740564183!2d-52.107571623630086!3d-32.038689526611776!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95119c09954a74d9%3A0x55f925d82ada53af!2sR.%20Tiradentes%2C%2020%20-%20Cidade%20Nova%2C%20Rio%20Grande%20-%20RS%2C%2096211-080!5e0!3m2!1spt-BR!2sbr!4v1780942209820!5m2!1spt-BR!2sbr",  // Lembre-se de atualizar com o iframe novo do Google Maps
       whatsapp: '5553991281500'
     },
     Abreu: {
