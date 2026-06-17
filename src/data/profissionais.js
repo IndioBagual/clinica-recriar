@@ -452,21 +452,6 @@ export const profissionais = [
     whatsapp: "5553991281500"
   },
   {
-    slug: "natasha-leoni",
-    nome: "Natasha Leoni",
-    cargo: "Fonoaudióloga",
-    registro: "CRFa - (Pendente)",
-    foto: "/img/branco.jpg", // Verificar nome correto da foto se existir
-    unidades: ["Tiradentes"],
-    bio: [
-      "Bio da Natasha Leoni pendente de atualização."
-    ],
-    especialidades: [
-      "Fonoaudiologia Geral"
-    ],
-    whatsapp: "5553991281500"
-  },
-  {
     slug: "nathalia-oliveira",
     nome: "Nathalia Oliveira",
     cargo: "Psicóloga",
@@ -547,25 +532,5 @@ export const profissionais = [
       "Disfagia"
     ],
     whatsapp: "5553991281500"
-  },
-  {
-    slug: "victoria-amaral",
-    nome: "Victoria Farias Amaral",
-    cargo: "Terapeuta Ocupacional",
-    registro: "CREFITO - 05/28323-TO",
-    foto: "/img/victoria.jpeg",
-    unidades: ["Tiradentes"],
-    bio: [
-      "Me chamo Victoria, tenho 24 anos e sou formada em Terapia Ocupacional pela Universidade Federal de Pelotas (UFPEL). Sempre fui uma pessoa alegre, simpática e atenciosa. Tenho um carinho muito especial por atender crianças, pois acredito na potência da infância e na importância de intervenções que respeitem o desenvolvimento, a individualidade e o brincar como ferramenta terapêutica. A Terapia Ocupacional é uma profissão incrível, capaz de promover autonomia, independência e qualidade de vida em diferentes fases da vida. Mais do que reabilitar, a Terapia Ocupacional acolhe, adapta, estimula e possibilita. Ser terapeuta ocupacional é, para mim, acreditar no potencial e celebrar cada pequena conquista como uma grande vitória."
-    ],
-    especialidades: [
-      "Atendimento para crianças",
-      "Terapia Ocupacional Infantil",
-      "Intervenção precoce",
-      "Transtorno do Espectro Autista (TEA)",
-      "Transtorno de Déficit de Atenção e Hiperatividade (TDAH)"
-    ],
-    whatsapp: "5553991281500"
   }
-
 ];
