@@ -302,23 +302,6 @@ export const profissionais = [
     whatsapp: "5553991281500"
   },
   {
-    slug: "juliana-maia",
-    nome: "Juliana Maia",
-    cargo: "Psicóloga",
-    registro: "CRP - 07/42044",
-    foto: "/img/Juliana.jpg",
-    unidades: ["Tiradentes"],
-    bio: [
-      "Olá, prazer! Me chamo Juliana, sou psicóloga formada pela Faculdade Anhanguera de Rio Grande e trabalho com a abordagem psicanalítica.",
-      "Acredito em um processo terapêutico de empatia, cuidado, conforto e segurança pra dizer o que passa na sua mente e no seu coração."
-    ],
-    especialidades: [
-      "Terapia de orientação psicanalítica",
-      "Atendimento de adolescentes e adultos"
-    ],
-    whatsapp: "5553991281500"
-  },
-  {
     slug: "liliane-albino",
     nome: "Liliane Albino",
     cargo: "Psicóloga",
