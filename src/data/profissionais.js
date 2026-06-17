@@ -118,6 +118,23 @@ export const profissionais = [
     whatsapp: "5553991281500"
   },
   {
+    slug: "eliana-barreto",
+    nome: "Eliana Barreto",
+    cargo: "Psicóloga",
+    registro: "CRP - 07/30010",
+    foto: "/img/eliana.jpeg",
+    unidades: ["Abreu"],
+    bio: [
+      "Através da Metodologia Psicodramatista, como Psicóloga Clínica tenho o compromisso com o vínculo e com fortalecimento e o desenvolvimento dos papéis. Psicodrama é ação, por meios de Técnicas Psicodramatista, da espontaneidade e da criatividade dar uma nova resposta, a uma experiência vivenciada anteriormente, ou uma nova resposta a uma nova experiência."
+    ],
+    especialidades: [
+      "Psicodrama",
+      "Orientação Analítica",
+      "Atendimento para Crianças, Adolescentes, Adultos e Idosos"
+    ],
+    whatsapp: "5553991281500"
+  },
+  {
     slug: "eliane-magnus",
     nome: "Eliane Magnus",
     cargo: "Psicóloga",
