@@ -98,6 +98,26 @@ export const profissionais = [
     whatsapp: "5553991281500"
   },
   {
+    slug: "daiane-cardoso",
+    nome: "Daiane Cardoso",
+    cargo: "Psicóloga",
+    registro: "CRP - 07/42351",
+    foto: "/img/daiane.jpeg",
+    unidades: ["Abreu"],
+    bio: [
+      "Olá, sou Daiane Cardoso, psicóloga apaixonada pelo ser humano e pelos processos de transformação que acontecem ao longo da vida.",
+      "Há mais de 10 anos atuo na área da Psicologia, acompanhando pessoas em suas jornadas de autoconhecimento, fortalecimento emocional e desenvolvimento pessoal.",
+      "Meu trabalho é pautado na escuta empática, no respeito à singularidade de cada pessoa e na construção de um vínculo terapêutico baseado na confiança. Busco oferecer um ambiente acolhedor, onde cada paciente possa se sentir à vontade para expressar seus sentimentos, compreender suas emoções e desenvolver recursos para enfrentar os desafios da vida.",
+      "Mais do que ser psicóloga, sou uma pessoa que acredita no poder das conexões humanas, na importância do cuidado emocional e na capacidade que todos temos de nos reinventar e crescer."
+    ],
+    especialidades: [
+      "Terapia Cognitiva- Comportamental (TCC)",
+      "Atendimento para adolescentes e adultos",
+      "Capacitação em autoconhecimento, ansiedade, autoestima, inteligência emocional",
+    ],
+    whatsapp: "5553991281500"
+  },
+  {
     slug: "eduarda-posser",
     nome: "Eduarda Posser Machado",
     cargo: "Fonoaudióloga",
@@ -298,6 +318,26 @@ export const profissionais = [
       "Atendimento de crianças, adolescentes e adultos",
       "Abordagem TCC (Terapia Cognitivo-Comportamental)",
       "Especialização em ABA (Análise do Comportamento Aplicada)",
+    ],
+    whatsapp: "5553991281500"
+  },
+  {
+    slug: "kelia-rangel",
+    nome: "Kélia Rangel",
+    cargo: "Psicóloga",
+    registro: "CRP - 07/24681",
+    foto: "/img/kelia.jpeg",
+    unidades: ["Abreu"],
+    bio: [
+      "Olá sou Kelia Rangel, Psicóloga,  com pós-graduação em Neuropsicologia e Psicopedagogia. ",
+      "Atendo crianças,  adolescentes e adultos,  com foco no desenvolvimento emocional,  cognitivo e comportamental. ",
+      "Atualmente em formação em Psicologia Clínica Cognitivo-Comportamental  e Análise do Comportamento Aplicada  (ABA)."
+    ],
+    especialidades: [
+      "Neuropsicologia",
+      "Psicopedagogia",
+      "ABA",
+      "TCC"
     ],
     whatsapp: "5553991281500"
   },
