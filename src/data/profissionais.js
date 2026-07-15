@@ -572,5 +572,26 @@ export const profissionais = [
       "Disfagia"
     ],
     whatsapp: "5553991281500"
+  },
+  {
+    slug: "vitoria-jensen",
+    nome: "Vitória Colares Jensen",
+    cargo: "Psicopedagoga",
+    registro: "CFEP - 2620074",
+    foto: "/img/vitoria.jpeg",
+    unidades: ["Tiradentes"],
+    bio: [
+      "Olá, sou Vitória Jensen, graduada em Pedagogia pela Universidade Federal do Rio Grande. Possuo pós-graduação em Psicopedagogia Clínica e Institucional e especialização em Análise do Comportamento Aplicada (ABA).",
+      "Atuo no acompanhamento de crianças e adolescentes, com foco no desenvolvimento da aprendizagem, atenção, comunicação e autonomia.",
+      "Tenho experiência no atendimento de crianças com Transtorno do Espectro Autista (TEA), TDAH e dificuldades de aprendizagem, sempre em parceria com a família, a escola e a equipe multidisciplinar."
+    ],
+    especialidades: [
+      "Psicopedagoga",
+      "Atendimento para Crianças e Adolescentes",
+      "Transtorno do Espectro Autista (TEA)",
+      "Análise do Comportamento Aplicada (ABA)",
+      "Alfabetização e desenvolvimento da leitura e escrita"
+    ],
+    whatsapp: "5553991281500"
   }
 ];
