@@ -123,7 +123,7 @@ export const profissionais = [
     cargo: "Fonoaudióloga",
     registro: "CRFa - 7-11358",
     foto: "/img/eduarda.png", 
-    unidades: ["Tiradentes"],
+    unidades: ["Abreu"],
     bio: [
       "Olá, sou Eduarda Posser Machado, fonoaudióloga formada pela Universidade Federal de Santa Maria, com formação complementar nas áreas de Comunicação Alternativa e Aumentativa (CAA), intervenção precoce, motricidade orofacial, aprendizagem e teste da linguinha. Possuo experiência no atendimento de pacientes com Transtorno do Espectro Autista (TEA), atuação baseada em princípios da Análise do Comportamento Aplicada (ABA), além de trabalhar com transtorno fonológico e processamento auditivo central. Busco uma prática acolhedora, baseada em evidências, promovendo o desenvolvimento da comunicação e qualidade de vida dos meus pacientes."
     ],
@@ -160,7 +160,7 @@ export const profissionais = [
     cargo: "Psicóloga",
     registro: "CRP - 07/43402",
     foto: "/img/Eliane.jpeg",
-    unidades: ["Abreu", "Tiradentes"],
+    unidades: ["Abreu"],
     bio: [
       "Me chamo, Eliane Acosta Saizer Magnus sou Psicóloga Clínica– CRP 07/43402, Psicóloga clínica com pós-graduação em Terapia Cognitivo-Comportamental (TCC), abordagem baseada em evidências científicas. Atua no atendimento de crianças, adultos e idosos, oferecendo acompanhamento psicológico focado na compreensão e modificação de pensamentos, emoções e comportamentos disfuncionais. Meu trabalho é pautado na escuta qualificada, no respeito à singularidade de cada pessoa e no fortalecimento da autonomia emocional, auxiliando o paciente a compreender seus pensamentos, emoções e comportamentos, promovendo mudanças consistentes e duradouras."
     ],
@@ -214,7 +214,7 @@ export const profissionais = [
     cargo: "Psicóloga",
     registro: "CRP - 07/39592",
     foto: "/img/Isadora.jpg",
-    unidades: ["Tiradentes"],
+    unidades: ["Abreu"],
     bio: [
       "Olá sou Psicóloga Isadora Donati, atendo adolescentes a partir de 12 anos e adultos, com foco em transtornos ansiosos e dificuldades nas relações.",
       "Trabalho com Terapia Cognitivo-Comportamental (TCC) e técnicas da terapia sistêmica familiar, sempre prezando por um vínculo terapêutico sólido e acolhedor."
@@ -289,7 +289,7 @@ export const profissionais = [
     cargo: "Nutricionista",
     registro: "CRN2 - 17163",
     foto: "/img/JessicaCarollina.jpg",
-    unidades: ["Tiradentes"],
+    unidades: ["Abreu"],
     bio: [
       "Muito prazer! Me chamo Jéssica Schiatti, sou nutricionista e mestra em nutrição e alimentos pela Universidade Federal de Pelotas.",
       "Sou pós-graduada em nutrição aplicada à saúde da mulher e trabalho com reeducação alimentar, emagrecimento saudável, desempenho físico, hipertrofia e dietoterapia.",
@@ -309,7 +309,7 @@ export const profissionais = [
     cargo: "Psicóloga",
     registro: "CRP - 07/35077",
     foto: "/img/Juliana².jpeg",
-    unidades: ["Tiradentes"],
+    unidades: ["Abreu"],
     bio: [
       "Olá! Sou Juliana Carrir Diniz Zanella, psicóloga clínica formada pela Universidade Federal do Rio Grande (FURG). Acredito que o aprendizado contínuo é fundamental para oferecer o melhor cuidado aos meus pacientes. Por isso, sou pós-graduada em Análise do Comportamento Aplicada (ABA) e pós-graduanda em Neuropsicologia pela FACUVALE, além de realizar especialização em Terapia Cognitivo-Comportamental (TCC) pela Academia do TCC. Atualmente, dedico meus estudos ao aprofundamento no espectro autista e desenvolvimento infantil através das formações 'Simplificando o Autismo', 'ABA em Casa', 'TEA na Escola' e 'Comunicação Alternativa (CAA)'.        Será um prazer acompanhar você nessa jornada de desenvolvimento e bem-estar.",
     ],
@@ -367,7 +367,7 @@ export const profissionais = [
     cargo: "Nutricionista",
     registro: "CRN - 20169D",
     foto: "/img/Litierry.jpeg",
-    unidades: ["Tiradentes", "Abreu"],
+    unidades: ["Abreu"],
     bio: [
       "Sou nutricionista clínico, formado pela Universidade Federal de Pelotas (UFPel), especialista em Nutrição Oncológica e Terapia Nutricional. Atuo com base em evidências científicas, aliando conhecimento técnico, empatia e respeito à individualidade de cada paciente."
     ],
@@ -439,7 +439,7 @@ export const profissionais = [
     cargo: "Nutricionista",
     registro: "CRN - 19815D",
     foto: "/img/Marcia.png",
-    unidades: ["Tiradentes"],
+    unidades: ["Abreu"],
     bio: [
       "Olá sou Márcia Furtado Silveira, formada em Nutrição Clínica pela Faculdade Anhanguera Rio Grande oriunda da primeira turma de Nutrição.",
       "Também formada na área estética com foco na saúde da mulher."
@@ -479,7 +479,7 @@ export const profissionais = [
     cargo: "Psicóloga",
     registro: "CRP 07/23804",
     foto: "/img/melani.jpeg",
-    unidades: ["Tiradentes", "Abreu"], 
+    unidades: ["Abreu"], 
     bio: [
       "Sou Mélani França, psicóloga (CRP 07/23804) dedicada ao cuidado integral de crianças, adolescentes e adultos. Minha atuação é guiada pela escuta sensível, responsabilidade ética e compromisso com o desenvolvimento emocional de cada paciente.",
       "Possuo pós-graduação em Avaliação Psicológica e Psicodiagnóstico, Terapia Cognitivo-Comportamental, Psicologia Hospitalar e da Saúde, e sou pós-graduanda em Análise Comportamental Aplicada ao Autismo (ABA)."
@@ -497,7 +497,7 @@ export const profissionais = [
     cargo: "Psicóloga",
     registro: "CRP - 07/39159",
     foto: "/img/Nathalia.png",
-    unidades: ["Tiradentes"],
+    unidades: ["Abreu"],
     bio: [
       "Olá, sou Nathália Oliveira, psicóloga clínica, com experiência em atendimentos a adultos e idosos.",
       "Tenho uma escuta acolhedora e direcionada, buscando compreender cada paciente dentro de sua singularidade e história de vida.",
