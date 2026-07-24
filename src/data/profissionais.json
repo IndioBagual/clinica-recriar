@@ -259,6 +259,26 @@
     },
     {
       "especialidades": [
+        "Humanismo",
+        "Neuropsicologia",
+        "etc",
+        "etc"
+      ],
+      "foto": "/img/indioaparecido-icon1.png",
+      "unidades": [
+        "Tiradentes"
+      ],
+      "bio": [
+        "Gerente, bonito, engraçado e testador de site"
+      ],
+      "slug": "gui-aparecido",
+      "whatsapp": "5553991281500",
+      "registro": "CRP - 07/48950",
+      "nome": "Guilherme Aparecido",
+      "cargo": "Psicológo "
+    },
+    {
+      "especialidades": [
         "Transtornos de Ansiedade",
         "Dificuldades nas Relações (familiares, afetivas e interpessoais)",
         "Terapia Cognitivo-Comportamental (TCC)",
@@ -705,26 +725,6 @@
       "registro": "CFEP - 2620074",
       "nome": "Vitória Colares Jensen",
       "cargo": "Psicopedagoga"
-    },
-    {
-      "especialidades": [
-        "Humanismo",
-        "Neuropsicologia",
-        "etc",
-        "etc"
-      ],
-      "foto": "/img/indioaparecido-icon1.png",
-      "unidades": [
-        "Tiradentes"
-      ],
-      "bio": [
-        "Gerente, bonito, engraçado e testador de site"
-      ],
-      "slug": "gui-aparecido",
-      "whatsapp": "5553991281500",
-      "registro": "CRP - 07/48950",
-      "nome": "Guilherme Aparecido",
-      "cargo": "Psicológo "
     }
   ]
 }
