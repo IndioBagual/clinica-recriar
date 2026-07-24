@@ -109,11 +109,34 @@ export const profissionais = [
       "Há mais de 10 anos atuo na área da Psicologia, acompanhando pessoas em suas jornadas de autoconhecimento, fortalecimento emocional e desenvolvimento pessoal.",
       "Meu trabalho é pautado na escuta empática, no respeito à singularidade de cada pessoa e na construção de um vínculo terapêutico baseado na confiança. Busco oferecer um ambiente acolhedor, onde cada paciente possa se sentir à vontade para expressar seus sentimentos, compreender suas emoções e desenvolver recursos para enfrentar os desafios da vida.",
       "Mais do que ser psicóloga, sou uma pessoa que acredita no poder das conexões humanas, na importância do cuidado emocional e na capacidade que todos temos de nos reinventar e crescer."
-    ],
+    ],  
     especialidades: [
       "Terapia Cognitiva- Comportamental (TCC)",
       "Atendimento para adolescentes e adultos",
       "Capacitação em autoconhecimento, ansiedade, autoestima, inteligência emocional",
+    ],
+    whatsapp: "5553991281500"
+  },
+  {
+    slug: "daniele-garcia",
+    nome: "Daniele Garcia Lopes",
+    cargo: "Psicóloga",
+    registro: "CRP - 07/17282",
+    foto: "/img/daniele.jpeg",
+    unidades: ["Abreu", "Tiradentes"],
+    bio: [
+      "Formada pela Universidade Católica de Pelotas, com 18 anos de experiência na área clínica. Atuo no atendimento de crianças, adolescentes, adultos e casais, oferecendo um cuidado individualizado, acolhedor e baseado em evidências científicas.",
+      "Sou especialista no atendimento de pessoas com Transtorno do Espectro Autista (TEA) e Transtorno de Déficit de Atenção e Hiperatividade (TDAH), com foco no desenvolvimento emocional, comportamental e social.",
+      "Também realizo avaliações neuropsicológicas, contribuindo para um diagnóstico mais preciso e direcionamento terapêutico adequado.",
+      "Além disso, atuo com terapia de casal, auxiliando na melhoria da comunicação, resolução de conflitos e fortalecimento dos vínculos afetivos.",
+      "Possuo formação e especialização nas abordagens ABA (Análise do Comportamento Aplicada) e Modelo Denver, utilizando estratégias práticas e eficazes no desenvolvimento infantil."
+    ],
+    especialidades: [
+      "Terapia Cognitiva- Comportamental (TCC)",
+      "Atendimento para crianças, adolescentes e adultos",
+      "Terapia de casal",
+      "Especialista em TEA e TDAH",
+      "Intervenção em ABA e Modelo Denver",
     ],
     whatsapp: "5553991281500"
   },
@@ -398,7 +421,7 @@ export const profissionais = [
   },
   {
     slug: "liziane-paiva",
-    nome: "Liziane Paiva Souza Duran",
+    nome: "Liziane Paiva Souza",
     cargo: "Psicóloga",
     registro: "CRP - 07/31902",
     foto: "/img/Liziane.png",
@@ -409,6 +432,27 @@ export const profissionais = [
     especialidades: [
       "Atendimento para Adolescentes e Adultos",
       "Abordagem Psicanalítica"
+    ],
+    whatsapp: "5553991281500"
+  },
+  {
+    slug: "liziane-suita",
+    nome: "Liziane Suita",
+    cargo: "Psicóloga",
+    registro: "CRP - 07/29085",
+    foto: "/img/liziane-suita.jpeg",
+    unidades: ["Tiradentes", "Abreu"],
+    bio: [
+      "Olá, sou Liziane Suita, psicóloga, CRP 07/29085, Sou especialista em Terapia Cognitivo-Comportamental (TCC) e atuo com foco no cuidado psicológico individualizado.",
+      "Tenho especialização em Psicologia Hospitalar, Avaliação Psicológica e Neuropsicologia, além de capacitação em Comportamento Alimentar e Transtornos Alimentares.",
+      "Meu objetivo é oferecer um espaço de acolhimento e reflexão, auxiliando cada pessoa a compreender melhor seus pensamentos, emoções e comportamentos para construir mudanças possíveis em sua vida."
+    ],
+    especialidades: [
+      "Terapia Cognitivo-Comportamental (TCC)",
+      "Psicologia Hospitalar",
+      "Avaliação Psicológica",
+      "Neuropsicologia",
+      "Comportamento Alimentar e Transtornos Alimentares"
     ],
     whatsapp: "5553991281500"
   },
