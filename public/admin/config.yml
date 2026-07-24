@@ -1,0 +1,40 @@
+backend:
+  name: github
+  repo: indiobagual/clinica-recriar
+  branch: main
+
+media_folder: "public/img"
+public_folder: "/img"
+
+collections:
+  - name: "clinica"
+    label: "Configurações da Clínica"
+    files:
+      - label: "Profissionais"
+        name: "profissionais"
+        file: "src/data/profissionais.json"
+        fields:
+          - label: "Equipe"
+            name: "equipe"
+            widget: "list"
+            fields:
+              - {label: "Slug (URL)", name: "slug", widget: "string"}
+              - {label: "Nome", name: "nome", widget: "string"}
+              - {label: "Cargo", name: "cargo", widget: "string"}
+              - {label: "Registro", name: "registro", widget: "string"}
+              - {label: "Foto", name: "foto", widget: "image"}
+              - {label: "WhatsApp", name: "whatsapp", widget: "string"}
+              
+              - label: "Unidades"
+                name: "unidades"
+                widget: "list"
+                
+              - label: "Especialidades"
+                name: "especialidades"
+                widget: "list"
+                
+              - label: "Biografia (Adicione um item para cada parágrafo)"
+                name: "bio"
+                widget: "list"
+                # A correção está na linha abaixo, com a adição do name: "paragrafo"
+                field: {name: "paragrafo", label: "Parágrafo", widget: "text"}
