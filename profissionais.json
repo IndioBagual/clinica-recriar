@@ -1,0 +1,10 @@
+{
+  "equipe": [
+    {
+      "nome": "Guilherme Aparecido",
+      "foto": "/img/indioaparecido-icon1.png",
+      "apresentacao": "oi meu nome é guilherme",
+      "slug": "gui-aparecido"
+    }
+  ]
+}
