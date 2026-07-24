@@ -1,0 +1,24 @@
+{
+  "equipe": [
+    {
+      "especialidades": [
+        "Humanista",
+        "Neuropsico",
+        "blablabla",
+        "saas"
+      ],
+      "foto": "/img/indioaparecido-icon1.png",
+      "unidades": [
+        "Tiradentes"
+      ],
+      "bio": [
+        "lindo, bonito, engraçado e inteligente"
+      ],
+      "slug": "gui-aparecido",
+      "whatsapp": "53991281500",
+      "registro": "CRP 07/48590",
+      "nome": "Guilherme Aparecido",
+      "cargo": "Psicologo"
+    }
+  ]
+}
