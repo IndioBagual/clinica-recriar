@@ -1,7 +1,6 @@
 backend:
-  name: github
-  repo: indiobagual/clinica-recriar
-  branch: main
+  name: git-gateway
+  branch: main # Mantenha a branch que você usa
 
 media_folder: "public/img"
 public_folder: "/img"
