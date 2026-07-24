@@ -441,7 +441,7 @@ export const profissionais = [
     cargo: "Psicóloga",
     registro: "CRP - 07/29085",
     foto: "/img/liziane-suita.jpeg",
-    unidades: ["Tiradentes", "Abreu"],
+    unidades: ["Abreu"],
     bio: [
       "Olá, sou Liziane Suita, psicóloga, CRP 07/29085, Sou especialista em Terapia Cognitivo-Comportamental (TCC) e atuo com foco no cuidado psicológico individualizado.",
       "Tenho especialização em Psicologia Hospitalar, Avaliação Psicológica e Neuropsicologia, além de capacitação em Comportamento Alimentar e Transtornos Alimentares.",
