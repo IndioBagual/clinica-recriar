@@ -643,7 +643,8 @@
         "Reabilitação Neurológica",
         "Estimulação Precoce",
         "Teste da linguinha/orelhinha",
-        "Atrasos e trocas na fala (Crianças típicas e atípicas, TEA nível 1 de suporte)",
+        "Atrasos e trocas na fala (Crianças típicas e atípicas",
+        "TEA nível 1 de suporte)",
         "Disfagia"
       ],
       "foto": "/img/Thays Amanda.png",
@@ -683,6 +684,27 @@
       "registro": "CFEP - 2620074",
       "nome": "Vitória Colares Jensen",
       "cargo": "Psicopedagoga"
+    },
+    {
+      "especialidades": [
+        "Atraso na Fala",
+        "Comunicação Aumentativa e Alternativa (CAA)",
+        "Plushand",
+        "Atendimento Infantil"
+      ],
+      "foto": "/img/whatsapp-image-2026-11-04-at-10.52.47.jpeg",
+      "unidades": [
+        "Tiradentes"
+      ],
+      "bio": [
+        "Sou Milena Souza, fonoaudióloga infantil e especialista em Desenvolvimento Infantil. Atuo na área da linguagem, acompanhando crianças com atraso de fala, trocas fonológicas e demandas relacionadas ao neurodesenvolvimento, incluindo crianças autistas.",
+        "Também trabalho com intervenção precoce e tenho formação em Comunicação Aumentativa e Alternativa (CAA) e Plushand. Meu objetivo é oferecer um atendimento acolhedor e individualizado, que respeite as necessidades de cada criança e envolva a família no processo terapêutico."
+      ],
+      "slug": "milena-vitoria",
+      "whatsapp": "5553991281500",
+      "registro": "CRFa 7/14017-4",
+      "nome": "Milena Vitória",
+      "cargo": "Fonoaudióloga"
     }
   ]
 }
