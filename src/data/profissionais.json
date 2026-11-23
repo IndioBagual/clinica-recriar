@@ -214,6 +214,27 @@
     },
     {
       "especialidades": [
+        "ACP - Atenção Centrada na Pessoa",
+        "Atendimento para Adolescentes e Adultos"
+      ],
+      "foto": "/img/perfil.png",
+      "unidades": [
+        "Tiradentes"
+      ],
+      "bio": [
+        "Sou psicólogo formado pela Universidade Federal do Rio Grande (FURG), tenho minha visão pela perspectiva humanista da Psicologia, especificamente na abordagem Centrada na Pessoa (ACP) de Carl Rogers.",
+        "Ao longo da minha trajetória acadêmica na Psicologia, encontrei na abordagem humanista — especialmente na sensibilidade da Abordagem Centrada na Pessoa — uma forma ética e profunda de compreender o ser humano: não como um conjunto de sintomas ou categorias isoladas, mas como alguém em constante processo de tornar-se pessoa. ",
+        "Lhe extendo o convite para eu te conhecer um pouco mais e juntos buscarmos maior a compreensão de você mesmo, porque eu não sou o detentor de todo conhecimento e só você pode saber mais quem você é do que qualquer outra pessoa."
+      ],
+      "slug": "guilherme-aparecido",
+      "whatsapp": "5553991281500",
+      "status": "Em breve",
+      "registro": "Em breve",
+      "nome": "Guilherme Aparecido",
+      "cargo": "Psicológo"
+    },
+    {
+      "especialidades": [
         "Transtornos de Ansiedade",
         "Dificuldades nas Relações (familiares, afetivas e interpessoais)",
         "Terapia Cognitivo-Comportamental (TCC)",
