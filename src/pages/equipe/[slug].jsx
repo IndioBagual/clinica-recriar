@@ -27,10 +27,18 @@ export default function PerfilProfissional({ profissional }) {
     );
   }
 
+  // Verifica se o profissional está marcado como "Em breve"
+  const isEmBreve = profissional.status === 'Em breve';
+
   // Define a unidade principal (pega a primeira da lista ou define Canabarro como padrão)
   const unidadePrincipal = profissional.unidades && profissional.unidades.length > 0 
     ? profissional.unidades[0] 
     : 'Canabarro';
+
+  // Mensagem personalizada para o WhatsApp conforme o status
+  const mensagemWhatsapp = isEmBreve
+    ? `Olá, gostaria de consultar a disponibilidade de atendimento com ${profissional.nome}.`
+    : `Olá, gostaria de marcar atendimento com ${profissional.nome}.`;
 
   return (
     // Passamos a unidade para o Layout, que repassará para o Footer e Header
@@ -45,15 +53,23 @@ export default function PerfilProfissional({ profissional }) {
           
           {/* Foto do Profissional */}
           <div className="w-full md:w-1/3 flex justify-center md:justify-start">
-            {/* O componente Image do Next.js otimiza automaticamente as imagens */}
-            <div className="relative w-64 h-64 md:w-80 md:h-80">
+            <div className="relative w-64 h-64 md:w-80 md:h-80 rounded-full overflow-hidden border-[5px] border-brand shadow-xl">
               <Image 
                 src={profissional.foto} 
                 alt={`Foto de ${profissional.nome}`} 
                 fill
-                className="rounded-full object-cover object-top border-[5px] border-brand shadow-xl"
+                className={`object-cover object-top transition-all ${
+                  isEmBreve ? 'grayscale opacity-80' : ''
+                }`}
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
+
+              {/* Faixa "Em breve" */}
+              {isEmBreve && (
+                <div className="absolute bottom-0 left-0 right-0 bg-black/75 py-2.5 text-center text-sm font-bold uppercase tracking-widest text-white backdrop-blur-sm">
+                  Em breve
+                </div>
+              )}
             </div>
           </div>
           
@@ -91,12 +107,12 @@ export default function PerfilProfissional({ profissional }) {
             {/* Botão de Agendamento */}
             <div className="pt-4">
               <a 
-                href={`https://api.whatsapp.com/send/?phone=${profissional.whatsapp}&text=Olá+gostaria+de+marcar+atendimento+com+${encodeURIComponent(profissional.nome)}.`} 
+                href={`https://api.whatsapp.com/send/?phone=${profissional.whatsapp}&text=${encodeURIComponent(mensagemWhatsapp)}`} 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="inline-block bg-brand hover:bg-brand-dark text-white font-bold py-4 px-8 rounded-lg shadow-lg hover:scale-105 transition-transform text-center w-full md:w-auto"
               >
-                Agendar Consulta
+                {isEmBreve ? 'Avise-me / Consultar disponibilidade' : 'Agendar Consulta'}
               </a>
             </div>
           </div>
@@ -108,12 +124,11 @@ export default function PerfilProfissional({ profissional }) {
 
 // ESTA PARTE É FUNDAMENTAL: Diz ao Next.js quais páginas criar
 export async function getStaticPaths() {
-  // Cria uma lista de caminhos baseada nos slugs do nosso arquivo de dados
   const paths = profissionais.map((prof) => ({
     params: { slug: prof.slug },
   }));
 
-  return { paths, fallback: false }; // fallback: false significa que qualquer slug não listado dará erro 404
+  return { paths, fallback: false };
 }
 
 // ESTA PARTE BUSCA OS DADOS: Pega as informações do profissional específico para montar a página

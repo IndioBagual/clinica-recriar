@@ -49,30 +49,43 @@ export default function TeamSection({ unidadeAtual }) {
 
         {/* Grid de Profissionais */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-          {profissionaisExibidos.map((prof, index) => (
-            <Reveal key={prof.slug} delay={index * 0.1}>
-              <Link 
-                key={prof.slug} 
-                href={`/equipe/${prof.slug}`}
-                className="group block hover:scale-105 transition-transform duration-300"
-              >
-                <div className="text-center p-6 bg-white rounded-2xl hover:shadow-xl transition-shadow border border-transparent hover:border-gray-100 h-full">
-                  <div className="relative w-48 h-48 mx-auto mb-6">
-                    {/* Imagem otimizada */}
-                    <Image 
-                      src={prof.foto} 
-                      alt={`Foto de ${prof.nome}`}
-                      fill
-                      className="rounded-full object-cover object-top shadow-lg group-hover:ring-4 group-hover:ring-brand/30 transition-all"
-                    />
+          {profissionaisExibidos.map((prof, index) => {
+            const isEmBreve = prof.status === 'Em breve';
+
+            return (
+              <Reveal key={prof.slug} delay={index * 0.1}>
+                <Link 
+                  href={`/equipe/${prof.slug}`}
+                  className="group block hover:scale-105 transition-transform duration-300"
+                >
+                  <div className="text-center p-6 bg-white rounded-2xl hover:shadow-xl transition-shadow border border-transparent hover:border-gray-100 h-full">
+                    <div className="relative w-48 h-48 mx-auto mb-6 rounded-full overflow-hidden shadow-lg group-hover:ring-4 group-hover:ring-brand/30 transition-all">
+                      {/* Imagem otimizada */}
+                      <Image 
+                        src={prof.foto} 
+                        alt={`Foto de ${prof.nome}`}
+                        fill
+                        className={`object-cover object-top transition-all ${
+                          isEmBreve ? 'grayscale opacity-80' : ''
+                        }`}
+                      />
+
+                      {/* Faixa "Em breve" */}
+                      {isEmBreve && (
+                        <div className="absolute bottom-0 left-0 right-0 bg-black/75 py-2 text-center text-xs font-bold uppercase tracking-widest text-white backdrop-blur-sm">
+                          Em breve
+                        </div>
+                      )}
+                    </div>
+
+                    <h3 className="text-xl font-bold text-gray-800">{prof.nome}</h3>
+                    <p className="text-brand font-medium">{prof.cargo}</p>
+                    <p className="text-sm text-gray-400 mt-1">{prof.registro}</p>
                   </div>
-                  <h3 className="text-xl font-bold text-gray-800">{prof.nome}</h3>
-                  <p className="text-brand font-medium">{prof.cargo}</p>
-                  <p className="text-sm text-gray-400 mt-1">{prof.registro}</p>
-                </div>
-              </Link>
-            </Reveal>
-          ))}
+                </Link>
+              </Reveal>
+            );
+          })}
         </div>
       </div>
     </section>
