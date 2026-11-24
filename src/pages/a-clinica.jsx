@@ -49,14 +49,14 @@ export default function AClinicaPage() {
           </div>
 
           <div className="lg:col-span-5">
-            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-organic border border-sand-dark/60 shadow-card">
+            <div className="relative aspect-[16/9] w-full overflow-hidden rounded-organic border border-sand-dark/60 shadow-card">
               <Image
-                src={resolverImagem('/img/frente.jpg')}
+                src={resolverImagem(SITE_CONFIG.imagemFachadaPrincipal)}
                 alt="Fachada da Clínica Recriar"
                 fill
                 priority
                 sizes="(max-width: 1024px) 100vw, 42vw"
-                className="object-cover"
+                className="object-cover object-[center_40%]"
               />
             </div>
           </div>

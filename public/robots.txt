@@ -5,4 +5,4 @@ Disallow: /admin/
 Disallow: /gestao
 Disallow: /gestao/
 
-Sitemap: https://clinicarecriar.com.br/sitemap.xml
+Sitemap: https://clinicarecriar.com/sitemap.xml
