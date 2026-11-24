@@ -1,57 +1,56 @@
-import Reveal from './Reveal'; // Importa o nosso componente
 import { Users, ClipboardList, HeartPulse } from 'lucide-react';
+import Reveal from './Reveal';
+import SectionHeading from './ui/SectionHeading';
+
+const PILARES = [
+  {
+    titulo: 'Cuidado Integrado',
+    descricao:
+      'Profissionais de diferentes áreas colaboram para garantir que todos os aspectos da sua saúde sejam atendidos.',
+    Icone: Users,
+  },
+  {
+    titulo: 'Atendimento Focalizado',
+    descricao:
+      'São realizados atendimentos focados no paciente, para auxiliar suas necessidades específicas.',
+    Icone: ClipboardList,
+  },
+  {
+    titulo: 'Foco no Bem-Estar',
+    descricao:
+      'Nosso objetivo, além de tratar a saúde, é trazer comodidade e bom atendimento.',
+    Icone: HeartPulse,
+  },
+];
 
 export default function SectionSobre() {
   return (
-    <section id="sobre" className="py-20 bg-white">
-      <div className="container mx-auto px-6">
-        
-        <div className="text-center mb-16">
-          {/* Animação no Título */}
-          <Reveal>
-            <h2 className="text-4xl font-extrabold text-brand-dark mb-4">Nossa Abordagem Multidisciplinar</h2>
-          </Reveal>
-          
-          {/* Animação no Texto com um pequeno atraso (delay) */}
-          <Reveal delay={0.2}>
-            <p className="text-lg text-gray-500 max-w-3xl mx-auto">
-              Acreditamos que o atendimento multidisciplinar auxilia em diversos contextos...
-            </p>
-          </Reveal>
-        </div>
+    <section id="sobre" className="bg-cream py-20 md:py-24">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <Reveal>
+          <SectionHeading
+            eyebrow="A Clínica"
+            title="Nossa Abordagem Multidisciplinar"
+            description="Acreditamos que o atendimento multidisciplinar auxilia em diversos contextos..."
+          />
+        </Reveal>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {/* Card 1 */}
-           <Reveal delay={0.2}>
-            <div className="bg-light p-8 rounded-2xl text-center shadow-sm hover:shadow-xl hover:scale-105 transition-all duration-300">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-[#E6F6F5] text-brand rounded-full mb-6">
-                <Users className="w-8 h-8" />
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-dark">Cuidado Integrado</h3>
-              <p className="text-gray-600">Profissionais de diferentes áreas colaboram para garantir que todos os aspectos da sua saúde sejam atendidos.</p>
-            </div>
-          </Reveal>
-
-          {/* Card 2 */}
-          <Reveal delay={0.4}>
-            <div className="bg-light p-8 rounded-2xl text-center shadow-sm hover:shadow-xl hover:scale-105 transition-all duration-300">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-[#E6F6F5] text-brand rounded-full mb-6">
-                <ClipboardList className="w-8 h-8" />
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-dark">Atendimento Focalizado</h3>
-              <p className="text-gray-600">São realizados atendimentos focados no paciente, para auxiliar suas necessidades específicas.</p>
-            </div>
-          </Reveal>
-          {/* Card 3 */}
-          <Reveal delay={0.6}>
-            <div className="bg-light p-8 rounded-2xl text-center shadow-sm hover:shadow-xl hover:scale-105 transition-all duration-300">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-[#E6F6F5] text-brand rounded-full mb-6">
-                <HeartPulse className="w-8 h-8" />
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-dark">Foco no Bem-Estar</h3>
-              <p className="text-gray-600">Nosso objetivo, além de tratar a saúde, é trazer comodidade e bom atendimento.</p>
-            </div>
-          </Reveal>
+        <div className="mt-14 grid grid-cols-1 gap-6 md:grid-cols-3 lg:gap-8">
+          {PILARES.map(({ titulo, descricao, Icone }, index) => (
+            <Reveal key={titulo} delay={index * 0.1}>
+              <article className="flex h-full flex-col rounded-organic border border-sand-dark/60 bg-white/90 p-8 shadow-soft transition-transform duration-300 hover:-translate-y-1">
+                <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-sage-100 text-brand">
+                  <Icone className="h-7 w-7" aria-hidden="true" />
+                </div>
+                <h3 className="font-serif text-2xl font-semibold text-brand-dark">
+                  {titulo}
+                </h3>
+                <p className="mt-3 leading-relaxed text-earth-body">
+                  {descricao}
+                </p>
+              </article>
+            </Reveal>
+          ))}
         </div>
       </div>
     </section>

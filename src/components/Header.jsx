@@ -1,79 +1,133 @@
 import Link from 'next/link';
-import { Menu } from 'lucide-react';
-import { useState } from 'react';
-import Reveal from './Reveal';
+import Image from 'next/image';
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
+import { Menu, X, CalendarCheck } from 'lucide-react';
+import { SITE_CONFIG, criarLinkWhatsapp } from '../config/site';
+import { resolverImagem } from '../lib/midia';
 
-export default function Header({ unidade }) {
+export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const router = useRouter();
+  const whatsappLink = criarLinkWhatsapp();
 
-  // Define para onde os links internos (Sobre, Equipe...) devem apontar
-  const baseUrl = unidade === 'Abreu' ? '/unidade-abreu' : '/home';
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setIsMobileMenuOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
-  // Link do WhatsApp (igual para ambas as unidades conforme os arquivos originais)
-  const whatsappLink = "https://api.whatsapp.com/send/?phone=5553991281500&text=Olá+gostaria+de+marcar+uma+consulta.";
-
-  const closeMenu = () => setIsMobileMenuOpen(false);
+  const isActive = (href) => {
+    if (href === '/') return router.pathname === '/';
+    return router.pathname === href || router.pathname.startsWith(`${href}/`);
+  };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md shadow-sm py-3 transition-all">
-        <div className="container mx-auto px-6 flex justify-between items-center">
-            
-            {/* Logo */}
-            <Link href="/" className="block">
-                <img src="/img/Logo recriar.png" alt="Logo Clínica Recriar" className="h-10 md:h-12" />
+    <header className="sticky top-0 z-50 border-b border-sand-dark/60 bg-cream/95 backdrop-blur-md">
+      <div className="container mx-auto flex h-20 items-center justify-between px-4 sm:px-6 lg:px-8">
+        <Link
+          href="/"
+          className="flex items-center gap-3 shrink-0"
+          aria-label="Página inicial da Clínica Recriar"
+        >
+          <Image
+            src={resolverImagem('/img/Logo recriar.png')}
+            alt="Logotipo Clínica Recriar"
+            width={156}
+            height={48}
+            priority
+            className="h-11 w-auto object-contain"
+          />
+        </Link>
+
+        <nav
+          aria-label="Navegação principal"
+          className="hidden xl:flex items-center gap-6"
+        >
+          {SITE_CONFIG.navPrincipal.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              aria-current={isActive(item.href) ? 'page' : undefined}
+              className={`text-sm font-medium transition-colors ${
+                isActive(item.href)
+                  ? 'text-brand font-semibold'
+                  : 'text-earth-body hover:text-brand'
+              }`}
+            >
+              {item.label}
             </Link>
-            
-            {/* Navegação Desktop */}
-            <nav className="hidden lg:flex items-center gap-8">
-                <Link href={`${baseUrl}#sobre`} className="text-gray-500 font-medium hover:text-brand transition-colors">Sobre Nós</Link>
-                <Link href={`${baseUrl}#servicos`} className="text-gray-500 font-medium hover:text-brand transition-colors">Serviços</Link>
-                <Link href={`${baseUrl}#equipe`} className="text-gray-500 font-medium hover:text-brand transition-colors">Equipe</Link>
-                <Link href={`${baseUrl}#convenios`} className="text-gray-500 font-medium hover:text-brand transition-colors">Convênios</Link>
-                <Link href={`${baseUrl}#contato`} className="text-gray-500 font-medium hover:text-brand transition-colors">Contato</Link>
-            </nav>
+          ))}
+        </nav>
 
-            {/* Botão Desktop (Agora linkando para o WhatsApp) */}
-            <a 
-                href={whatsappLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hidden lg:inline-block bg-accent hover:bg-accent-dark text-white font-bold py-2 px-6 rounded-lg shadow-md hover:scale-105 transition-all"
-            >
-                Agendar Consulta
-            </a>
-
-            {/* Botão Menu Mobile */}
-            <button 
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden text-gray-700 hover:text-brand"
-            >
-                <Menu className="w-8 h-8" />
-            </button>
+        <div className="hidden xl:flex items-center gap-3">
+          <a
+            href={whatsappLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-full bg-terracotta px-5 py-2.5 text-sm font-semibold text-white shadow-soft transition-colors hover:bg-terracotta-dark"
+          >
+            <CalendarCheck className="h-4 w-4" aria-hidden="true" />
+            Agendar Consulta
+          </a>
         </div>
-        
-        {/* Menu Mobile */}
-        {isMobileMenuOpen && (
-          <div className="bg-white border-t border-gray-200 absolute w-full left-0 top-full shadow-lg lg:hidden">
-              <nav className="flex flex-col items-center gap-4 py-6">
-                  <Link href={`${baseUrl}#sobre`} onClick={closeMenu} className="text-gray-600 hover:text-brand">Sobre Nós</Link>
-                  <Link href={`${baseUrl}#servicos`} onClick={closeMenu} className="text-gray-600 hover:text-brand">Serviços</Link>
-                  <Link href={`${baseUrl}#equipe`} onClick={closeMenu} className="text-gray-600 hover:text-brand">Equipe</Link>
-                  <Link href={`${baseUrl}#convenios`} onClick={closeMenu} className="text-gray-600 hover:text-brand">Convênios</Link>
-                  <Link href={`${baseUrl}#contato`} onClick={closeMenu} className="text-gray-600 hover:text-brand">Contato</Link>
-                  
-                  {/* Botão Mobile (Também linkando para o WhatsApp) */}
-                  <a 
-                    href={whatsappLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={closeMenu} 
-                    className="mt-2 bg-accent text-white font-bold py-2 px-6 rounded-lg text-center"
-                  >
-                    Agendar Consulta
-                  </a>
-              </nav>
-          </div>
-        )}
+
+        <button
+          type="button"
+          onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+          aria-expanded={isMobileMenuOpen}
+          aria-controls="menu-mobile"
+          aria-label={isMobileMenuOpen ? 'Fechar menu de navegação' : 'Abrir menu de navegação'}
+          className="inline-flex xl:hidden items-center justify-center rounded-xl p-2.5 text-brand-dark hover:bg-sage-100 transition-colors"
+        >
+          {isMobileMenuOpen ? (
+            <X className="h-6 w-6" aria-hidden="true" />
+          ) : (
+            <Menu className="h-6 w-6" aria-hidden="true" />
+          )}
+        </button>
+      </div>
+
+      {isMobileMenuOpen && (
+        <div
+          id="menu-mobile"
+          className="border-t border-sand-dark/60 bg-cream shadow-card xl:hidden"
+        >
+          <nav
+            aria-label="Navegação móvel"
+            className="container mx-auto flex flex-col gap-1 px-4 py-5 sm:px-6"
+          >
+            {SITE_CONFIG.navPrincipal.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setIsMobileMenuOpen(false)}
+                aria-current={isActive(item.href) ? 'page' : undefined}
+                className={`rounded-xl px-4 py-3 text-base font-medium transition-colors ${
+                  isActive(item.href)
+                    ? 'bg-sage-100 text-brand-dark font-semibold'
+                    : 'text-earth-body hover:bg-sand/60 hover:text-brand-dark'
+                }`}
+              >
+                {item.label}
+              </Link>
+            ))}
+
+            <a
+              href={whatsappLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="mt-3 inline-flex items-center justify-center gap-2 rounded-full bg-terracotta px-6 py-3 text-base font-semibold text-white shadow-soft transition-colors hover:bg-terracotta-dark"
+            >
+              <CalendarCheck className="h-5 w-5" aria-hidden="true" />
+              Agendar Consulta
+            </a>
+          </nav>
+        </div>
+      )}
     </header>
   );
 }
