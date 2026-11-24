@@ -2,6 +2,27 @@
   "equipe": [
     {
       "especialidades": [
+        "Pós graduação em Psicopedagogia Clínica e Institucional",
+        "Pós graduação em Analise do Comportamento Aplicado (ABA)",
+        "Pós Graduanda em Neurociência e Autismo"
+      ],
+      "foto": "/img/whatsapp-image-2026-11-23-at-14.54.06.jpeg",
+      "unidades": [
+        "Tiradentes"
+      ],
+      "bio": [
+        "Sou Alessandra Batista Sequeira, formada em Letras Português, com pós-graduação em Psicopedagogia Clínica e Institucional e em Análise do Comportamento Aplicado (ABA). Atualmente, faço pós-graduação em Neurociência e Autismo.",
+        "Atuo com avaliação e intervenção psicopedagógica de crianças e adolescentes, buscando compreender como cada um aprende e o que pode interferir nesse processo. A partir da avaliação, planejo intervenções de acordo com as necessidades de cada criança."
+      ],
+      "slug": "alessandra-batista",
+      "whatsapp": "5553991281500",
+      "status": "Ativo",
+      "registro": "CFEP - 2620721",
+      "nome": "Alessandra Batista Sequeira",
+      "cargo": "Psicopedagoga"
+    },
+    {
+      "especialidades": [
         "Psicologia Humanista com Abordagem Centrada na Pessoa",
         "Atendimento para Adolescentes e Adultos",
         "Neuropsicologia"
@@ -703,27 +724,6 @@
       "registro": "CRFa 7/14017-4",
       "nome": "Milena Vitória",
       "cargo": "Fonoaudióloga"
-    },
-    {
-      "especialidades": [
-        "Pós graduação em Psicopedagogia Clínica e Institucional",
-        "Pós graduação em Analise do Comportamento Aplicado (ABA)",
-        "Pós Graduanda em Neurociência e Autismo"
-      ],
-      "foto": "/img/whatsapp-image-2026-11-23-at-14.54.06.jpeg",
-      "unidades": [
-        "Tiradentes"
-      ],
-      "bio": [
-        "Sou Alessandra Batista Sequeira, formada em Letras Português, com pós-graduação em Psicopedagogia Clínica e Institucional e em Análise do Comportamento Aplicado (ABA). Atualmente, faço pós-graduação em Neurociência e Autismo.",
-        "Atuo com avaliação e intervenção psicopedagógica de crianças e adolescentes, buscando compreender como cada um aprende e o que pode interferir nesse processo. A partir da avaliação, planejo intervenções de acordo com as necessidades de cada criança."
-      ],
-      "slug": "alessandra-batista",
-      "whatsapp": "5553991281500",
-      "status": "Ativo",
-      "registro": "CFEP - 2620721",
-      "nome": "Alessandra Batista Sequeira",
-      "cargo": "Psicopedagoga"
     }
   ]
 }
