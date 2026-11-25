@@ -1,7 +1,12 @@
 import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
-import type { NextApiRequest, NextApiResponse } from 'next';
-import { appendSetCookie, isSecureRequest, serializeCookie } from '@/lib/security/http';
+import {
+  appendSetCookie,
+  isSecureRequest,
+  serializeCookie,
+  type ServerRequestLike,
+  type ServerResponseLike,
+} from '@/lib/security/http';
 
 function getPublicSupabaseEnv(): { url: string; publishableKey: string } {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -16,7 +21,7 @@ function getPublicSupabaseEnv(): { url: string; publishableKey: string } {
  * Cliente SSR autenticado para Next.js Pages Router (API Routes e getServerSideProps).
  * Opera SEMPRE com NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY e a identidade do usuario (RLS).
  */
-export function createUserServerClient(req: NextApiRequest, res: NextApiResponse) {
+export function createUserServerClient(req: ServerRequestLike, res: ServerResponseLike) {
   const { url, publishableKey } = getPublicSupabaseEnv();
   const secure = isSecureRequest(req);
 
@@ -53,10 +58,6 @@ export function createUserServerClient(req: NextApiRequest, res: NextApiResponse
   });
 }
 
-/**
- * Cliente efemero com chave publicavel (sem cookies/sessao) para operacoes pontuais
- * como validacao de senha atual ou resetPasswordForEmail sem poluir cookies da requisicao.
- */
 export function createEphemeralPublicAuthClient() {
   const { url, publishableKey } = getPublicSupabaseEnv();
   return createClient(url, publishableKey, {

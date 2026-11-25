@@ -1,5 +1,12 @@
 import crypto from 'node:crypto';
+import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { NextApiRequest, NextApiResponse } from 'next';
+
+export type ServerRequestLike = Pick<IncomingMessage, 'headers'> & {
+  cookies?: Partial<Record<string, string>>;
+};
+
+export type ServerResponseLike = Pick<ServerResponse, 'getHeader' | 'setHeader'>;
 
 export interface CookieOptions {
   httpOnly?: boolean;
@@ -17,7 +24,7 @@ export function isProductionRuntime(): boolean {
   );
 }
 
-export function isSecureRequest(req: NextApiRequest): boolean {
+export function isSecureRequest(req: ServerRequestLike): boolean {
   if (isProductionRuntime()) return true;
   const proto = req.headers['x-forwarded-proto'];
   if (typeof proto === 'string') {
@@ -59,7 +66,7 @@ export function serializeCookie(
   return parts.join('; ');
 }
 
-export function appendSetCookie(res: NextApiResponse, cookieHeader: string): void {
+export function appendSetCookie(res: ServerResponseLike, cookieHeader: string): void {
   const existing = res.getHeader('Set-Cookie');
   if (!existing) {
     res.setHeader('Set-Cookie', [cookieHeader]);
@@ -72,11 +79,12 @@ export function appendSetCookie(res: NextApiResponse, cookieHeader: string): voi
   res.setHeader('Set-Cookie', [String(existing), cookieHeader]);
 }
 
-export function applyNoStoreHeaders(res: NextApiResponse): void {
+export function applyNoStoreHeaders(res: ServerResponseLike): void {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+  res.setHeader('Vary', 'Cookie');
 }
 
 export function requireMethod(
@@ -106,11 +114,6 @@ export function requireJsonContentType(req: NextApiRequest, res: NextApiResponse
   return true;
 }
 
-/**
- * Extrai IP sem confiar em X-Forwarded-For arbitrario do cliente.
- * Prioriza cabecalho injetado pela plataforma Netlify (x-nf-client-connection-ip)
- * e cai para req.socket.remoteAddress em ambiente local.
- */
 export function getTrustedClientIp(req: NextApiRequest): string {
   const nfIp = req.headers['x-nf-client-connection-ip'];
   if (typeof nfIp === 'string' && nfIp.trim().length > 0 && nfIp.trim().length <= 64) {
@@ -127,9 +130,6 @@ export function hashIdentifier(value: string): string {
   return crypto.createHash('sha256').update(value).digest('hex').slice(0, 32);
 }
 
-/**
- * Protecao contra redirecionamento aberto: aceita apenas rotas internas sob /gestao.
- */
 export function sanitizeInternalRedirect(raw: unknown, fallback = '/gestao'): string {
   if (typeof raw !== 'string') return fallback;
   const trimmed = raw.trim();
