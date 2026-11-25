@@ -5,7 +5,7 @@ import Layout from '../components/Layout';
 import SeoHead from '../components/seo/SeoHead';
 import SectionSobre from '../components/SectionSobre';
 import SectionServicos from '../components/SectionServicos';
-import { LISTA_UNIDADES } from '../config/site';
+import { LISTA_UNIDADES, SITE_CONFIG } from '../config/site';
 import { resolverImagem } from '../lib/midia';
 
 export default function AClinicaPage() {
