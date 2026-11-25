@@ -5,12 +5,20 @@ import { type FormEvent, useEffect, useState } from 'react';
 import { AuthShell } from '@/components/gestao/AuthShell';
 import { apiRequest } from '@/lib/admin/clientApi';
 import { applyNoStoreHeaders } from '@/lib/security/http';
-import { createSupabaseBrowserClient } from '@/lib/supabase/browserClient';
+import {
+  clearPasswordFlowCookie,
+  issuePasswordFlowCookie,
+  type PasswordSetupFlowType,
+  verifyPasswordFlowCookie,
+} from '@/lib/security/passwordFlow';
 import { createUserServerClient } from '@/lib/supabase/userServerClient';
 
 interface AtualizarSenhaProps {
   linkError: string | null;
-  hasServerSession: boolean;
+  hasValidFlowSession: boolean;
+  flowType: PasswordSetupFlowType | null;
+  sessionEmail: string | null;
+  hasRegularSessionWithoutLink: boolean;
 }
 
 function firstParam(val: string | string[] | undefined): string | null {
@@ -22,9 +30,27 @@ function firstParam(val: string | string[] | undefined): string | null {
 }
 
 /**
- * Processa links de convite/recuperacao enviados pelo Supabase Auth no servidor sempre que
- * houver ?token_hash=&type= ou ?code= (PKCE), gravando cookies HttpOnly via SSR e
- * redirecionando imediatamente para limpar parametros sensiveis da URL.
+ * Inspeciona fragmentos de URL sem armazenar nem autenticar tokens no navegador.
+ * Utilizado apenas para limpeza imediata e exibicao de erro seguro.
+ */
+export function inspectAuthHashFragment(hash: string): {
+  hasUnexpectedTokens: boolean;
+  errorCode: string | null;
+} {
+  const clean = hash.startsWith('#') ? hash.slice(1) : hash;
+  const params = new URLSearchParams(clean);
+  const errorCode = params.get('error_code') ?? params.get('error');
+  const hasUnexpectedTokens = Boolean(params.get('access_token') || params.get('refresh_token'));
+  return { hasUnexpectedTokens, errorCode };
+}
+
+/**
+ * Fluxo 100% SSR via token_hash + verifyOtp (somente 'invite' e 'recovery'):
+ * - Aplica Cache-Control: no-store e Referrer-Policy: no-referrer.
+ * - Limpa localmente qualquer sessao anterior antes de validar um novo link, impedindo
+ *   confusao entre a conta previamente autenticada e a conta do link.
+ * - Emite cookie HttpOnly assinado vinculando o fluxo (invite|recovery) ao userId autenticado.
+ * - Redireciona imediatamente (307) para remover parametros sensiveis da URL.
  */
 export const getServerSideProps: GetServerSideProps<AtualizarSenhaProps> = async (ctx) => {
   applyNoStoreHeaders(ctx.res);
@@ -34,8 +60,18 @@ export const getServerSideProps: GetServerSideProps<AtualizarSenhaProps> = async
     const message =
       errorCode === 'otp_expired' || errorCode === 'access_denied'
         ? 'O link de convite ou recuperação expirou ou já foi utilizado. Solicite um novo link.'
-        : 'Link de acesso inválido. Solicite um novo convite ou recuperação de senha.';
-    return { props: { linkError: message, hasServerSession: false } };
+        : errorCode === 'unsupported_link_format'
+          ? 'Formato de link não suportado. Solicite um novo convite ou recuperação de senha.'
+          : 'Link de acesso inválido. Solicite um novo convite ou recuperação de senha.';
+    return {
+      props: {
+        linkError: message,
+        hasValidFlowSession: false,
+        flowType: null,
+        sessionEmail: null,
+        hasRegularSessionWithoutLink: false,
+      },
+    };
   }
 
   const supabase = createUserServerClient(ctx.req, ctx.res);
@@ -43,12 +79,40 @@ export const getServerSideProps: GetServerSideProps<AtualizarSenhaProps> = async
   const otpType = firstParam(ctx.query.type);
   const pkceCode = firstParam(ctx.query.code);
 
-  if (tokenHash && (otpType === 'invite' || otpType === 'recovery' || otpType === 'email')) {
-    const { error } = await supabase.auth.verifyOtp({
+  // Links PKCE (?code=) nao possuem code_verifier quando originados no servidor;
+  // limpa da URL imediatamente e orienta novo envio no formato token_hash SSR.
+  if (pkceCode && !tokenHash) {
+    clearPasswordFlowCookie(ctx.req, ctx.res);
+    return {
+      redirect: {
+        destination: '/gestao/atualizar-senha?error_code=unsupported_link_format',
+        permanent: false,
+      },
+    };
+  }
+
+  if (tokenHash || otpType) {
+    // Limpa localmente qualquer sessao anterior ANTES de processar o link recebido
+    await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+    clearPasswordFlowCookie(ctx.req, ctx.res);
+
+    if (!tokenHash || (otpType !== 'invite' && otpType !== 'recovery')) {
+      return {
+        redirect: {
+          destination: '/gestao/atualizar-senha?error_code=invalid_link',
+          permanent: false,
+        },
+      };
+    }
+
+    const { data, error } = await supabase.auth.verifyOtp({
       token_hash: tokenHash,
       type: otpType,
     });
-    if (error) {
+
+    if (error || !data?.user?.id) {
+      await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+      clearPasswordFlowCookie(ctx.req, ctx.res);
       return {
         redirect: {
           destination: '/gestao/atualizar-senha?error_code=otp_expired',
@@ -56,6 +120,12 @@ export const getServerSideProps: GetServerSideProps<AtualizarSenhaProps> = async
         },
       };
     }
+
+    issuePasswordFlowCookie(ctx.req, ctx.res, {
+      userId: data.user.id,
+      flow: otpType,
+    });
+
     return {
       redirect: {
         destination: '/gestao/atualizar-senha',
@@ -64,94 +134,86 @@ export const getServerSideProps: GetServerSideProps<AtualizarSenhaProps> = async
     };
   }
 
-  if (pkceCode) {
-    const { error } = await supabase.auth.exchangeCodeForSession(pkceCode);
-    if (error) {
-      return {
-        redirect: {
-          destination: '/gestao/atualizar-senha?error_code=otp_expired',
-          permanent: false,
-        },
-      };
-    }
-    return {
-      redirect: {
-        destination: '/gestao/atualizar-senha',
-        permanent: false,
-      },
-    };
-  }
-
+  // Sem parametros na URL: verifica sessao SSR + vinculo assinado do fluxo de convite/recuperacao
   const { data } = await supabase.auth.getUser();
+  const userId = data?.user?.id ?? null;
+
+  if (!userId) {
+    clearPasswordFlowCookie(ctx.req, ctx.res);
+    return {
+      props: {
+        linkError: null,
+        hasValidFlowSession: false,
+        flowType: null,
+        sessionEmail: null,
+        hasRegularSessionWithoutLink: false,
+      },
+    };
+  }
+
+  const flowCheck = verifyPasswordFlowCookie(ctx.req, userId);
+  if (!flowCheck.ok) {
+    return {
+      props: {
+        linkError: null,
+        hasValidFlowSession: false,
+        flowType: null,
+        sessionEmail: null,
+        hasRegularSessionWithoutLink: true,
+      },
+    };
+  }
+
   return {
     props: {
       linkError: null,
-      hasServerSession: Boolean(data?.user?.id),
+      hasValidFlowSession: true,
+      flowType: flowCheck.flow,
+      sessionEmail: data.user.email ?? null,
+      hasRegularSessionWithoutLink: false,
     },
   };
 };
 
-export function parseAuthHashFragment(hash: string): {
-  accessToken: string | null;
-  refreshToken: string | null;
-  errorCode: string | null;
-} {
-  const clean = hash.startsWith('#') ? hash.slice(1) : hash;
-  const params = new URLSearchParams(clean);
-  return {
-    accessToken: params.get('access_token'),
-    refreshToken: params.get('refresh_token'),
-    errorCode: params.get('error_code') ?? params.get('error'),
-  };
-}
-
-export default function AtualizarSenhaPage({ linkError, hasServerSession }: AtualizarSenhaProps) {
+export default function AtualizarSenhaPage({
+  linkError,
+  hasValidFlowSession,
+  flowType,
+  sessionEmail,
+  hasRegularSessionWithoutLink,
+}: AtualizarSenhaProps) {
   const router = useRouter();
-  const [sessionReady, setSessionReady] = useState(hasServerSession);
-  const [hashError, setHashError] = useState<string | null>(linkError);
+  const [fragmentError, setFragmentError] = useState<string | null>(linkError);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [needsChangePasswordRoute, setNeedsChangePasswordRoute] = useState(false);
 
-  // Fallback seguro para links implicitos (#access_token=...&refresh_token=...):
-  // remove imediatamente o fragmento da URL e nao persiste tokens em localStorage/logs.
+  // Tratamento preventivo de fragmentos (#...): limpa imediatamente da URL e
+  // RECUSA estabelecer sessao via JavaScript/browserClient (zero tokens em cookies JS ou storage).
   useEffect(() => {
     const rawHash = window.location.hash;
     if (!rawHash || rawHash.length <= 1) return;
 
-    const parsed = parseAuthHashFragment(rawHash);
+    const inspected = inspectAuthHashFragment(rawHash);
     window.history.replaceState(null, '', '/gestao/atualizar-senha');
 
-    if (parsed.errorCode) {
+    if (inspected.errorCode) {
       const msg =
-        parsed.errorCode === 'otp_expired'
+        inspected.errorCode === 'otp_expired' || inspected.errorCode === 'access_denied'
           ? 'O link de convite ou recuperação expirou. Solicite um novo link.'
           : 'Não foi possível validar o link recebido.';
-      Promise.resolve().then(() => setHashError(msg));
+      Promise.resolve().then(() => setFragmentError(msg));
       return;
     }
 
-    if (parsed.accessToken && parsed.refreshToken) {
-      const accessToken = parsed.accessToken;
-      const refreshToken = parsed.refreshToken;
-      (async () => {
-        try {
-          const browserClient = createSupabaseBrowserClient();
-          const { error } = await browserClient.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken,
-          });
-          if (error) {
-            setHashError('O link recebido é inválido ou expirou. Solicite um novo link.');
-            return;
-          }
-          setSessionReady(true);
-        } catch {
-          setHashError('Não foi possível inicializar a sessão de redefinição.');
-        }
-      })();
+    if (inspected.hasUnexpectedTokens) {
+      Promise.resolve().then(() =>
+        setFragmentError(
+          'Links com tokens no fragmento da URL não são aceitos por política de segurança. Solicite um novo link.'
+        )
+      );
     }
   }, []);
 
@@ -164,10 +226,11 @@ export default function AtualizarSenhaPage({ linkError, hasServerSession }: Atua
     match: newPassword.length > 0 && newPassword === confirmPassword,
   };
   const passwordValid = Object.values(checks).every(Boolean);
+  const formEnabled = hasValidFlowSession && !fragmentError;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (submitting || !passwordValid) return;
+    if (submitting || !formEnabled || !passwordValid) return;
 
     setSubmitting(true);
     setErrorMessage(null);
@@ -192,15 +255,15 @@ export default function AtualizarSenhaPage({ linkError, hasServerSession }: Atua
 
   return (
     <AuthShell
-      title="Definir nova senha"
+      title={flowType === 'invite' ? 'Definir senha inicial' : 'Definir nova senha'}
       description="Fluxo exclusivo para links recentes de convite administrativo ou recuperação de senha."
     >
-      {hashError && (
+      {fragmentError && (
         <div
           role="alert"
           className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
         >
-          <p>{hashError}</p>
+          <p>{fragmentError}</p>
           <div className="mt-3 flex flex-wrap gap-3 text-xs font-semibold">
             <Link href="/gestao/recuperar-senha" className="text-teal-800 underline">
               Solicitar nova recuperação
@@ -212,7 +275,34 @@ export default function AtualizarSenhaPage({ linkError, hasServerSession }: Atua
         </div>
       )}
 
-      {!hashError && !sessionReady && (
+      {!fragmentError && hasValidFlowSession && sessionEmail && (
+        <div
+          role="status"
+          className="mb-5 rounded-xl border border-teal-200 bg-teal-50 px-4 py-3 text-sm text-teal-900"
+        >
+          Link validado para a conta <strong>{sessionEmail}</strong> (
+          {flowType === 'invite' ? 'convite inicial' : 'recuperação de senha'}).
+        </div>
+      )}
+
+      {!fragmentError && !hasValidFlowSession && hasRegularSessionWithoutLink && (
+        <div
+          role="status"
+          className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+        >
+          <p>
+            Você já está autenticado em uma sessão administrativa comum. Para alterar sua senha
+            informando a senha atual, utilize a tela Minha conta.
+          </p>
+          <p className="mt-2">
+            <Link href="/gestao/minha-conta" className="font-semibold text-teal-800 underline">
+              Ir para Minha conta
+            </Link>
+          </p>
+        </div>
+      )}
+
+      {!fragmentError && !hasValidFlowSession && !hasRegularSessionWithoutLink && (
         <div
           role="status"
           className="mb-5 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700"
@@ -250,7 +340,7 @@ export default function AtualizarSenhaPage({ linkError, hasServerSession }: Atua
             required
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
-            disabled={submitting || !sessionReady}
+            disabled={submitting || !formEnabled}
             className="mt-1.5 w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 shadow-sm focus:border-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-600/20 disabled:bg-slate-100"
           />
         </div>
@@ -266,29 +356,32 @@ export default function AtualizarSenhaPage({ linkError, hasServerSession }: Atua
             required
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            disabled={submitting || !sessionReady}
+            disabled={submitting || !formEnabled}
             className="mt-1.5 w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 shadow-sm focus:border-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-600/20 disabled:bg-slate-100"
           />
         </div>
 
-        <ul className="space-y-1 rounded-xl bg-slate-50 p-3 text-xs text-slate-700" aria-label="Requisitos mínimos da senha">
-          <li className={checks.minLength ? 'text-emerald-700 font-medium' : ''}>
+        <ul
+          className="space-y-1 rounded-xl bg-slate-50 p-3 text-xs text-slate-700"
+          aria-label="Requisitos mínimos da senha"
+        >
+          <li className={checks.minLength ? 'font-medium text-emerald-700' : ''}>
             • Mínimo de 12 caracteres (máximo 128)
           </li>
-          <li className={checks.upper && checks.lower ? 'text-emerald-700 font-medium' : ''}>
+          <li className={checks.upper && checks.lower ? 'font-medium text-emerald-700' : ''}>
             • Letras maiúsculas e minúsculas
           </li>
-          <li className={checks.digit && checks.special ? 'text-emerald-700 font-medium' : ''}>
+          <li className={checks.digit && checks.special ? 'font-medium text-emerald-700' : ''}>
             • Pelo menos um número e um caractere especial
           </li>
-          <li className={checks.match ? 'text-emerald-700 font-medium' : ''}>
+          <li className={checks.match ? 'font-medium text-emerald-700' : ''}>
             • Confirmação idêntica à nova senha
           </li>
         </ul>
 
         <button
           type="submit"
-          disabled={submitting || !sessionReady || !passwordValid}
+          disabled={submitting || !formEnabled || !passwordValid}
           className="w-full rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-teal-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {submitting ? 'Salvando senha...' : 'Salvar nova senha'}

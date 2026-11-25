@@ -8,6 +8,7 @@ import {
   requireJsonContentType,
   requireMethod,
 } from '@/lib/security/http';
+import { clearPasswordFlowCookie, verifyPasswordFlowCookie } from '@/lib/security/passwordFlow';
 import { enforceRateLimit } from '@/lib/security/rateLimit';
 
 export const config = {
@@ -26,46 +27,63 @@ interface JwtAmrEntry {
   timestamp?: unknown;
 }
 
+export interface VerifiedClaimsCheck {
+  ok: boolean;
+  reason?: string;
+  observedMethods: string[];
+}
+
 /**
- * Inspeciona o claim `amr` do JWT da sessao JA VALIDADA no servidor por `auth.getUser()`.
- * Garante que uma sessao administrativa comum (autenticada por 'password') nao consiga
- * usar /api/auth/definir-senha-inicial para contornar a exigencia de senha atual em /api/auth/alterar-senha.
+ * Valida claims JA VERIFICADOS pelo SDK via `supabase.auth.getClaims()` (JWKS ou Auth API):
+ * - Correspondencia estrita de `sub` com `auth.userId`;
+ * - Token nao expirado (`exp > now`);
+ * - Vinculo a uma sessao ativa (`session_id` nao vazio);
+ * - Metodo `amr` recente (invite|recovery|otp <= 15m) sem autenticacao `password` igual ou posterior.
  *
- * Limite tecnico explicitamente documentado: o Supabase Auth (GoTrue) ainda permite chamadas
- * diretas a PUT /auth/v1/user com um JWT valido se Secure Password Change nao estiver habilitado
- * no projeto Auth; este controle protege a camada de API Route da aplicacao.
+ * IMPORTANTE: isoladamente, `otp` NAO e tratado como prova suficiente de convite/recuperacao;
+ * esta validacao atua SEMPRE em conjunto com `verifyPasswordFlowCookie`, emitido apenas no SSR
+ * apos `verifyOtp(token_hash, 'invite' | 'recovery')`.
  */
-export function hasRecentInviteOrRecoveryAmr(
-  accessToken: string | undefined,
+export function validateVerifiedClaimsForPasswordSetup(
+  claims: Record<string, unknown> | null | undefined,
+  expectedUserId: string,
   nowSeconds: number = Math.floor(Date.now() / 1000)
-): boolean {
-  if (!accessToken || typeof accessToken !== 'string') return false;
-  const parts = accessToken.split('.');
-  if (parts.length !== 3) return false;
-
-  let payload: { amr?: unknown };
-  try {
-    const decoded = Buffer.from(parts[1], 'base64url').toString('utf8');
-    payload = JSON.parse(decoded) as { amr?: unknown };
-  } catch {
-    return false;
+): VerifiedClaimsCheck {
+  if (!claims || typeof claims !== 'object') {
+    return { ok: false, reason: 'missing_claims', observedMethods: [] };
   }
 
-  if (!Array.isArray(payload.amr) || payload.amr.length === 0) {
-    return false;
+  if (typeof claims.sub !== 'string' || claims.sub !== expectedUserId) {
+    return { ok: false, reason: 'sub_mismatch', observedMethods: [] };
   }
 
+  if (typeof claims.exp !== 'number' || !Number.isFinite(claims.exp) || claims.exp <= nowSeconds) {
+    return { ok: false, reason: 'token_expired', observedMethods: [] };
+  }
+
+  if (typeof claims.session_id !== 'string' || claims.session_id.trim().length === 0) {
+    return { ok: false, reason: 'missing_session_id', observedMethods: [] };
+  }
+
+  if (!Array.isArray(claims.amr) || claims.amr.length === 0) {
+    return { ok: false, reason: 'missing_amr', observedMethods: [] };
+  }
+
+  const observedMethods: string[] = [];
   let latestLinkTs = -1;
   let latestPasswordTs = -1;
 
-  for (const rawEntry of payload.amr as JwtAmrEntry[]) {
+  for (const rawEntry of claims.amr as JwtAmrEntry[]) {
     if (!rawEntry || typeof rawEntry !== 'object') continue;
     const method = typeof rawEntry.method === 'string' ? rawEntry.method.toLowerCase() : '';
-    const ts = typeof rawEntry.timestamp === 'number' && Number.isFinite(rawEntry.timestamp)
-      ? rawEntry.timestamp
-      : -1;
+    const ts =
+      typeof rawEntry.timestamp === 'number' && Number.isFinite(rawEntry.timestamp)
+        ? rawEntry.timestamp
+        : -1;
 
+    if (method) observedMethods.push(method);
     if (ts <= 0) continue;
+
     if (ALLOWED_LINK_METHODS.has(method) && ts > latestLinkTs) {
       latestLinkTs = ts;
     }
@@ -74,14 +92,17 @@ export function hasRecentInviteOrRecoveryAmr(
     }
   }
 
-  if (latestLinkTs <= 0) return false;
-  // Rejeita se houve login por senha igual ou posterior ao fluxo de convite/recuperacao
-  if (latestPasswordTs >= latestLinkTs) return false;
-  // Rejeita links antigos (fora da janela de 15 minutos, com tolerancia de 60s para skew)
-  if (nowSeconds - latestLinkTs > MAX_LINK_AUTH_AGE_SECONDS) return false;
-  if (latestLinkTs - nowSeconds > 60) return false;
+  if (latestLinkTs <= 0) {
+    return { ok: false, reason: 'no_link_amr', observedMethods };
+  }
+  if (latestPasswordTs >= latestLinkTs) {
+    return { ok: false, reason: 'password_session_detected', observedMethods };
+  }
+  if (nowSeconds - latestLinkTs > MAX_LINK_AUTH_AGE_SECONDS || latestLinkTs - nowSeconds > 60) {
+    return { ok: false, reason: 'amr_expired', observedMethods };
+  }
 
-  return true;
+  return { ok: true, observedMethods };
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -101,11 +122,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const rl = await enforceRateLimit(res, 'adminSensitive', [auth.userId, getTrustedClientIp(req)]);
   if (!rl.allowed) return;
 
-  // Sessao ja validada via auth.getUser(); inspeciona amr para barrar sessoes comuns por senha
-  const { data: sessionData } = await auth.supabase.auth.getSession();
-  const accessToken = sessionData?.session?.access_token;
-
-  if (!hasRecentInviteOrRecoveryAmr(accessToken)) {
+  // 1. Exige cookie HttpOnly assinado emitido exclusivamente pelo SSR apos verifyOtp(invite|recovery)
+  const flowCheck = verifyPasswordFlowCookie(req, auth.userId);
+  if (!flowCheck.ok) {
     await auth.supabase.rpc('rpc_log_authenticated_event', {
       p_acao: 'ACCESS_DENIED',
       p_recurso_entidade: 'auth',
@@ -115,7 +134,32 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       error: {
         code: 'INITIAL_OR_RECOVERY_SESSION_REQUIRED',
         message:
-          'Esta rota é restrita a sessões recentes de convite ou recuperação. Utilize /api/auth/alterar-senha informando a senha atual.',
+          'Esta rota é restrita a sessões recentes originadas de convite ou recuperação. Utilize /api/auth/alterar-senha.',
+      },
+    });
+    return;
+  }
+
+  // 2. Valida claims autenticados do JWT via getClaims() (assinatura/exp/sub/session_id/amr)
+  const { data: claimsData, error: claimsError } = await auth.supabase.auth.getClaims();
+  const claimsCheck = claimsError
+    ? { ok: false, reason: 'claims_verification_failed', observedMethods: [] }
+    : validateVerifiedClaimsForPasswordSetup(
+        claimsData?.claims as Record<string, unknown> | undefined,
+        auth.userId
+      );
+
+  if (!claimsCheck.ok) {
+    await auth.supabase.rpc('rpc_log_authenticated_event', {
+      p_acao: 'ACCESS_DENIED',
+      p_recurso_entidade: 'auth',
+      p_codigo_motivo: 'sem_permissao',
+    });
+    res.status(403).json({
+      error: {
+        code: 'INITIAL_OR_RECOVERY_SESSION_REQUIRED',
+        message:
+          'Sessão incompatível ou expirada para definição inicial/recuperação. Solicite um novo link ou utilize /api/auth/alterar-senha.',
       },
     });
     return;
@@ -132,7 +176,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return;
   }
 
-  // Alteracao efetiva da senha realizada pelo Supabase Auth
+  // 3. Alteracao efetiva da senha realizada pelo Supabase Auth
   const { error: updateError } = await auth.supabase.auth.updateUser({
     password: parsed.data.newPassword,
   });
@@ -144,8 +188,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return;
   }
 
-  // Diferencia fluxo inicial (primeiro_acesso_observado_em === null) de recuperacao de senha
-  if (auth.profile.primeiro_acesso_observado_em === null) {
+  // Consome/limpa o cookie assinado imediatamente (uso unico)
+  clearPasswordFlowCookie(req, res);
+
+  // Diferencia fluxo inicial (convite) de recuperacao de senha
+  if (flowCheck.flow === 'invite' && auth.profile.primeiro_acesso_observado_em === null) {
     const { data: reportState } = await auth.supabase.rpc('rpc_report_initial_setup_completed');
     res.status(200).json({
       ok: true,

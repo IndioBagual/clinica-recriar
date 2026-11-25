@@ -1,4 +1,4 @@
-import crypto from 'node:crypto';
+﻿import crypto from 'node:crypto';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
@@ -85,6 +85,7 @@ export function applyNoStoreHeaders(res: ServerResponseLike): void {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Robots-Tag', 'noindex, nofollow');
   res.setHeader('Vary', 'Cookie');
+  res.setHeader('Referrer-Policy', 'no-referrer');
 }
 
 export function requireMethod(
@@ -94,7 +95,7 @@ export function requireMethod(
 ): boolean {
   if (!req.method || !allowed.includes(req.method)) {
     res.setHeader('Allow', allowed.join(', '));
-    res.status(405).json({ error: { code: 'METHOD_NOT_ALLOWED', message: 'Método HTTP não permitido.' } });
+    res.status(405).json({ error: { code: 'METHOD_NOT_ALLOWED', message: 'MÃ©todo HTTP nÃ£o permitido.' } });
     return false;
   }
   return true;
@@ -103,12 +104,12 @@ export function requireMethod(
 export function requireJsonContentType(req: NextApiRequest, res: NextApiResponse): boolean {
   const raw = req.headers['content-type'];
   if (typeof raw !== 'string') {
-    res.status(415).json({ error: { code: 'UNSUPPORTED_MEDIA_TYPE', message: 'Content-Type application/json é obrigatório.' } });
+    res.status(415).json({ error: { code: 'UNSUPPORTED_MEDIA_TYPE', message: 'Content-Type application/json Ã© obrigatÃ³rio.' } });
     return false;
   }
   const mime = raw.split(';')[0].trim().toLowerCase();
   if (mime !== 'application/json') {
-    res.status(415).json({ error: { code: 'UNSUPPORTED_MEDIA_TYPE', message: 'Content-Type application/json é obrigatório.' } });
+    res.status(415).json({ error: { code: 'UNSUPPORTED_MEDIA_TYPE', message: 'Content-Type application/json Ã© obrigatÃ³rio.' } });
     return false;
   }
   return true;
@@ -159,5 +160,5 @@ export function getCanonicalSiteOrigin(): string {
       continue;
     }
   }
-  throw new Error('Origem canônica do site não configurada (NEXT_PUBLIC_SITE_URL).');
+  throw new Error('Origem canÃ´nica do site nÃ£o configurada (NEXT_PUBLIC_SITE_URL).');
 }
