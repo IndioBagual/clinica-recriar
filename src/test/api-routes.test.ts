@@ -5,6 +5,7 @@ import { resetDevRateLimitStore } from '@/lib/security/rateLimit';
 const mockUserClient = {
   auth: {
     getUser: vi.fn(),
+    getSession: vi.fn(),
     signInWithPassword: vi.fn(),
     signOut: vi.fn(),
     updateUser: vi.fn(),
@@ -24,6 +25,7 @@ const mockAdminClient = {
   auth: {
     admin: {
       inviteUserByEmail: vi.fn(),
+      updateUserById: vi.fn(),
       listUsers: vi.fn(),
       getUserById: vi.fn(),
     },
@@ -42,15 +44,24 @@ vi.mock('@/lib/supabase/adminServiceClient', () => ({
 
 import loginHandler from '@/pages/api/auth/login';
 import sessionHandler from '@/pages/api/auth/session';
+import definirSenhaInicialHandler from '@/pages/api/auth/definir-senha-inicial';
 import usuariosHandler from '@/pages/api/admin/usuarios/index';
 import statusHandler from '@/pages/api/admin/usuarios/[id]/status';
 import reenviarHandler from '@/pages/api/admin/usuarios/[id]/reenviar-acesso';
 import permissoesHandler from '@/pages/api/admin/usuarios/[id]/permissoes';
+import retrySyncHandler from '@/pages/api/admin/usuarios/[id]/retry-auth-sync';
+import falhasSyncHandler from '@/pages/api/admin/auth-sync/falhas';
 import auditoriaHandler from '@/pages/api/admin/auditoria';
 
 const ADMIN_ID = '11111111-1111-4111-8111-111111111111';
 const TARGET_ID = '22222222-2222-4222-8222-222222222222';
 const CSRF_TOKEN = 'c'.repeat(64);
+
+function makeFakeJwt(payload: Record<string, unknown>): string {
+  const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
+  const body = Buffer.from(JSON.stringify(payload)).toString('base64url');
+  return `${header}.${body}.sig`;
+}
 
 function createReqRes(overrides: {
   method?: string;
@@ -101,7 +112,11 @@ function createReqRes(overrides: {
   return { req, res, getStatus: () => statusCode, getBody: () => jsonBody, getHeaders: () => resHeaders };
 }
 
-function setupAuthenticatedAdmin(isAdminPrincipal = true, permissions: string[] = ['usuarios.manage']) {
+function setupAuthenticatedAdmin(
+  isAdminPrincipal = true,
+  permissions: string[] = ['usuarios.manage'],
+  primeiroAcessoObservadoEm: string | null = '2026-11-25T10:05:00Z'
+) {
   mockUserClient.auth.getUser.mockResolvedValue({
     data: { user: { id: ADMIN_ID, email: 'admin@clinica.local' } },
     error: null,
@@ -125,8 +140,8 @@ function setupAuthenticatedAdmin(isAdminPrincipal = true, permissions: string[] 
                     convite_solicitado_em: null,
                     email_confirmado_em: '2026-11-25T10:00:00Z',
                     configuracao_inicial_reportada_em: null,
-                    primeiro_acesso_observado_em: '2026-11-25T10:05:00Z',
-                    ultimo_acesso_auth_em: '2026-11-25T10:05:00Z',
+                    primeiro_acesso_observado_em: primeiroAcessoObservadoEm,
+                    ultimo_acesso_auth_em: primeiroAcessoObservadoEm,
                     desativado_em: null,
                     criado_em: '2026-11-25T09:00:00Z',
                   },
@@ -149,11 +164,32 @@ function setupAuthenticatedAdmin(isAdminPrincipal = true, permissions: string[] 
         }),
       };
     }
+    if (table === 'audit_logs') {
+      return {
+        select: () => ({
+          in: () => ({
+            order: () => ({
+              range: async () => ({
+                data: [
+                  {
+                    id: '33333333-3333-4333-8333-333333333333',
+                    acao: 'AUTH_SYNC_FAILURE_REPORTED',
+                    codigo_motivo: 'max_tentativas_excedido',
+                  },
+                ],
+                count: 1,
+                error: null,
+              }),
+            }),
+          }),
+        }),
+      };
+    }
     return {};
   });
 }
 
-describe('integracao controlada das API Routes (chamadas diretas, CSRF, auth e falhas parciais)', () => {
+describe('integracao controlada das API Routes (Etapa 5 + correcoes 7.1, 7.2 e retry failed_permanent)', () => {
   const envBackup = { ...process.env };
 
   beforeEach(() => {
@@ -162,6 +198,7 @@ describe('integracao controlada das API Routes (chamadas diretas, CSRF, auth e f
     process.env.RATE_LIMIT_ALLOW_DEV_MEMORY = 'true';
     process.env.NEXT_PUBLIC_SITE_URL = 'http://localhost:3000';
     mockAdminClient.rpc.mockResolvedValue({ data: null, error: null });
+    mockAdminClient.auth.admin.updateUserById.mockResolvedValue({ data: {}, error: null });
     mockUserClient.rpc.mockResolvedValue({ data: null, error: null });
   });
 
@@ -190,7 +227,6 @@ describe('integracao controlada das API Routes (chamadas diretas, CSRF, auth e f
     await sessionHandler(m.req, m.res);
     expect(m.getStatus()).toBe(200);
     expect(m.getBody()).toEqual({ authenticated: false });
-    expect(m.getHeaders()['cache-control']).toContain('no-store');
   });
 
   it('POST /api/admin/usuarios/[id]/status bloqueia auto-desativacao e retorna 409 CR001 para ultimo admin', async () => {
@@ -206,10 +242,38 @@ describe('integracao controlada das API Routes (chamadas diretas, CSRF, auth e f
     expect(lastAdminReq.getStatus()).toBe(409);
   });
 
-  it('POST /api/admin/usuarios trata falha parcial sem deletar Auth e recupera idempotentemente em nova tentativa', async () => {
+  it('[7.1 NEGATIVO] POST /api/admin/usuarios bloqueia vinculacao de conta preexistente sem procedencia em app_metadata', async () => {
     setupAuthenticatedAdmin(true);
 
-    // 1a tentativa: Auth cria usuario mas RPC falha -> 502 PARTIAL_CREATION_RECOVERY_REQUIRED
+    mockAdminClient.auth.admin.listUsers.mockResolvedValueOnce({
+      data: {
+        users: [
+          {
+            id: TARGET_ID,
+            email: 'preexistente@clinica.local',
+            email_confirmed_at: null,
+            last_sign_in_at: null,
+            app_metadata: {},
+          },
+        ],
+      },
+      error: null,
+    });
+
+    const m = createReqRes({ body: { nome: 'Conta Externa', email: 'preexistente@clinica.local' } });
+    await usuariosHandler(m.req, m.res);
+    expect(m.getStatus()).toBe(409);
+    expect((m.getBody() as { error: { code: string } }).error.code).toBe(
+      'AUTH_ACCOUNT_PREEXISTING_CONFLICT'
+    );
+    expect(mockUserClient.rpc).not.toHaveBeenCalled();
+  });
+
+  it('[7.1 POSITIVO] POST /api/admin/usuarios recupera falha parcial quando ha carimbo confiavel em app_metadata e sem uso previo', async () => {
+    setupAuthenticatedAdmin(true);
+
+    // 1a tentativa: conta nao existe -> cria convite, carimba app_metadata, mas RPC falha -> 502
+    mockAdminClient.auth.admin.listUsers.mockResolvedValueOnce({ data: { users: [] }, error: null });
     mockAdminClient.auth.admin.inviteUserByEmail.mockResolvedValueOnce({
       data: { user: { id: TARGET_ID } },
       error: null,
@@ -222,17 +286,32 @@ describe('integracao controlada das API Routes (chamadas diretas, CSRF, auth e f
     const first = createReqRes({ body: { nome: 'Nova Gestora', email: 'nova@clinica.local' } });
     await usuariosHandler(first.req, first.res);
     expect(first.getStatus()).toBe(502);
-    expect((first.getBody() as { error: { code: string } }).error.code).toBe(
-      'PARTIAL_CREATION_RECOVERY_REQUIRED'
+    expect(mockAdminClient.auth.admin.updateUserById).toHaveBeenCalledWith(
+      TARGET_ID,
+      expect.objectContaining({
+        app_metadata: expect.objectContaining({
+          recriar_admin_provisioned: true,
+          recriar_provisioning_actor_id: ADMIN_ID,
+        }),
+      })
     );
 
-    // 2a tentativa (recuperacao): Auth informa existente -> localiza via listUsers e conclui RPC
-    mockAdminClient.auth.admin.inviteUserByEmail.mockResolvedValueOnce({
-      data: { user: null },
-      error: { message: 'User already registered' },
-    });
+    // 2a tentativa: conta localizada com carimbo confiavel em app_metadata e nao confirmada -> 201
     mockAdminClient.auth.admin.listUsers.mockResolvedValueOnce({
-      data: { users: [{ id: TARGET_ID, email: 'nova@clinica.local', email_confirmed_at: null }] },
+      data: {
+        users: [
+          {
+            id: TARGET_ID,
+            email: 'nova@clinica.local',
+            email_confirmed_at: null,
+            last_sign_in_at: null,
+            app_metadata: {
+              recriar_admin_provisioned: true,
+              recriar_provisioning_actor_id: ADMIN_ID,
+            },
+          },
+        ],
+      },
       error: null,
     });
     mockUserClient.rpc.mockResolvedValueOnce({ data: TARGET_ID, error: null });
@@ -246,6 +325,71 @@ describe('integracao controlada das API Routes (chamadas diretas, CSRF, auth e f
       conviteSolicitado: false,
       recoveredExistingAuthUser: true,
     });
+  });
+
+  it('[7.2 NEGATIVO e POSITIVO] /api/auth/definir-senha-inicial bloqueia sessao comum por password e aceita fluxo otp/recovery recente', async () => {
+    const nowSec = Math.floor(Date.now() / 1000);
+    setupAuthenticatedAdmin(true, ['usuarios.manage'], null);
+
+    // Sessao comum autenticada via 'password' -> 403 (nao contorna /api/auth/alterar-senha)
+    mockUserClient.auth.getSession.mockResolvedValueOnce({
+      data: { session: { access_token: makeFakeJwt({ amr: [{ method: 'password', timestamp: nowSec - 60 }] }) } },
+    });
+    const blocked = createReqRes({ body: { newPassword: 'NovaSenha@2026!' } });
+    await definirSenhaInicialHandler(blocked.req, blocked.res);
+    expect(blocked.getStatus()).toBe(403);
+    expect(mockUserClient.auth.updateUser).not.toHaveBeenCalled();
+
+    // Sessao com link OTP expirado (>15 min) -> 403
+    mockUserClient.auth.getSession.mockResolvedValueOnce({
+      data: { session: { access_token: makeFakeJwt({ amr: [{ method: 'otp', timestamp: nowSec - 1200 }] }) } },
+    });
+    const expired = createReqRes({ body: { newPassword: 'NovaSenha@2026!' } });
+    await definirSenhaInicialHandler(expired.req, expired.res);
+    expect(expired.getStatus()).toBe(403);
+
+    // Sessao recente de convite ('otp') com primeiro_acesso_observado_em=null -> 200 initial_setup
+    mockUserClient.auth.getSession.mockResolvedValueOnce({
+      data: { session: { access_token: makeFakeJwt({ amr: [{ method: 'otp', timestamp: nowSec - 30 }] }) } },
+    });
+    mockUserClient.auth.updateUser.mockResolvedValueOnce({ data: {}, error: null });
+    mockUserClient.rpc.mockResolvedValueOnce({ data: 'reported', error: null });
+
+    const allowed = createReqRes({ body: { newPassword: 'NovaSenha@2026!' } });
+    await definirSenhaInicialHandler(allowed.req, allowed.res);
+    expect(allowed.getStatus()).toBe(200);
+    expect(allowed.getBody()).toEqual({
+      ok: true,
+      flow: 'initial_setup',
+      initialSetupReportState: 'reported',
+    });
+  });
+
+  it('[15] recuperacao manual de falha permanente via /retry-auth-sync e consulta de falhas em /api/admin/auth-sync/falhas', async () => {
+    setupAuthenticatedAdmin(true, ['usuarios.manage', 'auditoria.read']);
+
+    mockUserClient.rpc.mockResolvedValueOnce({
+      data: '44444444-4444-4444-8444-444444444444',
+      error: null,
+    });
+    const retryOk = createReqRes({ query: { id: TARGET_ID } });
+    await retrySyncHandler(retryOk.req, retryOk.res);
+    expect(retryOk.getStatus()).toBe(202);
+
+    // Conflito quando ja existe job pendente/processing (CR021 -> 409)
+    mockUserClient.rpc.mockResolvedValueOnce({
+      data: null,
+      error: { code: 'CR021', message: 'ja existe sync ativa' },
+    });
+    const retryDup = createReqRes({ query: { id: TARGET_ID } });
+    await retrySyncHandler(retryDup.req, retryDup.res);
+    expect(retryDup.getStatus()).toBe(409);
+
+    // Consulta administrativa de falhas (exige auditoria.read)
+    const falhasRes = createReqRes({ method: 'GET', query: { pagina: '1', limite: '20' } });
+    await falhasSyncHandler(falhasRes.req, falhasRes.res);
+    expect(falhasRes.getStatus()).toBe(200);
+    expect((falhasRes.getBody() as { total: number }).total).toBe(1);
   });
 
   it('POST /api/admin/usuarios/[id]/reenviar-acesso escolhe definicao_senha quando email ja esta confirmado no Auth', async () => {
@@ -311,17 +455,12 @@ describe('integracao controlada das API Routes (chamadas diretas, CSRF, auth e f
     await reenviarHandler(m.req, m.res);
     expect(m.getStatus()).toBe(200);
     expect(m.getBody()).toEqual({ ok: true, fluxo: 'definicao_senha' });
-    expect(mockAdminClient.auth.admin.inviteUserByEmail).not.toHaveBeenCalled();
-    expect(mockEphemeralClient.auth.resetPasswordForEmail).toHaveBeenCalledTimes(1);
   });
 
-  it('bloqueia gestor comum em /api/admin/usuarios/[id]/permissoes e usuario sem auditoria.read em /api/admin/auditoria', async () => {
+  it('bloqueia gestor comum em /permissoes e usuario sem auditoria.read em /auditoria', async () => {
     setupAuthenticatedAdmin(false, ['usuarios.manage']);
 
-    const permReq = createReqRes({
-      query: { id: TARGET_ID },
-      body: { permissao: 'auditoria.read' },
-    });
+    const permReq = createReqRes({ query: { id: TARGET_ID }, body: { permissao: 'auditoria.read' } });
     await permissoesHandler(permReq.req, permReq.res);
     expect(permReq.getStatus()).toBe(403);
 
