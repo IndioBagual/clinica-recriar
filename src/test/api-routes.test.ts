@@ -318,21 +318,11 @@ describe('integracao controlada das API Routes (Etapas 5, 6 e 8B.2)', () => {
     const nowSec = Math.floor(Date.now() / 1000);
     setupAuthenticatedAdmin(true, ['usuarios.manage'], null);
 
-    // 1. Sem cookie assinado de fluxo (mesmo se AMR tiver otp) -> 403
-    mockUserClient.auth.getClaims.mockResolvedValueOnce({
-      data: {
-        claims: {
-          sub: ADMIN_ID,
-          exp: nowSec + 600,
-          session_id: 'sess-1',
-          amr: [{ method: 'otp', timestamp: nowSec - 20 }],
-        },
-      },
-      error: null,
-    });
+    // 1. Sem cookie assinado de fluxo -> bloqueia imediatamente com 403 antes de chamar getClaims
     const noFlowCookie = createReqRes({ body: { newPassword: 'NovaSenha@2026!' } });
     await definirSenhaInicialHandler(noFlowCookie.req, noFlowCookie.res);
     expect(noFlowCookie.getStatus()).toBe(403);
+    expect(mockUserClient.auth.getClaims).not.toHaveBeenCalled();
 
     // 2. Com cookie assinado mas claims.sub divergente -> 403
     const validInviteCookie = createPasswordFlowCookieValue(ADMIN_ID, 'invite', nowSec - 10);

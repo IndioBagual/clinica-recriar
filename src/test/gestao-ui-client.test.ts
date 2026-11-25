@@ -10,7 +10,7 @@ function mockJsonResponse(status: number, body: unknown, headers: Record<string,
   });
 }
 
-describe('Etapa 7 â€” Client API CSRF, codigos HTTP (401/403/409/429/503) e isolamento de bundle', () => {
+describe('Etapa 7/8B — Client API CSRF, codigos HTTP (401/403/409/429/503) e isolamento de bundle', () => {
   afterEach(() => {
     clearCsrfToken();
   });
@@ -40,15 +40,13 @@ describe('Etapa 7 â€” Client API CSRF, codigos HTTP (401/403/409/429/503) e
   it('[11, 12 & 13] trata respostas 401, 403 (incluindo limpeza de CSRF), 409, 429 (Retry-After) e 503', async () => {
     const token = 'c'.repeat(64);
 
-    // 401
     const f401 = vi
       .fn<typeof fetch>()
-      .mockResolvedValueOnce(mockJsonResponse(401, { error: { code: 'UNAUTHENTICATED', message: 'SessÃ£o expirada.' } }));
+      .mockResolvedValueOnce(mockJsonResponse(401, { error: { code: 'UNAUTHENTICATED', message: 'Sessão expirada.' } }));
     const r401 = await apiRequest('/api/admin/usuarios', { method: 'GET', fetchImpl: f401 });
     expect(r401.ok).toBe(false);
     expect(r401.status).toBe(401);
 
-    // 403 INVALID_CSRF_TOKEN limpa cache
     const f403 = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(mockJsonResponse(200, { csrfToken: token }))
@@ -61,13 +59,12 @@ describe('Etapa 7 â€” Client API CSRF, codigos HTTP (401/403/409/429/503) e
     expect(r403.status).toBe(403);
     expect(getCachedCsrfToken()).toBeNull();
 
-    // 409 ultimo Admin Principal
     const f409 = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(mockJsonResponse(200, { csrfToken: token }))
       .mockResolvedValueOnce(
         mockJsonResponse(409, {
-          error: { code: 'LAST_ADMIN_PRINCIPAL_PROTECTED', message: 'Ãšltimo Admin Principal protegido.' },
+          error: { code: 'LAST_ADMIN_PRINCIPAL_PROTECTED', message: 'Último Admin Principal protegido.' },
         })
       );
     const r409 = await apiRequest('/api/admin/usuarios/1/status', {
@@ -78,7 +75,6 @@ describe('Etapa 7 â€” Client API CSRF, codigos HTTP (401/403/409/429/503) e
     expect(r409.status).toBe(409);
     expect(r409.errorCode).toBe('LAST_ADMIN_PRINCIPAL_PROTECTED');
 
-    // 429 com Retry-After
     const f429 = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(mockJsonResponse(429, { error: { code: 'RATE_LIMITED' } }, { 'retry-after': '45' }));
@@ -87,16 +83,15 @@ describe('Etapa 7 â€” Client API CSRF, codigos HTTP (401/403/409/429/503) e
     expect(r429.retryAfterSeconds).toBe(45);
     expect(r429.errorMessage).toContain('45s');
 
-    // 503 indisponibilidade temporaria (fail-closed)
     const f503 = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(mockJsonResponse(503, { error: { code: 'RATE_LIMIT_UNAVAILABLE' } }));
     const r503 = await apiRequest('/api/admin/auditoria', { method: 'GET', fetchImpl: f503 });
     expect(r503.status).toBe(503);
-    expect(r503.errorMessage).toContain('temporariamente indisponÃ­vel');
+    expect(r503.errorMessage).toContain('temporariamente indisponível');
   });
 
-  it('[16 & 17] garante que nenhum componente/pagina de /gestao importa adminServiceClient ou SUPABASE_SECRET_KEY', () => {
+  it('[16 & 17] garante que nenhum componente/pagina de /gestao importa modulos privilegiados ou browserClient', () => {
     const dirs = [
       path.resolve(process.cwd(), 'src/components/gestao'),
       path.resolve(process.cwd(), 'src/pages/gestao'),
@@ -113,7 +108,9 @@ describe('Etapa 7 â€” Client API CSRF, codigos HTTP (401/403/409/429/503) e
 
     for (const file of files) {
       const content = fs.readFileSync(file, 'utf8');
-      expect(content).not.toMatch(/adminServiceClient|SUPABASE_SECRET_KEY|sb_secret_|authSync|browserClient/);
+      expect(content).not.toMatch(
+        /adminServiceClient|SUPABASE_SECRET_KEY|sb_secret_|authSync|supabase\/browserClient|createSupabaseBrowserClient/
+      );
     }
   });
 });

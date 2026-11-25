@@ -1,5 +1,5 @@
 ﻿import type { GetServerSidePropsContext } from 'next';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   canEditUserName,
   canManageUserPermissions,
@@ -7,7 +7,10 @@ import {
   getAuthorizedNavigation,
 } from '@/lib/admin/navigation';
 import { requireAdminPageAuth } from '@/lib/admin/pageGuard';
-import { createPasswordFlowCookieValue, verifyPasswordFlowCookie } from '@/lib/security/passwordFlow';
+import {
+  createPasswordFlowCookieValue,
+  verifyPasswordFlowCookie,
+} from '@/lib/security/passwordFlow';
 import { inspectAuthHashFragment } from '@/pages/gestao/atualizar-senha';
 
 function createMockSsrContext(overrides?: {
@@ -97,8 +100,14 @@ const BASE_PROFILE = {
   criado_em: '2026-11-25T09:00:00Z',
 };
 
-describe('Etapa 7 â€” Guards SSR, matriz de navegacao, cache privado e links de convite/recuperacao', () => {
-  it('[1 & 18] redireciona visitante sem sessao e aplica headers no-store/noindex', async () => {
+describe('Etapa 7/8B — Guards SSR, matriz de navegacao, cache privado e fluxo token_hash', () => {
+  const envBackup = { ...process.env };
+
+  afterEach(() => {
+    process.env = { ...envBackup };
+  });
+
+  it('[1 & 18] redireciona visitante sem sessao e aplica headers no-store/noindex/no-referrer', async () => {
     const { ctx, getHeaders } = createMockSsrContext({ resolvedUrl: '/gestao/usuarios' });
     const res = await requireAdminPageAuth(ctx, {
       requiredPermission: 'usuarios.manage',
@@ -111,6 +120,7 @@ describe('Etapa 7 â€” Guards SSR, matriz de navegacao, cache privado e link
     }
     expect(getHeaders()['cache-control']).toContain('no-store');
     expect(getHeaders()['x-robots-tag']).toContain('noindex');
+    expect(getHeaders()['referrer-policy']).toBe('no-referrer');
   });
 
   it('[9] redireciona sessao expirada com motivo=sessao_expirada quando havia cookie sb-*', async () => {
@@ -183,7 +193,7 @@ describe('Etapa 7 â€” Guards SSR, matriz de navegacao, cache privado e link
       createClient: makeFakeSupabase({
         userId: BASE_PROFILE.id,
         profile: BASE_PROFILE,
-        permissions: ['usuarios.manage'], // tem usuarios.manage mas NAO tem auditoria.read
+        permissions: ['usuarios.manage'],
         emitRefreshCookie: true,
       }) as never,
     });
@@ -240,11 +250,5 @@ describe('Etapa 7 â€” Guards SSR, matriz de navegacao, cache privado e link
       nowSec + 60
     );
     expect(tampered).toEqual({ ok: false, reason: 'invalid_signature' });
-  });
-    expect(parseAuthHashFragment('#error=access_denied&error_code=otp_expired')).toEqual({
-      accessToken: null,
-      refreshToken: null,
-      errorCode: 'otp_expired',
-    });
   });
 });
