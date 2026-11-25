@@ -1,4 +1,4 @@
-import type { GetServerSidePropsContext } from 'next';
+﻿import type { GetServerSidePropsContext } from 'next';
 import { describe, expect, it, vi } from 'vitest';
 import {
   canEditUserName,
@@ -7,7 +7,8 @@ import {
   getAuthorizedNavigation,
 } from '@/lib/admin/navigation';
 import { requireAdminPageAuth } from '@/lib/admin/pageGuard';
-import { parseAuthHashFragment } from '@/pages/gestao/atualizar-senha';
+import { createPasswordFlowCookieValue, verifyPasswordFlowCookie } from '@/lib/security/passwordFlow';
+import { inspectAuthHashFragment } from '@/pages/gestao/atualizar-senha';
 
 function createMockSsrContext(overrides?: {
   resolvedUrl?: string;
@@ -96,7 +97,7 @@ const BASE_PROFILE = {
   criado_em: '2026-11-25T09:00:00Z',
 };
 
-describe('Etapa 7 — Guards SSR, matriz de navegacao, cache privado e links de convite/recuperacao', () => {
+describe('Etapa 7 â€” Guards SSR, matriz de navegacao, cache privado e links de convite/recuperacao', () => {
   it('[1 & 18] redireciona visitante sem sessao e aplica headers no-store/noindex', async () => {
     const { ctx, getHeaders } = createMockSsrContext({ resolvedUrl: '/gestao/usuarios' });
     const res = await requireAdminPageAuth(ctx, {
@@ -205,12 +206,41 @@ describe('Etapa 7 — Guards SSR, matriz de navegacao, cache privado e links de 
     expect(canManageUserPermissions(adminViewer, { id: 'u2', is_admin_principal: false })).toBe(true);
   });
 
-  it('[15] faz parse seguro de fragmento de convite/recuperacao e erro otp_expired', () => {
-    expect(parseAuthHashFragment('#access_token=abc&refresh_token=def&type=invite')).toEqual({
-      accessToken: 'abc',
-      refreshToken: 'def',
+  it('[15] rejeita fragmentos com tokens, identifica erro otp_expired e valida cookie assinado de fluxo', () => {
+    expect(inspectAuthHashFragment('#access_token=abc&refresh_token=def&type=invite')).toEqual({
+      hasUnexpectedTokens: true,
       errorCode: null,
     });
+    expect(inspectAuthHashFragment('#error=access_denied&error_code=otp_expired')).toEqual({
+      hasUnexpectedTokens: false,
+      errorCode: 'otp_expired',
+    });
+
+    process.env.SUPABASE_SECRET_KEY = 'sb_secret_unit_test_signing_key_only';
+    const nowSec = Math.floor(Date.now() / 1000);
+    const cookieVal = createPasswordFlowCookieValue(BASE_PROFILE.id, 'recovery', nowSec);
+
+    const ok = verifyPasswordFlowCookie(
+      { headers: { 'x-forwarded-proto': 'https' }, cookies: { '__Host-recriar_pwd_flow': cookieVal } },
+      BASE_PROFILE.id,
+      nowSec + 60
+    );
+    expect(ok).toEqual({ ok: true, flow: 'recovery', iat: nowSec });
+
+    const wrongUser = verifyPasswordFlowCookie(
+      { headers: { 'x-forwarded-proto': 'https' }, cookies: { '__Host-recriar_pwd_flow': cookieVal } },
+      '99999999-9999-4999-8999-999999999999',
+      nowSec + 60
+    );
+    expect(wrongUser).toEqual({ ok: false, reason: 'user_mismatch' });
+
+    const tampered = verifyPasswordFlowCookie(
+      { headers: { 'x-forwarded-proto': 'https' }, cookies: { '__Host-recriar_pwd_flow': cookieVal + 'x' } },
+      BASE_PROFILE.id,
+      nowSec + 60
+    );
+    expect(tampered).toEqual({ ok: false, reason: 'invalid_signature' });
+  });
     expect(parseAuthHashFragment('#error=access_denied&error_code=otp_expired')).toEqual({
       accessToken: null,
       refreshToken: null,

@@ -1,4 +1,4 @@
-import fs from 'node:fs';
+﻿import fs from 'node:fs';
 import path from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { apiRequest, clearCsrfToken, getCachedCsrfToken } from '@/lib/admin/clientApi';
@@ -10,7 +10,7 @@ function mockJsonResponse(status: number, body: unknown, headers: Record<string,
   });
 }
 
-describe('Etapa 7 — Client API CSRF, codigos HTTP (401/403/409/429/503) e isolamento de bundle', () => {
+describe('Etapa 7 â€” Client API CSRF, codigos HTTP (401/403/409/429/503) e isolamento de bundle', () => {
   afterEach(() => {
     clearCsrfToken();
   });
@@ -43,7 +43,7 @@ describe('Etapa 7 — Client API CSRF, codigos HTTP (401/403/409/429/503) e isol
     // 401
     const f401 = vi
       .fn<typeof fetch>()
-      .mockResolvedValueOnce(mockJsonResponse(401, { error: { code: 'UNAUTHENTICATED', message: 'Sessão expirada.' } }));
+      .mockResolvedValueOnce(mockJsonResponse(401, { error: { code: 'UNAUTHENTICATED', message: 'SessÃ£o expirada.' } }));
     const r401 = await apiRequest('/api/admin/usuarios', { method: 'GET', fetchImpl: f401 });
     expect(r401.ok).toBe(false);
     expect(r401.status).toBe(401);
@@ -67,7 +67,7 @@ describe('Etapa 7 — Client API CSRF, codigos HTTP (401/403/409/429/503) e isol
       .mockResolvedValueOnce(mockJsonResponse(200, { csrfToken: token }))
       .mockResolvedValueOnce(
         mockJsonResponse(409, {
-          error: { code: 'LAST_ADMIN_PRINCIPAL_PROTECTED', message: 'Último Admin Principal protegido.' },
+          error: { code: 'LAST_ADMIN_PRINCIPAL_PROTECTED', message: 'Ãšltimo Admin Principal protegido.' },
         })
       );
     const r409 = await apiRequest('/api/admin/usuarios/1/status', {
@@ -93,7 +93,7 @@ describe('Etapa 7 — Client API CSRF, codigos HTTP (401/403/409/429/503) e isol
       .mockResolvedValueOnce(mockJsonResponse(503, { error: { code: 'RATE_LIMIT_UNAVAILABLE' } }));
     const r503 = await apiRequest('/api/admin/auditoria', { method: 'GET', fetchImpl: f503 });
     expect(r503.status).toBe(503);
-    expect(r503.errorMessage).toContain('temporariamente indisponível');
+    expect(r503.errorMessage).toContain('temporariamente indisponÃ­vel');
   });
 
   it('[16 & 17] garante que nenhum componente/pagina de /gestao importa adminServiceClient ou SUPABASE_SECRET_KEY', () => {
@@ -113,7 +113,7 @@ describe('Etapa 7 — Client API CSRF, codigos HTTP (401/403/409/429/503) e isol
 
     for (const file of files) {
       const content = fs.readFileSync(file, 'utf8');
-      expect(content).not.toMatch(/adminServiceClient|SUPABASE_SECRET_KEY|sb_secret_|authSync/);
+      expect(content).not.toMatch(/adminServiceClient|SUPABASE_SECRET_KEY|sb_secret_|authSync|browserClient/);
     }
   });
 });
