@@ -1,6 +1,7 @@
 import type { GetServerSideProps } from 'next';
 import { type FormEvent, useMemo, useState } from 'react';
 import {
+  AlertTriangle,
   Mail,
   Pencil,
   Power,
@@ -25,14 +26,20 @@ import {
 } from '@/lib/admin/navigation';
 import { requireAdminPageAuth } from '@/lib/admin/pageGuard';
 import { PHASE2_PERMISSIONS, type Phase2Permission } from '@/lib/admin/schemas';
+import type { FailedAuthSyncRow } from '@/pages/api/admin/usuarios/falhas-sync';
+
+const FAILED_SYNC_PAGE_SIZE = 50;
 
 interface UsuariosPageProps {
   viewer: AdminViewer;
   forbidden: boolean;
   initialUsers: ManagedUserRow[];
+  initialFailedSyncs: FailedAuthSyncRow[];
+  initialFailedSyncsHasMore: boolean;
+  initialFailedSyncsNextCursor: string | null;
 }
 
-type StatusFilter = 'todos' | 'ativos' | 'desativados' | 'pendentes_acesso';
+type StatusFilter = 'todos' | 'ativos' | 'desativados' | 'pendentes_acesso' | 'falha_sync';
 
 interface PendingAction {
   title: string;
@@ -46,21 +53,33 @@ export const getServerSideProps: GetServerSideProps<UsuariosPageProps> = async (
   const guard = await requireAdminPageAuth(ctx, { requiredPermission: 'usuarios.manage' });
   if (guard.status === 'redirect') return { redirect: guard.redirect };
   if (guard.status === 'forbidden') {
-    return { props: { viewer: guard.viewer, forbidden: true, initialUsers: [] } };
+    return {
+      props: {
+        viewer: guard.viewer,
+        forbidden: true,
+        initialUsers: [],
+        initialFailedSyncs: [],
+        initialFailedSyncsHasMore: false,
+        initialFailedSyncsNextCursor: null,
+      },
+    };
   }
 
   const { viewer, supabase } = guard;
 
-  const { data: profiles } = await supabase
-    .from('usuarios_perfil')
-    .select(
-      'id, nome, email, is_admin_principal, ativo, estado_ativacao_versao, convite_solicitado_em, email_confirmado_em, configuracao_inicial_reportada_em, primeiro_acesso_observado_em, ultimo_acesso_auth_em, desativado_em, criado_em'
-    )
-    .order('criado_em', { ascending: false });
-
-  const { data: perms } = await supabase
-    .from('usuario_permissoes')
-    .select('usuario_id, permissao');
+  const [{ data: profiles }, { data: perms }, { data: failedRaw }] = await Promise.all([
+    supabase
+      .from('usuarios_perfil')
+      .select(
+        'id, nome, email, is_admin_principal, ativo, estado_ativacao_versao, convite_solicitado_em, email_confirmado_em, configuracao_inicial_reportada_em, primeiro_acesso_observado_em, ultimo_acesso_auth_em, desativado_em, criado_em'
+      )
+      .order('criado_em', { ascending: false }),
+    supabase.from('usuario_permissoes').select('usuario_id, permissao'),
+    supabase.rpc('rpc_admin_list_failed_auth_syncs', {
+      p_limit: FAILED_SYNC_PAGE_SIZE + 1,
+      p_after_user_id: null,
+    }),
+  ]);
 
   const permMap = new Map<string, string[]>();
   for (const row of perms ?? []) {
@@ -76,11 +95,21 @@ export const getServerSideProps: GetServerSideProps<UsuariosPageProps> = async (
     podeReenviarAcesso: canRequestAccessLink(p),
   }));
 
+  const failedRows = (Array.isArray(failedRaw) ? failedRaw : []) as FailedAuthSyncRow[];
+  const hasMore = failedRows.length > FAILED_SYNC_PAGE_SIZE;
+  const initialFailedSyncs = hasMore ? failedRows.slice(0, FAILED_SYNC_PAGE_SIZE) : failedRows;
+  const initialFailedSyncsNextCursor = hasMore
+    ? initialFailedSyncs[initialFailedSyncs.length - 1].target_user_id
+    : null;
+
   return {
     props: {
       viewer,
       forbidden: false,
       initialUsers,
+      initialFailedSyncs,
+      initialFailedSyncsHasMore: hasMore,
+      initialFailedSyncsNextCursor,
     },
   };
 };
@@ -89,30 +118,42 @@ export default function GestaoUsuariosPage({
   viewer,
   forbidden,
   initialUsers,
+  initialFailedSyncs,
+  initialFailedSyncsHasMore,
+  initialFailedSyncsNextCursor,
 }: UsuariosPageProps) {
   const [users, setUsers] = useState<ManagedUserRow[]>(initialUsers);
+  const [failedSyncs, setFailedSyncs] = useState<FailedAuthSyncRow[]>(initialFailedSyncs);
+  const [failedHasMore, setFailedHasMore] = useState<boolean>(initialFailedSyncsHasMore);
+  const [failedNextCursor, setFailedNextCursor] = useState<string | null>(initialFailedSyncsNextCursor);
+  const [loadingMoreFailed, setLoadingMoreFailed] = useState(false);
+
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<StatusFilter>('todos');
   const [refreshing, setRefreshing] = useState(false);
 
-  // Formulario de criacao
   const [createOpen, setCreateOpen] = useState(false);
   const [newName, setNewName] = useState('');
   const [newEmail, setNewEmail] = useState('');
   const [creating, setCreating] = useState(false);
 
-  // Edicao de nome
   const [editingUser, setEditingUser] = useState<ManagedUserRow | null>(null);
   const [editName, setEditName] = useState('');
   const [savingName, setSavingName] = useState(false);
 
-  // Confirmacao de acoes sensiveis
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
   const [actionBusy, setActionBusy] = useState(false);
 
-  // Feedback global
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const failedSyncMap = useMemo(() => {
+    const map = new Map<string, FailedAuthSyncRow>();
+    for (const f of failedSyncs) {
+      map.set(f.target_user_id, f);
+    }
+    return map;
+  }, [failedSyncs]);
 
   const filteredUsers = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -122,10 +163,11 @@ export default function GestaoUsuariosPage({
       if (filter === 'pendentes_acesso' && (!u.ativo || u.primeiro_acesso_observado_em !== null)) {
         return false;
       }
+      if (filter === 'falha_sync' && !failedSyncMap.has(u.id)) return false;
       if (!term) return true;
       return u.nome.toLowerCase().includes(term) || u.email.toLowerCase().includes(term);
     });
-  }, [users, search, filter]);
+  }, [users, search, filter, failedSyncMap]);
 
   if (forbidden) {
     return (
@@ -135,17 +177,59 @@ export default function GestaoUsuariosPage({
     );
   }
 
-  async function refreshUsers() {
+  async function refreshUsersAndFailures() {
     setRefreshing(true);
-    const res = await apiRequest<{ usuarios: ManagedUserRow[] }>('/api/admin/usuarios', {
-      method: 'GET',
-    });
-    if (res.ok && res.data?.usuarios) {
-      setUsers(res.data.usuarios);
-    } else if (!res.ok) {
-      setErrorMsg(res.errorMessage ?? 'Não foi possível atualizar a lista de usuários.');
+    const [usersRes, failedRes] = await Promise.all([
+      apiRequest<{ usuarios: ManagedUserRow[] }>('/api/admin/usuarios', { method: 'GET' }),
+      apiRequest<{
+        falhas: FailedAuthSyncRow[];
+        hasMore: boolean;
+        nextAfterUserId: string | null;
+      }>(`/api/admin/usuarios/falhas-sync?limit=${FAILED_SYNC_PAGE_SIZE}`, { method: 'GET' }),
+    ]);
+
+    if (usersRes.ok && usersRes.data?.usuarios) {
+      setUsers(usersRes.data.usuarios);
+    } else if (!usersRes.ok) {
+      setErrorMsg(usersRes.errorMessage ?? 'Não foi possível atualizar a lista de usuários.');
+    }
+
+    if (failedRes.ok && failedRes.data) {
+      setFailedSyncs(failedRes.data.falhas);
+      setFailedHasMore(failedRes.data.hasMore);
+      setFailedNextCursor(failedRes.data.nextAfterUserId);
     }
     setRefreshing(false);
+  }
+
+  async function loadMoreFailedSyncs() {
+    if (!failedHasMore || !failedNextCursor || loadingMoreFailed) return;
+    setLoadingMoreFailed(true);
+    const res = await apiRequest<{
+      falhas: FailedAuthSyncRow[];
+      hasMore: boolean;
+      nextAfterUserId: string | null;
+    }>(
+      `/api/admin/usuarios/falhas-sync?limit=${FAILED_SYNC_PAGE_SIZE}&after_user_id=${encodeURIComponent(
+        failedNextCursor
+      )}`,
+      { method: 'GET' }
+    );
+    if (res.ok && res.data) {
+      setFailedSyncs((prev) => {
+        const seen = new Set(prev.map((x) => x.target_user_id));
+        const next = [...prev];
+        for (const item of res.data!.falhas) {
+          if (!seen.has(item.target_user_id)) next.push(item);
+        }
+        return next;
+      });
+      setFailedHasMore(res.data.hasMore);
+      setFailedNextCursor(res.data.nextAfterUserId);
+    } else if (!res.ok) {
+      setErrorMsg(res.errorMessage ?? 'Não foi possível carregar mais falhas de sincronização.');
+    }
+    setLoadingMoreFailed(false);
   }
 
   async function handleCreateUser(event: FormEvent<HTMLFormElement>) {
@@ -180,7 +264,7 @@ export default function GestaoUsuariosPage({
         ? 'Perfil vinculado a provisionamento anterior interrompido. Utilize "Reenviar acesso" caso precise enviar novo link.'
         : 'Perfil administrativo criado e convite solicitado.'
     );
-    await refreshUsers();
+    await refreshUsersAndFailures();
   }
 
   async function handleSaveName(event: FormEvent<HTMLFormElement>) {
@@ -205,7 +289,7 @@ export default function GestaoUsuariosPage({
     setEditingUser(null);
     setSavingName(false);
     setSuccessMsg('Nome atualizado com sucesso.');
-    await refreshUsers();
+    await refreshUsersAndFailures();
   }
 
   function requestToggleStatus(target: ManagedUserRow) {
@@ -234,7 +318,7 @@ export default function GestaoUsuariosPage({
             ? `Conta de ${target.nome} reativada com sincronização enfileirada.`
             : `Conta de ${target.nome} desativada com sincronização enfileirada.`
         );
-        await refreshUsers();
+        await refreshUsersAndFailures();
       },
     });
   }
@@ -259,7 +343,7 @@ export default function GestaoUsuariosPage({
             ? `Link de definição de senha solicitado para ${target.email} (e-mail já confirmado).`
             : `Convite solicitado novamente para ${target.email}.`
         );
-        await refreshUsers();
+        await refreshUsersAndFailures();
       },
     });
   }
@@ -293,7 +377,7 @@ export default function GestaoUsuariosPage({
             ? `Permissão ${permissao} concedida a ${target.nome}.`
             : `Permissão ${permissao} revogada de ${target.nome}.`
         );
-        await refreshUsers();
+        await refreshUsersAndFailures();
       },
     });
   }
@@ -314,6 +398,7 @@ export default function GestaoUsuariosPage({
           return;
         }
         setSuccessMsg(`Nova sincronização enfileirada para ${target.nome}.`);
+        await refreshUsersAndFailures();
       },
     });
   }
@@ -337,7 +422,7 @@ export default function GestaoUsuariosPage({
       title="Usuários administrativos"
       subtitle="Contas individuais, ciclo de convite e permissões da Fase 2"
     >
-      {/* Aviso de governanca: Admin Principal e status de sincronizacao */}
+      {/* Aviso de governanca */}
       <div className="mb-5 rounded-2xl border border-slate-200 bg-white p-4 text-xs text-slate-600 shadow-sm">
         <p>
           <strong className="text-slate-800">Governança do Administrador Principal:</strong> promoção,
@@ -345,12 +430,50 @@ export default function GestaoUsuariosPage({
           <code className="rounded bg-slate-100 px-1 py-0.5 text-slate-800">usuarios.manage</code> não
           concede acesso à auditoria nem a funcionalidades de fases futuras.
         </p>
-        <p className="mt-1.5">
-          <strong className="text-slate-800">Sincronização Auth:</strong> o estado atual de eventuais falhas
-          permanentes por usuário não é inferido a partir de eventos históricos de auditoria; caso precise
-          reprocessar manualmente uma conta, utilize a ação <em>Re-sincronizar Auth</em>.
-        </p>
       </div>
+
+      {/* Alerta operacional comprovado de falhas permanentes vigentes (RPC somente leitura) */}
+      {failedSyncs.length > 0 && (
+        <section
+          role="alert"
+          aria-label="Falhas permanentes de sincronização vigentes"
+          className="mb-5 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-900 shadow-sm"
+        >
+          <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+            <div className="flex items-start gap-2.5">
+              <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-rose-700" aria-hidden="true" />
+              <div>
+                <p className="font-semibold">
+                  {failedSyncs.length} {failedSyncs.length === 1 ? 'conta com falha permanente' : 'contas com falhas permanentes'} de sincronização Auth na versão vigente
+                  {failedHasMore ? ' (mais registros disponíveis)' : ''}.
+                </p>
+                <p className="mt-0.5 text-xs text-rose-800">
+                  Estado comprovado diretamente na outbox da versão atual (falhas históricas já superadas não são exibidas). Utilize <em>Re-sincronizar Auth</em> na conta afetada para reenfileirar.
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setFilter('falha_sync')}
+                className="rounded-xl bg-rose-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-800"
+              >
+                Filtrar afetadas
+              </button>
+              {failedHasMore && (
+                <button
+                  type="button"
+                  onClick={loadMoreFailedSyncs}
+                  disabled={loadingMoreFailed}
+                  className="rounded-xl border border-rose-300 bg-white px-3 py-1.5 text-xs font-semibold text-rose-800 hover:bg-rose-100 disabled:opacity-50"
+                >
+                  {loadingMoreFailed ? 'Carregando...' : 'Carregar mais falhas'}
+                </button>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
 
       {successMsg && (
         <div
@@ -405,6 +528,9 @@ export default function GestaoUsuariosPage({
               <option value="ativos">Somente ativas</option>
               <option value="desativados">Somente desativadas</option>
               <option value="pendentes_acesso">Aguardando primeiro acesso</option>
+              <option value="falha_sync">
+                Falha permanente de sincronização ({failedSyncs.length})
+              </option>
             </select>
           </div>
         </div>
@@ -412,7 +538,7 @@ export default function GestaoUsuariosPage({
         <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
-            onClick={refreshUsers}
+            onClick={refreshUsersAndFailures}
             disabled={refreshing}
             className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 disabled:opacity-50"
           >
@@ -564,6 +690,7 @@ export default function GestaoUsuariosPage({
             const allowEditName = canEditUserName(viewer, user);
             const allowToggleStatus = canToggleUserStatus(viewer, user);
             const allowPerms = canManageUserPermissions(viewer, user);
+            const failedSync = failedSyncMap.get(user.id);
 
             return (
               <article
@@ -592,9 +719,22 @@ export default function GestaoUsuariosPage({
                     <div className="flex flex-wrap items-center gap-2 pt-1">
                       <ActiveBadge ativo={user.ativo} />
                       <LifecycleBadge status={user.lifecycleStatus} />
+                      {failedSync && (
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-100 px-2.5 py-1 text-xs font-semibold text-rose-900 ring-1 ring-inset ring-rose-600/30">
+                          <AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" />
+                          Falha permanente Auth ({failedSync.operacao} • {failedSync.tentativas}/
+                          {failedSync.max_tentativas} • {failedSync.ultimo_erro_codigo ?? 'erro'})
+                        </span>
+                      )}
                     </div>
 
-                    {/* Marcos detalhados do ciclo de vida (sem confundir reportado com comprovado) */}
+                    {failedSync && (
+                      <p className="text-xs text-rose-800">
+                        Última falha vigente (v{failedSync.target_versao}) registrada em{' '}
+                        {formatDateTimePtBr(failedSync.concluido_em)}.
+                      </p>
+                    )}
+
                     <dl className="grid grid-cols-1 gap-x-6 gap-y-1 pt-2 text-xs text-slate-600 sm:grid-cols-2 lg:grid-cols-3">
                       <div>
                         <dt className="inline font-medium text-slate-700">Convite solicitado: </dt>
@@ -659,7 +799,11 @@ export default function GestaoUsuariosPage({
                     <button
                       type="button"
                       onClick={() => requestRetryAuthSync(user)}
-                      className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600"
+                      className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 ${
+                        failedSync
+                          ? 'bg-rose-700 text-white hover:bg-rose-800 focus-visible:ring-rose-600'
+                          : 'border border-slate-300 bg-white font-medium text-slate-700 hover:bg-slate-50 focus-visible:ring-teal-600'
+                      }`}
                     >
                       <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
                       Re-sincronizar Auth
@@ -680,9 +824,7 @@ export default function GestaoUsuariosPage({
                       </button>
                     ) : (
                       <span className="inline-flex items-center rounded-xl bg-slate-100 px-3 py-1.5 text-xs text-slate-500">
-                        {isSelf
-                          ? 'Auto-desativação bloqueada'
-                          : 'Protegido (Admin Principal)'}
+                        {isSelf ? 'Auto-desativação bloqueada' : 'Protegido (Admin Principal)'}
                       </span>
                     )}
                   </div>
