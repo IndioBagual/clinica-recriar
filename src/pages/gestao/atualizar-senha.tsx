@@ -169,7 +169,7 @@ export const getServerSideProps: GetServerSideProps<AtualizarSenhaProps> = async
       linkError: null,
       hasValidFlowSession: true,
       flowType: flowCheck.flow,
-      sessionEmail: data.user.email ?? null,
+      sessionEmail: data.user?.email ?? null,
       hasRegularSessionWithoutLink: false,
     },
   };
