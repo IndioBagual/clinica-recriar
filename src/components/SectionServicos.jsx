@@ -1,59 +1,56 @@
-import { BrainCircuit, Puzzle, Leaf, MessageCircle } from 'lucide-react';
+import Link from 'next/link';
+import { BrainCircuit, Puzzle, Leaf, MessageCircle, ArrowRight } from 'lucide-react';
 import Reveal from './Reveal';
+import SectionHeading from './ui/SectionHeading';
+import { SERVICOS } from '../data/servicos';
 
-export default function SectionServicos() {
+const ICONES = {
+  brain: BrainCircuit,
+  puzzle: Puzzle,
+  leaf: Leaf,
+  speech: MessageCircle,
+};
+
+export default function SectionServicos({ mostrarLinkEquipe = true }) {
   return (
-    <section id="servicos" className="py-20 bg-light">
-      <div className="container mx-auto px-6">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-extrabold text-brand-dark mb-4">Nossos Serviços</h2>
-          <p className="text-lg text-gray-500 max-w-3xl mx-auto">Oferecemos diversos serviços para todas as faixas etárias.</p>
-        </div>
+    <section id="servicos" className="border-y border-sand-dark/50 bg-cream-soft py-20 md:py-24">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <Reveal>
+          <SectionHeading
+            eyebrow="Especialidades"
+            title="Nossos Serviços"
+            description="Oferecemos diversos serviços para todas as faixas etárias."
+          />
+        </Reveal>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
-          {/* Psicologia */}
-          <Reveal delay={0.1}>
-            <div className="bg-white rounded-2xl shadow-lg hover:-translate-y-2 hover:shadow-xl transition-all duration-300 overflow-hidden h-full flex flex-col p-8 text-center items-center">
-              <div className="text-brand mb-6">
-                <BrainCircuit className="w-12 h-12" />
-              </div>
-              <h3 className="text-2xl font-bold mb-4 text-dark">Psicologia</h3>
-              <p className="text-gray-500 leading-relaxed">Cuidamos da sua saúde mental e emocional, oferecendo um caminho para o autoconhecimento.</p>
-            </div>
-          </Reveal>
-
-          {/* Psicopedagogia */}
-          <Reveal delay={0.2}>
-            <div className="bg-white rounded-2xl shadow-lg hover:-translate-y-2 hover:shadow-xl transition-all duration-300 overflow-hidden h-full flex flex-col p-8 text-center items-center">
-              <div className="text-brand mb-6">
-              <Puzzle className="w-12 h-12" />
-            </div>
-            <h3 className="text-2xl font-bold mb-4 text-dark">Psicopedagogia</h3>
-            <p className="text-gray-500 leading-relaxed">Transformamos dificuldades em conquistas, potencializando o processo de aprendizagem.</p>
-          </div>
-          </Reveal>
-
-          {/* Nutrição */}
-          <Reveal delay={0.3}>
-            <div className="bg-white rounded-2xl shadow-lg hover:-translate-y-2 hover:shadow-xl transition-all duration-300 overflow-hidden h-full flex flex-col p-8 text-center items-center">
-              <div className="text-brand mb-6">
-                <Leaf className="w-12 h-12" />
-              </div>
-              <h3 className="text-2xl font-bold mb-4 text-dark">Nutrição</h3>
-              <p className="text-gray-500 leading-relaxed">Guiamos você a uma relação saudável com a comida através de planos personalizados.</p>
-            </div>
-          </Reveal>
-
-          {/* Fonoaudiologia */}
-          <Reveal delay={0.4}>
-            <div className="bg-white rounded-2xl shadow-lg hover:-translate-y-2 hover:shadow-xl transition-all duration-300 overflow-hidden h-full flex flex-col p-8 text-center items-center">
-              <div className="text-brand mb-6">
-                <MessageCircle className="w-12 h-12" />
-              </div>
-              <h3 className="text-2xl font-bold mb-4 text-dark">Fonoaudiologia</h3>
-              <p className="text-gray-500 leading-relaxed">Aprimoramos a comunicação humana, atuando na reabilitação da fala e audição.</p>
-            </div>
-          </Reveal>
+        <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
+          {SERVICOS.map((servico, index) => {
+            const Icone = ICONES[servico.icone] || Leaf;
+            return (
+              <Reveal key={servico.slug} delay={index * 0.08}>
+                <article className="flex h-full flex-col rounded-organic border border-sand-dark/60 bg-cream p-7 shadow-soft transition-all duration-300 hover:-translate-y-1 hover:border-sage-300">
+                  <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-sage-100 text-brand">
+                    <Icone className="h-6 w-6" aria-hidden="true" />
+                  </div>
+                  <h3 className="font-serif text-2xl font-semibold text-brand-dark">
+                    {servico.nome}
+                  </h3>
+                  <p className="mt-3 flex-grow leading-relaxed text-earth-body">
+                    {servico.descricao}
+                  </p>
+                  {mostrarLinkEquipe && (
+                    <Link
+                      href={`/equipe?area=${encodeURIComponent(servico.nome)}`}
+                      className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-brand hover:text-brand-dark"
+                    >
+                      Ver profissionais
+                      <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                    </Link>
+                  )}
+                </article>
+              </Reveal>
+            );
+          })}
         </div>
       </div>
     </section>

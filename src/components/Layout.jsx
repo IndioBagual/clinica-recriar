@@ -1,19 +1,23 @@
 import Header from './Header';
 import Footer from './Footer';
 
-// O Layout recebe a prop "unidade" (Ex: "Canabarro" ou "Abreu")
-export default function Layout({ children, unidade }) {
+export default function Layout({ children }) {
   return (
-    <div className="flex flex-col min-h-screen font-sans text-gray-700 bg-light antialiased selection:bg-brand selection:text-white">
-      {/* Passamos a unidade para o Header saber criar os links certos */}
-      <Header unidade={unidade} />
-      
-      <main className="flex-grow pt-32 pb-0">
+    <div className="flex min-h-screen flex-col bg-cream text-earth-body antialiased">
+      <a
+        href="#conteudo-principal"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-lg focus:bg-brand-dark focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
+      >
+        Pular para o conteúdo principal
+      </a>
+
+      <Header />
+
+      <main id="conteudo-principal" className="flex-grow">
         {children}
       </main>
 
-      {/* O Footer também usa a unidade para mostrar o endereço certo */}
-      <Footer unidade={unidade} />
+      <Footer />
     </div>
   );
 }

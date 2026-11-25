@@ -1,128 +1,184 @@
-import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
-import Layout from '../../components/Layout';
-import { profissionais } from '../../data/profissionais';
 import { useRouter } from 'next/router';
+import { ArrowLeft, MapPin, CheckCircle2 } from 'lucide-react';
+import Layout from '../../components/Layout';
+import SeoHead from '../../components/seo/SeoHead';
+import { profissionais } from '../../data/profissionais';
+import { SITE_CONFIG, UNIDADES, criarLinkWhatsapp } from '../../config/site';
+import { resolverImagem } from '../../lib/midia';
 
 export default function PerfilProfissional({ profissional }) {
   const router = useRouter();
 
-  // Se a página ainda estiver a ser gerada (fallback), mostra algo simples
   if (router.isFallback) {
-    return <div>Carregando...</div>;
+    return (
+      <Layout>
+        <div className="container mx-auto px-4 py-24 text-center text-earth-muted">
+          Carregando perfil...
+        </div>
+      </Layout>
+    );
   }
 
-  // Se por algum motivo o profissional não for encontrado
   if (!profissional) {
     return (
       <Layout>
-        <div className="text-center py-20">
-          <h1 className="text-2xl font-bold text-gray-700">Profissional não encontrado</h1>
-          <Link href="/#equipe" className="text-brand hover:underline mt-4 block">
-            Voltar para a equipa
+        <SeoHead title="Profissional não encontrado" path="/equipe" noIndex />
+        <div className="container mx-auto px-4 py-24 text-center">
+          <h1 className="font-serif text-3xl font-semibold text-brand-dark">
+            Profissional não encontrado
+          </h1>
+          <Link
+            href="/equipe"
+            className="mt-6 inline-flex items-center gap-2 rounded-full bg-brand px-6 py-3 text-sm font-semibold text-white hover:bg-brand-dark"
+          >
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            Voltar para a equipe
           </Link>
         </div>
       </Layout>
     );
   }
 
-  // Verifica se o profissional está marcado como "Em breve"
   const isEmBreve = profissional.status === 'Em breve';
+  const unidadesProf =
+    Array.isArray(profissional.unidades) && profissional.unidades.length > 0
+      ? profissional.unidades
+      : ['Tiradentes'];
 
-  // Define a unidade principal (pega a primeira da lista ou define Canabarro como padrão)
-  const unidadePrincipal = profissional.unidades && profissional.unidades.length > 0 
-    ? profissional.unidades[0] 
-    : 'Canabarro';
-
-  // Mensagem personalizada para o WhatsApp conforme o status
   const mensagemWhatsapp = isEmBreve
     ? `Olá, gostaria de consultar a disponibilidade de atendimento com ${profissional.nome}.`
     : `Olá, gostaria de marcar atendimento com ${profissional.nome}.`;
 
+  const whatsappUrl = criarLinkWhatsapp(mensagemWhatsapp, profissional.whatsapp);
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: profissional.nome,
+    jobTitle: profissional.cargo,
+    worksFor: {
+      '@type': 'MedicalClinic',
+      name: SITE_CONFIG.nome,
+    },
+  };
+
   return (
-    // Passamos a unidade para o Layout, que repassará para o Footer e Header
-    <Layout unidade={unidadePrincipal}>
-      <Head>
-        <title>{`${profissional.nome} - ${profissional.cargo} | Clínica Recriar`}</title>
-        <meta name="description" content={`Saiba mais sobre ${profissional.nome}, ${profissional.cargo} na Clínica Recriar.`} />
-      </Head>
+    <Layout>
+      <SeoHead
+        title={`${profissional.nome} - ${profissional.cargo}`}
+        description={`Conheça ${profissional.nome}, ${profissional.cargo} (${profissional.registro}) na Clínica Recriar em Rio Grande - RS.`}
+        path={`/equipe/${profissional.slug}`}
+        jsonLd={jsonLd}
+      />
 
-      <section className="container mx-auto max-w-5xl">
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden p-8 md:p-12 flex flex-col md:flex-row gap-10 items-start">
-          
-          {/* Foto do Profissional */}
-          <div className="w-full md:w-1/3 flex justify-center md:justify-start">
-            <div className="relative w-64 h-64 md:w-80 md:h-80 rounded-full overflow-hidden border-[5px] border-brand shadow-xl">
-              <Image 
-                src={profissional.foto} 
-                alt={`Foto de ${profissional.nome}`} 
-                fill
-                className={`object-cover object-top transition-all ${
-                  isEmBreve ? 'grayscale opacity-80' : ''
-                }`}
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              />
+      <section className="py-12 md:py-16">
+        <div className="container mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+          <Link
+            href="/equipe"
+            className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-brand hover:text-brand-dark"
+          >
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            Voltar para toda a equipe
+          </Link>
 
-              {/* Faixa "Em breve" */}
-              {isEmBreve && (
-                <div className="absolute bottom-0 left-0 right-0 bg-black/75 py-2.5 text-center text-sm font-bold uppercase tracking-widest text-white backdrop-blur-sm">
-                  Em breve
+          <article className="overflow-hidden rounded-organic border border-sand-dark/60 bg-white p-6 shadow-card sm:p-10 md:p-12">
+            <div className="flex flex-col items-start gap-10 md:flex-row">
+              <div className="flex w-full shrink-0 flex-col items-center md:w-72">
+                <div className="relative h-64 w-64 overflow-hidden rounded-full border-4 border-sage-200 shadow-soft md:h-72 md:w-72">
+                  <Image
+                    src={resolverImagem(profissional.foto)}
+                    alt={`Foto de ${profissional.nome}`}
+                    fill
+                    priority
+                    sizes="(max-width: 768px) 256px, 288px"
+                    className={`object-cover object-top ${
+                      isEmBreve ? 'grayscale opacity-80' : ''
+                    }`}
+                  />
+                  {isEmBreve && (
+                    <div className="absolute inset-x-0 bottom-0 bg-brand-dark/85 py-2 text-center text-xs font-bold uppercase tracking-widest text-white">
+                      Em breve
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          </div>
-          
-          {/* Informações e Texto */}
-          <div className="w-full md:w-2/3 space-y-8">
-            <div>
-              <h1 className="text-4xl md:text-5xl font-extrabold text-dark mb-2">
-                {profissional.nome}
-              </h1>
-              <p className="text-xl font-bold text-brand uppercase tracking-wide">
-                {profissional.cargo} | {profissional.registro}
-              </p>
-            </div>
 
-            {/* Bio (Renderiza cada parágrafo do array) */}
-            <div>
-              <h2 className="text-2xl font-bold text-brand-dark border-b-2 border-brand/30 pb-2 mb-4">Sobre Mim</h2>
-              <div className="text-gray-600 leading-relaxed text-lg space-y-4">
-                {profissional.bio.map((paragrafo, index) => (
-                  <p key={index}>{paragrafo}</p>
-                ))}
+                <div className="mt-6 flex flex-wrap justify-center gap-2">
+                  {unidadesProf.map((un) => {
+                    const rota =
+                      un === 'Abreu' ? UNIDADES.abreu.rota : UNIDADES.tiradentes.rota;
+                    return (
+                      <Link
+                        key={un}
+                        href={rota}
+                        className="inline-flex items-center gap-1.5 rounded-full bg-sage-100 px-3.5 py-1.5 text-xs font-semibold text-brand-dark hover:bg-sage-200"
+                      >
+                        <MapPin className="h-3.5 w-3.5 text-brand" aria-hidden="true" />
+                        Unidade {un}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="flex-1 space-y-8">
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-wider text-terracotta-dark">
+                    {profissional.cargo} · {profissional.registro}
+                  </p>
+                  <h1 className="mt-2 font-serif text-3xl font-semibold text-brand-dark md:text-4xl">
+                    {profissional.nome}
+                  </h1>
+                </div>
+
+                <div>
+                  <h2 className="border-b border-sand-dark/60 pb-2 font-serif text-2xl font-semibold text-brand-dark">
+                    Sobre Mim
+                  </h2>
+                  <div className="mt-4 space-y-4 text-base leading-relaxed text-earth-body">
+                    {profissional.bio.map((paragrafo, index) => (
+                      <p key={index}>{paragrafo}</p>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h2 className="border-b border-sand-dark/60 pb-2 font-serif text-2xl font-semibold text-brand-dark">
+                    Especialidades e Formação
+                  </h2>
+                  <ul className="mt-4 space-y-2.5 text-base text-earth-body">
+                    {profissional.especialidades.map((item, index) => (
+                      <li key={index} className="flex items-start gap-2.5">
+                        <CheckCircle2
+                          className="mt-1 h-4 w-4 shrink-0 text-brand"
+                          aria-hidden="true"
+                        />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="pt-2">
+                  <a
+                    href={whatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex w-full items-center justify-center rounded-full bg-terracotta-dark px-8 py-3.5 text-base font-semibold text-white shadow-soft transition-colors hover:bg-[#8A412A] sm:w-auto"
+                  >
+                    {isEmBreve ? 'Avise-me / Consultar disponibilidade' : 'Agendar Consulta'}
+                  </a>
+                </div>
               </div>
             </div>
-
-            {/* Especialidades */}
-            <div>
-              <h2 className="text-2xl font-bold text-brand-dark border-b-2 border-brand/30 pb-2 mb-4">Especialidades</h2>
-              <ul className="list-disc pl-5 space-y-2 text-gray-600 text-lg marker:text-brand">
-                {profissional.especialidades.map((item, index) => (
-                  <li key={index}>{item}</li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Botão de Agendamento */}
-            <div className="pt-4">
-              <a 
-                href={`https://api.whatsapp.com/send/?phone=${profissional.whatsapp}&text=${encodeURIComponent(mensagemWhatsapp)}`} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-block bg-brand hover:bg-brand-dark text-white font-bold py-4 px-8 rounded-lg shadow-lg hover:scale-105 transition-transform text-center w-full md:w-auto"
-              >
-                {isEmBreve ? 'Avise-me / Consultar disponibilidade' : 'Agendar Consulta'}
-              </a>
-            </div>
-          </div>
+          </article>
         </div>
       </section>
     </Layout>
   );
 }
 
-// ESTA PARTE É FUNDAMENTAL: Diz ao Next.js quais páginas criar
 export async function getStaticPaths() {
   const paths = profissionais.map((prof) => ({
     params: { slug: prof.slug },
@@ -131,9 +187,8 @@ export async function getStaticPaths() {
   return { paths, fallback: false };
 }
 
-// ESTA PARTE BUSCA OS DADOS: Pega as informações do profissional específico para montar a página
 export async function getStaticProps({ params }) {
-  const profissional = profissionais.find((p) => p.slug === params.slug);
+  const profissional = profissionais.find((p) => p.slug === params.slug) || null;
 
   return {
     props: {

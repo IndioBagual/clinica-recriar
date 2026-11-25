@@ -2,10 +2,44 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Estilos adicionais para garantir que o html/body ocupam a altura toda */
-html,
-body {
-  padding: 0;
-  margin: 0;
-  font-family: 'Inter', sans-serif;
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    background-color: #FAF7F2;
+    color: #2F2A26;
+  }
+
+  body {
+    padding: 0;
+    margin: 0;
+    background-color: #FAF7F2;
+    color: #4F4842;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-serif), Georgia, serif;
+    color: #14423C;
+  }
+
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: 2px solid #1D5C54;
+    outline-offset: 3px;
+    border-radius: 0.375rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+.bg-paper-subtle {
+  background-image: radial-gradient(rgba(29, 92, 84, 0.045) 1px, transparent 0);
+  background-size: 24px 24px;
 }

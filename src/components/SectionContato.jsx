@@ -1,95 +1,129 @@
-import { MapPin, Phone, Mail } from 'lucide-react';
+import Image from 'next/image';
+import { MapPin, Mail, ExternalLink } from 'lucide-react';
+import { SITE_CONFIG, UNIDADES, LISTA_UNIDADES, criarLinkWhatsapp } from '../config/site';
+import { resolverImagem } from '../lib/midia';
+import SectionHeading from './ui/SectionHeading';
 
-export default function SectionContato({ unidade = 'Tiradentes' }) {
-  // Dados específicos de cada unidade
-  const dados = {
-    Tiradentes: {
-      endereco: 'Rua Tiradentes, 20, Rio Grande, Cidade Nova, CEP 96211-080',
-      mapaLink: 'https://maps.app.goo.gl/e5gR6cdYBhh336rR6', // Lembre-se de atualizar com o link novo do Google Maps
-      mapaSrc: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d6764.258740564183!2d-52.107571623630086!3d-32.038689526611776!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95119c09954a74d9%3A0x55f925d82ada53af!2sR.%20Tiradentes%2C%2020%20-%20Cidade%20Nova%2C%20Rio%20Grande%20-%20RS%2C%2096211-080!5e0!3m2!1spt-BR!2sbr!4v1780942209820!5m2!1spt-BR!2sbr",  // Lembre-se de atualizar com o iframe novo do Google Maps
-      whatsapp: '5553991281500'
-    },
-    Abreu: {
-      endereco: 'Rua General Abreu, 52 - Bairro Cidade Nova, Rio Grande, RS',
-      mapaLink: 'https://maps.app.goo.gl/AMDchxDPA7D3r5Y27', 
-      mapaSrc: "https://maps.google.com/maps?q=Rua%20General%20Abreu%2C%2052%20-%20Bairro%20Cidade%20Nova%2C%20Rio%20Grande%20-%20RS&t=&z=15&ie=UTF8&iwloc=&output=embed",
-      whatsapp: '5553991281500'
-    }
-  };
+export default function SectionContato({ unidade = null }) {
+  const unidadeObj =
+    unidade === 'Abreu'
+      ? UNIDADES.abreu
+      : unidade === 'Tiradentes'
+      ? UNIDADES.tiradentes
+      : null;
 
-  const infoAtual = dados[unidade] || dados['Tiradentes'];
+  const unidadesExibidas = unidadeObj ? [unidadeObj] : LISTA_UNIDADES;
+  const whatsappUrl = criarLinkWhatsapp();
 
   return (
-    <section id="contato" className="py-20 bg-white">
-      <div className="container mx-auto px-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          
-          {/* Coluna da Esquerda: Informações */}
-          <div className="text-left order-2 lg:order-1">
-            <h2 className="text-4xl font-extrabold text-brand-dark mb-6">Pronto para Recomeçar?</h2>
-            <p className="text-xl text-gray-500 mb-8">
-              Entre em contato conosco para agendar sua primeira consulta. Estamos aqui para ouvir você.
-            </p>
-            
-            <div className="flex flex-col gap-6">
-              {/* Endereço */}
-              <a 
-                href={infoAtual.mapaLink} 
-                target="_blank" 
-                rel="noreferrer" 
-                className="flex items-start gap-4 text-gray-700 hover:text-brand transition-colors group"
+    <section id="contato" className="bg-cream py-20 md:py-24">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <SectionHeading
+          eyebrow="Atendimento"
+          title="Pronto para Recomeçar?"
+          description="Entre em contato conosco para agendar sua primeira consulta. Estamos aqui para ouvir você."
+        />
+
+        <div className="mx-auto mt-12 grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-2">
+          <div className="rounded-organic border border-sand-dark/60 bg-white p-8 shadow-soft">
+            <h3 className="font-serif text-2xl font-semibold text-brand-dark">
+              Canais de Agendamento
+            </h3>
+            <div className="mt-6 space-y-5 text-earth-body">
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-4 rounded-2xl border border-sage-200 bg-sage-50/70 p-4 transition-colors hover:border-brand"
               >
-                <MapPin className="w-6 h-6 text-brand group-hover:scale-110 transition-transform mt-1" />
-                <span className="max-w-xs">{infoAtual.endereco}</span>
-              </a>
-              
-              {/* WhatsApp */}
-              <a 
-                href={`https://api.whatsapp.com/send/?phone=${infoAtual.whatsapp}`} 
-                target="_blank" 
-                rel="noreferrer" 
-                className="flex items-center gap-4 text-gray-700 hover:text-brand transition-colors group"
-              >
-                <img src="/img/Whatsapp.png" alt="Whatsapp" className="w-6 h-6 group-hover:scale-110 transition-transform" />
-                <span>(53) 99128-1500</span>
+                <Image
+                  src={resolverImagem('/img/Whatsapp.png')}
+                  alt="Ícone WhatsApp"
+                  width={28}
+                  height={28}
+                  className="h-7 w-7 shrink-0"
+                />
+                <div>
+                  <span className="block text-xs font-semibold uppercase tracking-wider text-sage-700">
+                    WhatsApp Central
+                  </span>
+                  <span className="text-base font-bold text-brand-dark">
+                    {SITE_CONFIG.telefoneExibicao}
+                  </span>
+                </div>
               </a>
 
-              {/* Email */}
-              <a 
-                href="mailto:clinicarecriar.rg@gmail.com" 
-                className="flex items-center gap-4 text-gray-700 hover:text-brand transition-colors group"
+              <a
+                href={`mailto:${SITE_CONFIG.email}`}
+                className="flex items-center gap-4 rounded-2xl border border-sand-dark/60 bg-cream/70 p-4 transition-colors hover:border-brand"
               >
-                <Mail className="w-6 h-6 text-brand group-hover:scale-110 transition-transform" />
-                <span>clinicarecriar.rg@gmail.com</span>
+                <Mail className="h-6 w-6 shrink-0 text-brand" aria-hidden="true" />
+                <div>
+                  <span className="block text-xs font-semibold uppercase tracking-wider text-earth-muted">
+                    E-mail Institucional
+                  </span>
+                  <span className="break-all text-base font-semibold text-brand-dark">
+                    {SITE_CONFIG.email}
+                  </span>
+                </div>
               </a>
             </div>
 
-            <div className="mt-10">
-              <a 
-                href={`https://api.whatsapp.com/send/?phone=${infoAtual.whatsapp}`} 
-                target="_blank" 
-                rel="noreferrer"
-                className="bg-brand hover:bg-brand-dark text-white font-bold py-4 px-8 rounded-lg shadow-xl inline-block hover:scale-105 transition-all text-lg"
+            <div className="mt-7">
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex w-full items-center justify-center rounded-full bg-terracotta-dark px-7 py-3.5 text-base font-semibold text-white shadow-soft transition-colors hover:bg-[#8A412A]"
               >
-                Agendar Consulta
+                Agendar Consulta pelo WhatsApp
               </a>
             </div>
           </div>
 
-          {/* Coluna da Direita: Mapa do Google */}
-          <div className="order-1 lg:order-2 h-[400px] w-full bg-gray-100 rounded-2xl overflow-hidden shadow-lg border border-gray-200">
-             <iframe
-               width="100%"
-               height="100%"
-               style={{ border: 0 }}
-               loading="lazy"
-               allowFullScreen
-               referrerPolicy="no-referrer-when-downgrade"
-               src={infoAtual.mapaSrc}
-               title={`Mapa da Unidade ${unidade}`}
-             ></iframe>
+          <div className="space-y-6">
+            {unidadesExibidas.map((un) => (
+              <div
+                key={un.slug}
+                className="overflow-hidden rounded-organic border border-sand-dark/60 bg-white shadow-soft"
+              >
+                <div className="p-6">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-3">
+                      <MapPin className="mt-1 h-5 w-5 shrink-0 text-brand" aria-hidden="true" />
+                      <div>
+                        <h3 className="font-serif text-xl font-semibold text-brand-dark">
+                          {un.nome}
+                        </h3>
+                        <p className="mt-1 text-sm text-earth-body">{un.enderecoCompleto}</p>
+                      </div>
+                    </div>
+                    <a
+                      href={un.mapaLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex shrink-0 items-center gap-1 rounded-full bg-sage-50 px-3 py-1.5 text-xs font-semibold text-brand-dark hover:bg-sage-100"
+                    >
+                      Abrir mapa
+                      <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+                    </a>
+                  </div>
+                </div>
+                <div className="h-56 w-full border-t border-sand-dark/50 bg-sand/30">
+                  <iframe
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    loading="lazy"
+                    allowFullScreen
+                    referrerPolicy="no-referrer-when-downgrade"
+                    src={un.mapaSrc}
+                    title={`Mapa da ${un.nome}`}
+                  />
+                </div>
+              </div>
+            ))}
           </div>
-
         </div>
       </div>
     </section>

@@ -1,13 +1,20 @@
-// src/components/Reveal.jsx
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 
-export default function Reveal({ children, delay = 0 }) {
+export default function Reveal({ children, delay = 0, className = '' }) {
+  const shouldReduceMotion = useReducedMotion();
+  const safeDelay = Math.min(delay, 0.35);
+
+  if (shouldReduceMotion) {
+    return <div className={className}>{children}</div>;
+  }
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 50 }} // Começa invisível e 50px para baixo
-      whileInView={{ opacity: 1, y: 0 }} // Quando visível, fica opaco e sobe
-      viewport={{ once: true, margin: "-100px" }} // Acontece só uma vez
-      transition={{ duration: 0.6, delay: delay, ease: "easeOut" }} // Duração da animação
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-60px' }}
+      transition={{ duration: 0.5, delay: safeDelay, ease: 'easeOut' }}
+      className={className}
     >
       {children}
     </motion.div>
