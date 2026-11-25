@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import { Redis } from '@upstash/redis';
 import {
   createAdminServiceClient,
@@ -132,7 +133,16 @@ export function classifyAuthSyncError(err: unknown): AuthSyncErrorCode {
   if (err instanceof HttpTimeoutError) return 'auth_timeout';
 
   if (err && typeof err === 'object') {
-    const rec = err as { name?: string; code?: string; status?: number; message?: string; cause?: unknown };
+    const rec = err as {
+      name?: string;
+      code?: string;
+      status?: number;
+      message?: string;
+      cause?: unknown;
+      originalError?: unknown;
+    };
+
+    // 1. Verifica timeout/abort ANTES de status (AuthRetryableFetchError usa status=0)
     if (
       rec.code === 'HTTP_TIMEOUT' ||
       rec.name === 'AbortError' ||
@@ -146,13 +156,21 @@ export function classifyAuthSyncError(err: unknown): AuthSyncErrorCode {
     if (rec.cause && classifyAuthSyncError(rec.cause) === 'auth_timeout') {
       return 'auth_timeout';
     }
-    if (typeof rec.status === 'number') {
+    if (rec.originalError && classifyAuthSyncError(rec.originalError) === 'auth_timeout') {
+      return 'auth_timeout';
+    }
+    if (
+      typeof rec.message === 'string' &&
+      /HTTP_TIMEOUT|timeout|timed out|tempo limite|aborted/i.test(rec.message)
+    ) {
+      return 'auth_timeout';
+    }
+
+    // 2. Classificacao por status HTTP real (> 0)
+    if (typeof rec.status === 'number' && rec.status > 0) {
       if (rec.status === 408 || rec.status === 504) return 'auth_timeout';
       if (rec.status >= 400 && rec.status < 500 && rec.status !== 429) return 'auth_4xx';
       return 'auth_5xx';
-    }
-    if (typeof rec.message === 'string' && /timeout|timed out|aborted/i.test(rec.message)) {
-      return 'auth_timeout';
     }
   }
 
@@ -206,7 +224,6 @@ async function processSingleClaimedJob(
   job: ClaimedAuthSyncJob,
   counters: DrainOutboxResult
 ): Promise<void> {
-  // 1. Checagem PRE-chamada externa (evita tocar no GoTrue se job ja ficou obsoleto ou lease expirou)
   const { data: verifyStatus, error: verifyErr } = await client.rpc('rpc_verify_auth_sync_job', {
     p_job_id: job.job_id,
     p_claim_token: job.claim_token,
@@ -227,7 +244,6 @@ async function processSingleClaimedJob(
     return;
   }
 
-  // 2. Operacao externa idempotente no GoTrue (ban_user | unban exclusivamente via updateUserById)
   let ok = false;
   let erroCodigo: AuthSyncErrorCode | null = null;
 
@@ -245,7 +261,6 @@ async function processSingleClaimedJob(
     erroCodigo = classifyAuthSyncError(err);
   }
 
-  // 3. Confirmacao POS-chamada externa (protegida por claim_token + auto-reconciliacao de versao)
   const { data: completeStatus, error: completeErr } = await client.rpc(
     'rpc_complete_auth_sync_job',
     {
@@ -257,8 +272,6 @@ async function processSingleClaimedJob(
   );
 
   if (completeErr) {
-    // Falha entre operacao externa e confirmacao no banco:
-    // lease expirara e sweep + reconciliador de drift garantem convergencia eventual
     return;
   }
 
@@ -301,7 +314,6 @@ export async function drainAuthSyncOutbox(
   const timeBudgetMs = options.timeBudgetMs ?? AUTH_SYNC_DEFAULTS.scheduledTimeBudgetMs;
   const maxBatches = Math.max(1, options.maxBatches ?? 3);
 
-  // Garante compatibilidade: lease deve exceder timeout individual com margem segura (>= 4x)
   if (leaseSeconds * 1000 < requestTimeoutMs * 2) {
     throw new Error('leaseSeconds incompatível com requestTimeoutMs.');
   }
@@ -323,7 +335,6 @@ export async function drainAuthSyncOutbox(
     elapsedMs: 0,
   };
 
-  // Nao reclama jobs se o orcamento disponivel nao comporta um ciclo seguro de timeout + confirmacao
   const minBudgetForBatchMs = requestTimeoutMs + AUTH_SYNC_DEFAULTS.budgetSafetyMarginMs;
 
   for (let batch = 0; batch < maxBatches; batch += 1) {
@@ -433,7 +444,6 @@ export async function reconcileAuthDrift(
 
     if (rows.length === 0) {
       if (afterId !== null && !wrappedOnce) {
-        // Cursor anterior estava no ultimo usuario da lista: reinicia ciclo completo
         afterId = null;
         wrappedOnce = true;
         result.nextAfterId = null;
@@ -469,7 +479,6 @@ export async function reconcileAuthDrift(
             result.usersChecked += 1;
             const currentlyBanned = isAuthUserBanned(userData.user.banned_until, now());
 
-            // Divergencia: ativo=true mas banido no Auth, ou ativo=false mas nao banido no Auth
             if (row.ativo === currentlyBanned) {
               const { data: driftStatus } = await client.rpc('rpc_report_auth_drift_and_enqueue', {
                 p_target_user_id: row.user_id,
@@ -488,7 +497,6 @@ export async function reconcileAuthDrift(
         })
       );
 
-      // Como os IDs sao ordenados por user_id ASC, o ultimo item do slice marca progresso seguro
       lastProcessedId = slice[slice.length - 1].user_id;
     }
 
@@ -548,7 +556,6 @@ export async function runAuthSyncCycle(options: {
   const timeBudgetMs = options.timeBudgetMs ?? AUTH_SYNC_DEFAULTS.scheduledTimeBudgetMs;
   const requestTimeoutMs = options.requestTimeoutMs ?? AUTH_SYNC_DEFAULTS.requestTimeoutMs;
 
-  // 1. Drena fila pendente primeiro
   const drain = await drainAuthSyncOutbox({
     workerId: `${options.workerId}-outbox`,
     requestTimeoutMs,
@@ -558,7 +565,6 @@ export async function runAuthSyncCycle(options: {
     now,
   });
 
-  // 2. Com o orcamento restante, executa reconciliacao paginada
   const remainingMs = timeBudgetMs - (now() - startedAt);
   let reconcile: ReconcileDriftResult | null = null;
   if (remainingMs > 4_000) {
@@ -578,4 +584,28 @@ export async function runAuthSyncCycle(options: {
     reconcile,
     totalElapsedMs: now() - startedAt,
   };
+}
+
+export async function runScheduledAuthSync(deps?: {
+  env?: NodeJS.ProcessEnv;
+  client?: AuthSyncClientLike;
+  cursorStore?: ReconcileCursorStore | null;
+  now?: () => number;
+}): Promise<{ executed: boolean; reason?: string; status: number }> {
+  const env = deps?.env ?? process.env;
+
+  if (env.AUTH_SYNC_SCHEDULE_ENABLED !== 'true') {
+    return { executed: false, reason: 'schedule_disabled_by_kill_switch', status: 204 };
+  }
+
+  await runAuthSyncCycle({
+    workerId: `netlify-sched-${crypto.randomUUID().slice(0, 8)}`,
+    timeBudgetMs: AUTH_SYNC_DEFAULTS.scheduledTimeBudgetMs,
+    requestTimeoutMs: AUTH_SYNC_DEFAULTS.requestTimeoutMs,
+    client: deps?.client,
+    cursorStore: deps?.cursorStore,
+    now: deps?.now,
+  });
+
+  return { executed: true, status: 200 };
 }
