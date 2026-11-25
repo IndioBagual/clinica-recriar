@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { canRequestAccessLink, deriveAccountLifecycleStatus } from '@/lib/admin/accountLifecycle';
 import { type AdminProfileRow, logSystemAuditSafe, requireApiAuth } from '@/lib/admin/auth';
-import { createUserSchema } from '@/lib/admin/schemas';
+import { createUserSchema, uuidParamSchema } from '@/lib/admin/schemas';
 import { validateCsrfAndOrigin } from '@/lib/security/csrf';
 import {
   applyNoStoreHeaders,
@@ -21,10 +21,36 @@ export const config = {
   },
 };
 
+export interface AuthLookupUser {
+  id: string;
+  email: string;
+  emailConfirmedAt: string | null;
+  lastSignInAt: string | null;
+  appMetadata: Record<string, unknown>;
+}
+
+/**
+ * Exige procedencia comprovavel (carimbo imutavel em app_metadata gravado apenas via SECRET_KEY)
+ * e ausencia de confirmacao/uso previo antes de permitir recuperacao automatica de falha parcial.
+ */
+export function isLegitimatePartialProvisioningRecovery(
+  user: AuthLookupUser,
+  normalizedEmail: string
+): boolean {
+  if (user.email.trim().toLowerCase() !== normalizedEmail) return false;
+  if (user.emailConfirmedAt !== null || user.lastSignInAt !== null) return false;
+  if (user.appMetadata?.recriar_admin_provisioned !== true) return false;
+  const actorId = user.appMetadata?.recriar_provisioning_actor_id;
+  if (typeof actorId !== 'string' || !uuidParamSchema.safeParse(actorId).success) {
+    return false;
+  }
+  return true;
+}
+
 async function findActiveAuthUserByEmail(
   admin: ReturnType<typeof createAdminServiceClient>,
   normalizedEmail: string
-): Promise<{ id: string; emailConfirmedAt: string | null } | null> {
+): Promise<AuthLookupUser | null> {
   const maxPages = 20;
   const perPage = 200;
 
@@ -33,12 +59,16 @@ async function findActiveAuthUserByEmail(
     if (error || !data?.users?.length) return null;
 
     const match = data.users.find(
-      (u) =>
-        typeof u.email === 'string' &&
-        u.email.trim().toLowerCase() === normalizedEmail
+      (u) => typeof u.email === 'string' && u.email.trim().toLowerCase() === normalizedEmail
     );
-    if (match) {
-      return { id: match.id, emailConfirmedAt: match.email_confirmed_at ?? null };
+    if (match && typeof match.email === 'string') {
+      return {
+        id: match.id,
+        email: match.email,
+        emailConfirmedAt: match.email_confirmed_at ?? null,
+        lastSignInAt: match.last_sign_in_at ?? null,
+        appMetadata: (match.app_metadata ?? {}) as Record<string, unknown>,
+      };
     }
     if (data.users.length < perPage) return null;
   }
@@ -95,7 +125,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return;
   }
 
-  // POST — Criacao/convite de usuario administrativo com recuperacao idempotente de falha parcial
+  // POST — Criacao/convite com verificacao estrita de procedencia (correcao 7.1)
   if (!requireJsonContentType(req, res)) return;
   const csrf = validateCsrfAndOrigin(req, res);
   if (!csrf.ok) {
@@ -125,7 +155,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const { nome, email } = parsed.data;
 
-  // 1. Verifica se perfil ja existe (usando sessao autenticada do operador sob RLS)
+  // 1. Verifica se perfil ja existe (sob RLS)
   const { data: existingProfile, error: existingErr } = await auth.supabase
     .from('usuarios_perfil')
     .select('id, ativo')
@@ -149,40 +179,62 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return;
   }
 
-  // 2. Interage com Supabase Auth Admin API somente APOS autorizacao validada no servidor
+  // 2. Verifica se ja existe conta no Supabase Auth ANTES de disparar novo convite
   const admin = createAdminServiceClient();
-  const redirectTo = `${getCanonicalSiteOrigin()}/gestao/atualizar-senha`;
+  const existingAuth = await findActiveAuthUserByEmail(admin, email);
 
-  let targetUserId: string | null = null;
+  let targetUserId: string;
   let conviteSolicitado = false;
   let recoveredExistingAuthUser = false;
 
-  const { data: inviteData, error: inviteError } = await admin.auth.admin.inviteUserByEmail(email, {
-    redirectTo,
-  });
-
-  if (!inviteError && inviteData?.user?.id) {
-    targetUserId = inviteData.user.id;
-    conviteSolicitado = true;
-  } else {
-    // Recuperacao idempotente: timeout anterior ou usuario ja existente no Auth sem perfil local
-    const existingAuth = await findActiveAuthUserByEmail(admin, email);
-    if (existingAuth) {
-      targetUserId = existingAuth.id;
-      conviteSolicitado = false;
-      recoveredExistingAuthUser = true;
-    } else {
-      res.status(502).json({
+  if (existingAuth) {
+    // Bloqueia vinculacao automatica de conta preexistente sem procedencia comprovada
+    if (!isLegitimatePartialProvisioningRecovery(existingAuth, email)) {
+      res.status(409).json({
         error: {
-          code: 'AUTH_INVITE_FAILED',
-          message: 'Não foi possível criar ou localizar a conta no serviço de autenticação.',
+          code: 'AUTH_ACCOUNT_PREEXISTING_CONFLICT',
+          message:
+            'Já existe uma conta no serviço de autenticação sem procedência administrativa comprovada. A vinculação automática foi bloqueada.',
         },
       });
       return;
     }
+
+    targetUserId = existingAuth.id;
+    conviteSolicitado = false;
+    recoveredExistingAuthUser = true;
+  } else {
+    const redirectTo = `${getCanonicalSiteOrigin()}/gestao/atualizar-senha`;
+    const { data: inviteData, error: inviteError } = await admin.auth.admin.inviteUserByEmail(email, {
+      redirectTo,
+    });
+
+    if (inviteError || !inviteData?.user?.id) {
+      res.status(502).json({
+        error: {
+          code: 'AUTH_INVITE_FAILED',
+          message: 'Não foi possível criar o convite no serviço de autenticação.',
+        },
+      });
+      return;
+    }
+
+    targetUserId = inviteData.user.id;
+    conviteSolicitado = true;
+
+    // Carimba procedencia imutavel em app_metadata (apenas backend SECRET_KEY) para eventual recuperacao
+    await admin.auth.admin
+      .updateUserById(targetUserId, {
+        app_metadata: {
+          recriar_admin_provisioned: true,
+          recriar_provisioning_actor_id: auth.userId,
+          recriar_provisioned_at: new Date().toISOString(),
+        },
+      })
+      .catch(() => {});
   }
 
-  // 3. Cria perfil usando a identidade do operador autenticado (auth.uid() + RPC autorizada)
+  // 3. Cria perfil sob identidade do operador autenticado
   const { error: rpcError } = await auth.supabase.rpc('rpc_admin_create_invited_profile', {
     p_user_id: targetUserId,
     p_nome: nome,
@@ -198,7 +250,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return;
     }
 
-    // Nao executa exclusao automatica insegura no Auth; reenvio do mesmo POST completa de forma idempotente
     res.status(502).json({
       error: {
         code: 'PARTIAL_CREATION_RECOVERY_REQUIRED',
