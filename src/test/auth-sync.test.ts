@@ -1,15 +1,15 @@
-import http from 'node:http';
+﻿import http from 'node:http';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import {
   type AuthSyncClientLike,
   type ClaimedAuthSyncJob,
   drainAuthSyncOutbox,
   type ReconcileCursorStore,
   reconcileAuthDrift,
+  runScheduledAuthSync,
 } from '@/lib/admin/authSync';
 import { createAdminServiceClient } from '@/lib/supabase/adminServiceClient';
-import { runScheduledAuthSync } from '../../netlify/functions/auth-sync-reconcile.mts';
 import internalSyncHandler from '@/pages/api/internal/auth-sync';
 
 /**
@@ -110,32 +110,31 @@ class SimulatedAuthAndOutbox {
     updateUserById?: AuthSyncClientLike['auth']['admin']['updateUserById'];
     onBeforeComplete?: () => Promise<void> | void;
   }): AuthSyncClientLike {
-    const sim = this;
     return {
-      async rpc(fn, params = {}) {
+      rpc: async (fn, params = {}) => {
         if (fn === 'rpc_claim_auth_sync_jobs') {
-          sim.sweepExpired();
+          this.sweepExpired();
           const limit = Number(params.p_limit ?? 10);
           const leaseSec = Number(params.p_lease_seconds ?? 120);
           const claimed: ClaimedAuthSyncJob[] = [];
 
-          for (const j of sim.jobs.values()) {
+          for (const j of this.jobs.values()) {
             if (claimed.length >= limit) break;
-            const u = sim.users.get(j.target_user_id)!;
+            const u = this.users.get(j.target_user_id)!;
             if (j.status === 'pending' && j.target_versao < u.versao) {
               j.status = 'superseded';
-              j.concluido_em = sim.clockMs;
+              j.concluido_em = this.clockMs;
               continue;
             }
             const claimable =
               j.target_versao === u.versao &&
               j.tentativas < j.max_tentativas &&
               (j.status === 'pending' ||
-                (j.status === 'processing' && (j.lease_expires_at ?? 0) <= sim.clockMs));
+                (j.status === 'processing' && (j.lease_expires_at ?? 0) <= this.clockMs));
             if (claimable) {
               j.status = 'processing';
-              j.claim_token = `tok-${sim.seq++}`;
-              j.lease_expires_at = sim.clockMs + leaseSec * 1000;
+              j.claim_token = `tok-${this.seq++}`;
+              j.lease_expires_at = this.clockMs + leaseSec * 1000;
               j.tentativas += 1;
               claimed.push({
                 job_id: j.id,
@@ -154,21 +153,21 @@ class SimulatedAuthAndOutbox {
         }
 
         if (fn === 'rpc_verify_auth_sync_job') {
-          const j = sim.jobs.get(String(params.p_job_id));
+          const j = this.jobs.get(String(params.p_job_id));
           if (
             !j ||
             j.status !== 'processing' ||
             j.claim_token !== params.p_claim_token ||
-            (j.lease_expires_at ?? 0) <= sim.clockMs
+            (j.lease_expires_at ?? 0) <= this.clockMs
           ) {
             return { data: 'claim_invalid', error: null };
           }
-          const u = sim.users.get(j.target_user_id)!;
+          const u = this.users.get(j.target_user_id)!;
           if (j.target_versao < u.versao) {
             j.status = 'superseded';
             j.claim_token = null;
             j.lease_expires_at = null;
-            j.concluido_em = sim.clockMs;
+            j.concluido_em = this.clockMs;
             return { data: 'abort_stale', error: null };
           }
           return { data: 'valid', error: null };
@@ -176,20 +175,20 @@ class SimulatedAuthAndOutbox {
 
         if (fn === 'rpc_complete_auth_sync_job') {
           if (overrides?.onBeforeComplete) await overrides.onBeforeComplete();
-          const j = sim.jobs.get(String(params.p_job_id));
+          const j = this.jobs.get(String(params.p_job_id));
           if (!j) return { data: null, error: { code: '22023', message: 'not found' } };
-          const u = sim.users.get(j.target_user_id)!;
+          const u = this.users.get(j.target_user_id)!;
           const opVigente: 'ban_user' | 'unban' = u.ativo ? 'unban' : 'ban_user';
 
           if (j.status !== 'processing' || j.claim_token !== params.p_claim_token) {
-            const hasActive = [...sim.jobs.values()].some(
+            const hasActive = [...this.jobs.values()].some(
               (x) =>
                 x.target_user_id === j.target_user_id &&
                 x.target_versao === u.versao &&
                 (x.status === 'pending' || x.status === 'processing')
             );
-            if (!hasActive) sim.enqueueJob(j.target_user_id, opVigente, 'stale_claim_recovery');
-            sim.auditEvents.push({
+            if (!hasActive) this.enqueueJob(j.target_user_id, opVigente, 'stale_claim_recovery');
+            this.auditEvents.push({
               acao: 'AUTH_SYNC_STALE_CLAIM_DETECTED',
               motivo: 'claim_expirado_reconciliacao_enfileirada',
             });
@@ -200,15 +199,15 @@ class SimulatedAuthAndOutbox {
             j.status = 'stale_after_external_call';
             j.claim_token = null;
             j.lease_expires_at = null;
-            j.concluido_em = sim.clockMs;
-            const hasActive = [...sim.jobs.values()].some(
+            j.concluido_em = this.clockMs;
+            const hasActive = [...this.jobs.values()].some(
               (x) =>
                 x.target_user_id === j.target_user_id &&
                 x.target_versao === u.versao &&
                 (x.status === 'pending' || x.status === 'processing')
             );
-            if (!hasActive) sim.enqueueJob(j.target_user_id, opVigente, 'stale_claim_recovery');
-            sim.auditEvents.push({ acao: 'AUTH_SYNC_STALE_RECONCILE_ENQUEUED', motivo: null });
+            if (!hasActive) this.enqueueJob(j.target_user_id, opVigente, 'stale_claim_recovery');
+            this.auditEvents.push({ acao: 'AUTH_SYNC_STALE_RECONCILE_ENQUEUED', motivo: null });
             return { data: 'stale_reconcile_enqueued', error: null };
           }
 
@@ -216,9 +215,9 @@ class SimulatedAuthAndOutbox {
             j.status = 'succeeded';
             j.claim_token = null;
             j.lease_expires_at = null;
-            j.concluido_em = sim.clockMs;
+            j.concluido_em = this.clockMs;
             if (j.origem === 'drift_reconciler') {
-              sim.auditEvents.push({ acao: 'AUTH_DRIFT_CORRECTION_REPORTED', motivo: null });
+              this.auditEvents.push({ acao: 'AUTH_DRIFT_CORRECTION_REPORTED', motivo: null });
             }
             return { data: 'succeeded', error: null };
           }
@@ -226,36 +225,36 @@ class SimulatedAuthAndOutbox {
           if (j.tentativas >= j.max_tentativas) {
             j.status = 'failed_permanent';
             j.ultimo_erro_codigo = String(params.p_erro_codigo ?? 'max_tentativas_excedido');
-            j.concluido_em = sim.clockMs;
+            j.concluido_em = this.clockMs;
           } else {
             j.status = 'pending';
             j.ultimo_erro_codigo = String(params.p_erro_codigo ?? 'auth_5xx');
           }
           j.claim_token = null;
           j.lease_expires_at = null;
-          sim.auditEvents.push({ acao: 'AUTH_SYNC_FAILURE_REPORTED', motivo: j.ultimo_erro_codigo });
+          this.auditEvents.push({ acao: 'AUTH_SYNC_FAILURE_REPORTED', motivo: j.ultimo_erro_codigo });
           return { data: j.status, error: null };
         }
 
         if (fn === 'rpc_list_users_for_auth_reconcile') {
-          sim.sweepExpired();
+          this.sweepExpired();
           const graceMs = Number(params.p_grace_seconds ?? 60) * 1000;
           const limit = Number(params.p_limit ?? 100);
           const afterId = params.p_after_id ? String(params.p_after_id) : null;
 
-          const ids = [...sim.users.keys()].sort();
+          const ids = [...this.users.keys()].sort();
           const rows = [];
           for (const id of ids) {
             if (afterId && id <= afterId) continue;
-            const u = sim.users.get(id)!;
-            const blocked = [...sim.jobs.values()].some(
+            const u = this.users.get(id)!;
+            const blocked = [...this.jobs.values()].some(
               (j) =>
                 j.target_user_id === id &&
                 j.target_versao === u.versao &&
                 (['pending', 'processing', 'failed_permanent'].includes(j.status) ||
                   (j.status === 'succeeded' &&
                     j.concluido_em !== null &&
-                    j.concluido_em > sim.clockMs - graceMs))
+                    j.concluido_em > this.clockMs - graceMs))
             );
             if (!blocked) {
               rows.push({ user_id: id, ativo: u.ativo, estado_ativacao_versao: u.versao });
@@ -269,20 +268,20 @@ class SimulatedAuthAndOutbox {
           const id = String(params.p_target_user_id);
           const expected = Number(params.p_expected_versao);
           const banned = Boolean(params.p_auth_currently_banned);
-          const u = sim.users.get(id);
+          const u = this.users.get(id);
           if (!u) return { data: 'not_found', error: null };
           if (u.versao !== expected) return { data: 'version_changed_skip', error: null };
           const div = (u.ativo && banned) || (!u.ativo && !banned);
           if (!div) return { data: 'in_sync', error: null };
-          const hasActive = [...sim.jobs.values()].some(
+          const hasActive = [...this.jobs.values()].some(
             (j) =>
               j.target_user_id === id &&
               j.target_versao === u.versao &&
               (j.status === 'pending' || j.status === 'processing')
           );
           if (hasActive) return { data: 'already_enqueued', error: null };
-          sim.enqueueJob(id, u.ativo ? 'unban' : 'ban_user', 'drift_reconciler');
-          sim.auditEvents.push({ acao: 'AUTH_DRIFT_REPORTED', motivo: 'estado_auth_divergente' });
+          this.enqueueJob(id, u.ativo ? 'unban' : 'ban_user', 'drift_reconciler');
+          this.auditEvents.push({ acao: 'AUTH_DRIFT_REPORTED', motivo: 'estado_auth_divergente' });
           return { data: 'drift_enqueued', error: null };
         }
 
@@ -290,17 +289,17 @@ class SimulatedAuthAndOutbox {
       },
       auth: {
         admin: {
-          async updateUserById(uid, attrs) {
+          updateUserById: async (uid, attrs) => {
             if (overrides?.updateUserById) {
               return overrides.updateUserById(uid, attrs);
             }
-            const u = sim.users.get(uid);
+            const u = this.users.get(uid);
             if (!u) return { data: null, error: { status: 404, message: 'not found' } };
-            u.bannedUntil = attrs.ban_duration === 'none' ? null : new Date(sim.clockMs + 3.6e12).toISOString();
+            u.bannedUntil = attrs.ban_duration === 'none' ? null : new Date(this.clockMs + 3.6e12).toISOString();
             return { data: { user: { id: uid, banned_until: u.bannedUntil } }, error: null };
           },
-          async getUserById(uid) {
-            const u = sim.users.get(uid);
+          getUserById: async (uid) => {
+            const u = this.users.get(uid);
             if (!u) return { data: null, error: { status: 404, message: 'not found' } };
             return { data: { user: { id: uid, banned_until: u.bannedUntil } }, error: null };
           },
@@ -344,7 +343,7 @@ function createMockApiReqRes(overrides: {
   return { req, res, getStatus: () => status, getBody: () => body };
 }
 
-describe('Etapa 6 — Worker Outbox, Timeout HTTP Real, Reconciliacao e Netlify (17 cenarios)', () => {
+describe('Etapa 6 â€” Worker Outbox, Timeout HTTP Real, Reconciliacao e Netlify (17 cenarios)', () => {
   const envBackup = { ...process.env };
 
   afterEach(() => {
@@ -354,47 +353,47 @@ describe('Etapa 6 — Worker Outbox, Timeout HTTP Real, Reconciliacao e Netlify 
   it('[1 & 7] processa job com sucesso e suporta reprocessamento idempotente', async () => {
     const sim = new SimulatedAuthAndOutbox();
     const uid = '11111111-1111-4111-8111-111111111111';
-    sim.addUser(uid, false, 2, null);
-    const jobId = sim.enqueueJob(uid, 'ban_user');
-    const client = sim.createClient();
+    this.addUser(uid, false, 2, null);
+    const jobId = this.enqueueJob(uid, 'ban_user');
+    const client = this.createClient();
 
-    const r1 = await drainAuthSyncOutbox({ workerId: 'w-ok', client, now: () => sim.clockMs });
+    const r1 = await drainAuthSyncOutbox({ workerId: 'w-ok', client, now: () => this.clockMs });
     expect(r1.succeeded).toBe(1);
-    expect(sim.jobs.get(jobId)?.status).toBe('succeeded');
-    expect(sim.users.get(uid)?.bannedUntil).not.toBeNull();
+    expect(this.jobs.get(jobId)?.status).toBe('succeeded');
+    expect(this.users.get(uid)?.bannedUntil).not.toBeNull();
 
     // Reprocessamento idempotente do mesmo estado (manual_retry)
-    sim.enqueueJob(uid, 'ban_user', 'manual_retry');
-    const r2 = await drainAuthSyncOutbox({ workerId: 'w-ok-2', client, now: () => sim.clockMs });
+    this.enqueueJob(uid, 'ban_user', 'manual_retry');
+    const r2 = await drainAuthSyncOutbox({ workerId: 'w-ok-2', client, now: () => this.clockMs });
     expect(r2.succeeded).toBe(1);
-    expect(sim.users.get(uid)?.bannedUntil).not.toBeNull();
+    expect(this.users.get(uid)?.bannedUntil).not.toBeNull();
   });
 
   it('[2, 3 & 14] trata falha HTTP temporaria (5xx), erro 4xx e esgotamento de tentativas (failed_permanent)', async () => {
     const sim = new SimulatedAuthAndOutbox();
     const uid = '11111111-1111-4111-8111-111111111112';
-    sim.addUser(uid, false, 2, null);
-    const jobId = sim.enqueueJob(uid, 'ban_user', 'status_change', 2);
+    this.addUser(uid, false, 2, null);
+    const jobId = this.enqueueJob(uid, 'ban_user', 'status_change', 2);
 
-    const client503 = sim.createClient({
+    const client503 = this.createClient({
       updateUserById: async () => ({ data: null, error: { status: 503, message: 'unavailable' } }),
     });
-    const r1 = await drainAuthSyncOutbox({ workerId: 'w-err', client: client503, now: () => sim.clockMs, maxBatches: 1 });
+    const r1 = await drainAuthSyncOutbox({ workerId: 'w-err', client: client503, now: () => this.clockMs, maxBatches: 1 });
     expect(r1.failedRetriable).toBe(1);
-    expect(sim.jobs.get(jobId)?.status).toBe('pending');
-    expect(sim.jobs.get(jobId)?.ultimo_erro_codigo).toBe('auth_5xx');
+    expect(this.jobs.get(jobId)?.status).toBe('pending');
+    expect(this.jobs.get(jobId)?.ultimo_erro_codigo).toBe('auth_5xx');
 
     // 2a tentativa falha com 400 e atinge max_tentativas=2 -> failed_permanent (sem loop infinito)
-    const client400 = sim.createClient({
+    const client400 = this.createClient({
       updateUserById: async () => ({ data: null, error: { status: 400, message: 'bad request' } }),
     });
-    const r2 = await drainAuthSyncOutbox({ workerId: 'w-err', client: client400, now: () => sim.clockMs, maxBatches: 1 });
+    const r2 = await drainAuthSyncOutbox({ workerId: 'w-err', client: client400, now: () => this.clockMs, maxBatches: 1 });
     expect(r2.failedPermanent).toBe(1);
-    expect(sim.jobs.get(jobId)?.status).toBe('failed_permanent');
-    expect(sim.jobs.get(jobId)?.ultimo_erro_codigo).toBe('auth_4xx');
+    expect(this.jobs.get(jobId)?.status).toBe('failed_permanent');
+    expect(this.jobs.get(jobId)?.ultimo_erro_codigo).toBe('auth_4xx');
 
     // Nao e mais reivindicado automaticamente
-    const r3 = await drainAuthSyncOutbox({ workerId: 'w-err', client: client400, now: () => sim.clockMs });
+    const r3 = await drainAuthSyncOutbox({ workerId: 'w-err', client: client400, now: () => this.clockMs });
     expect(r3.claimed).toBe(0);
   });
 
@@ -421,11 +420,11 @@ describe('Etapa 6 — Worker Outbox, Timeout HTTP Real, Reconciliacao e Netlify 
 
       const sim = new SimulatedAuthAndOutbox();
       const uid = '11111111-1111-4111-8111-111111111113';
-      sim.addUser(uid, false, 2, null);
-      const jobId = sim.enqueueJob(uid, 'ban_user');
+      this.addUser(uid, false, 2, null);
+      const jobId = this.enqueueJob(uid, 'ban_user');
 
       // Usa o transporte real do SDK para updateUserById contra o servidor local lento
-      const hybridClient = sim.createClient({
+      const hybridClient = this.createClient({
         updateUserById: (id, attrs) => sdkClient.auth.admin.updateUserById(id, attrs),
       });
 
@@ -442,7 +441,7 @@ describe('Etapa 6 — Worker Outbox, Timeout HTTP Real, Reconciliacao e Netlify 
 
       expect(elapsed).toBeLessThan(350); // Abortou bem antes dos 400ms do servidor
       expect(out.failedRetriable).toBe(1);
-      expect(sim.jobs.get(jobId)?.ultimo_erro_codigo).toBe('auth_timeout');
+      expect(this.jobs.get(jobId)?.ultimo_erro_codigo).toBe('auth_timeout');
     } finally {
       await new Promise<void>((resolve) => server.close(() => resolve()));
     }
@@ -451,9 +450,9 @@ describe('Etapa 6 — Worker Outbox, Timeout HTTP Real, Reconciliacao e Netlify 
   it('[5 & 6] trata lease expirado e claim_token obsoleto antes e depois da chamada externa', async () => {
     const sim = new SimulatedAuthAndOutbox();
     const uid = '11111111-1111-4111-8111-111111111114';
-    sim.addUser(uid, false, 2, null);
-    const jobId = sim.enqueueJob(uid, 'ban_user');
-    const client = sim.createClient();
+    this.addUser(uid, false, 2, null);
+    const jobId = this.enqueueJob(uid, 'ban_user');
+    const client = this.createClient();
 
     // Worker A reivindica
     const { data: claimed } = await client.rpc('rpc_claim_auth_sync_jobs', {
@@ -464,14 +463,14 @@ describe('Etapa 6 — Worker Outbox, Timeout HTTP Real, Reconciliacao e Netlify 
     const jobA = (claimed as ClaimedAuthSyncJob[])[0];
 
     // Lease de A expira -> Worker B reivindica recebendo novo claim_token
-    sim.clockMs += 61_000;
+    this.clockMs += 61_000;
     const { data: verifyA } = await client.rpc('rpc_verify_auth_sync_job', {
       p_job_id: jobA.job_id,
       p_claim_token: jobA.claim_token,
     });
     expect(verifyA).toBe('claim_invalid');
 
-    const rB = await drainAuthSyncOutbox({ workerId: 'worker-B', client, now: () => sim.clockMs });
+    const rB = await drainAuthSyncOutbox({ workerId: 'worker-B', client, now: () => this.clockMs });
     expect(rB.succeeded).toBe(1);
 
     // A tenta concluir tarde demais com claim_token antigo -> detectado e reconciliacao enfileirada
@@ -482,41 +481,41 @@ describe('Etapa 6 — Worker Outbox, Timeout HTTP Real, Reconciliacao e Netlify 
       p_erro_codigo: null,
     });
     expect(lateComplete).toBe('stale_claim_reconcile_enqueued');
-    expect(sim.auditEvents.some((e) => e.acao === 'AUTH_SYNC_STALE_CLAIM_DETECTED')).toBe(true);
+    expect(this.auditEvents.some((e) => e.acao === 'AUTH_SYNC_STALE_CLAIM_DETECTED')).toBe(true);
   });
 
   it('[8 & 9] alternancia rapida: desativacao->reativacao e reativacao->desativacao abortam job obsoleto', async () => {
     const sim = new SimulatedAuthAndOutbox();
     const uid = '11111111-1111-4111-8111-111111111115';
-    sim.addUser(uid, true, 1, null);
+    this.addUser(uid, true, 1, null);
 
     // Desativa (v2) e imediatamente reativa (v3)
-    const j2 = sim.setUserActive(uid, false);
-    const j3 = sim.setUserActive(uid, true);
-    expect(sim.jobs.get(j2)?.status).toBe('superseded');
+    const j2 = this.setUserActive(uid, false);
+    const j3 = this.setUserActive(uid, true);
+    expect(this.jobs.get(j2)?.status).toBe('superseded');
 
-    const client = sim.createClient();
-    const r1 = await drainAuthSyncOutbox({ workerId: 'w-flip', client, now: () => sim.clockMs });
+    const client = this.createClient();
+    const r1 = await drainAuthSyncOutbox({ workerId: 'w-flip', client, now: () => this.clockMs });
     expect(r1.succeeded).toBe(1);
-    expect(sim.jobs.get(j3)?.status).toBe('succeeded');
-    expect(sim.users.get(uid)?.bannedUntil).toBeNull();
+    expect(this.jobs.get(j3)?.status).toBe('succeeded');
+    expect(this.users.get(uid)?.bannedUntil).toBeNull();
 
     // Reativa -> Desativa (v4)
-    const j4 = sim.setUserActive(uid, false);
-    const r2 = await drainAuthSyncOutbox({ workerId: 'w-flip', client, now: () => sim.clockMs });
+    const j4 = this.setUserActive(uid, false);
+    const r2 = await drainAuthSyncOutbox({ workerId: 'w-flip', client, now: () => this.clockMs });
     expect(r2.succeeded).toBe(1);
-    expect(sim.jobs.get(j4)?.status).toBe('succeeded');
-    expect(sim.users.get(uid)?.bannedUntil).not.toBeNull();
+    expect(this.jobs.get(j4)?.status).toBe('succeeded');
+    expect(this.users.get(uid)?.bannedUntil).not.toBeNull();
   });
 
   it('[10, 11 & 12] resposta externa antiga apos operacao nova + morte do worker antes de complete + convergencia via reconciliador', async () => {
     const sim = new SimulatedAuthAndOutbox();
     const uid = '11111111-1111-4111-8111-111111111116';
-    sim.addUser(uid, true, 1, null);
+    this.addUser(uid, true, 1, null);
 
     // 1. Admin desativa (v2) e Worker A reivindica job v2
-    const jobV2Id = sim.setUserActive(uid, false);
-    const client = sim.createClient();
+    const jobV2Id = this.setUserActive(uid, false);
+    const client = this.createClient();
     const { data: claimedA } = await client.rpc('rpc_claim_auth_sync_jobs', {
       p_worker_id: 'worker-A',
       p_limit: 5,
@@ -525,32 +524,32 @@ describe('Etapa 6 — Worker Outbox, Timeout HTTP Real, Reconciliacao e Netlify 
     expect((claimedA as ClaimedAuthSyncJob[])[0].job_id).toBe(jobV2Id);
 
     // 2. Admin reativa (v3) e Worker B executa unban v3 e conclui succeeded
-    sim.setUserActive(uid, true);
-    const rB = await drainAuthSyncOutbox({ workerId: 'worker-B', client, now: () => sim.clockMs });
+    this.setUserActive(uid, true);
+    const rB = await drainAuthSyncOutbox({ workerId: 'worker-B', client, now: () => this.clockMs });
     expect(rB.succeeded).toBe(1);
-    expect(sim.users.get(uid)?.bannedUntil).toBeNull();
+    expect(this.users.get(uid)?.bannedUntil).toBeNull();
 
     // 3. Worker A atrasado altera o GoTrue (ban) DEPOIS de B e MORRE sem chamar rpc_complete_auth_sync_job!
     await client.auth.admin.updateUserById(uid, { ban_duration: '876000h' });
-    expect(sim.users.get(uid)?.bannedUntil).not.toBeNull(); // Divergente! (banco ativo=true, GoTrue banned)
+    expect(this.users.get(uid)?.bannedUntil).not.toBeNull(); // Divergente! (banco ativo=true, GoTrue banned)
 
     // 4. Passa tempo (lease de A expira + janela de graca de 60s de B expira)
-    sim.clockMs += 130_000;
+    this.clockMs += 130_000;
 
     // 5. Reconciliador faz sweep de A (expired_stale), nao exclui o usuario, detecta drift e drena correcao
     const rec = await reconcileAuthDrift({
       workerId: 'reconciler-1',
       client,
       cursorStore: null,
-      now: () => sim.clockMs,
+      now: () => this.clockMs,
     });
 
-    expect(sim.jobs.get(jobV2Id)?.status).toBe('expired_stale');
+    expect(this.jobs.get(jobV2Id)?.status).toBe('expired_stale');
     expect(rec.driftEnqueued).toBe(1);
     expect(rec.drainResult?.succeeded).toBe(1);
-    expect(sim.users.get(uid)?.bannedUntil).toBeNull(); // Estado final convergido para ativo/unban!
-    expect(sim.auditEvents.some((e) => e.acao === 'AUTH_DRIFT_REPORTED')).toBe(true);
-    expect(sim.auditEvents.some((e) => e.acao === 'AUTH_DRIFT_CORRECTION_REPORTED')).toBe(true);
+    expect(this.users.get(uid)?.bannedUntil).toBeNull(); // Estado final convergido para ativo/unban!
+    expect(this.auditEvents.some((e) => e.acao === 'AUTH_DRIFT_REPORTED')).toBe(true);
+    expect(this.auditEvents.some((e) => e.acao === 'AUTH_DRIFT_CORRECTION_REPORTED')).toBe(true);
   });
 
   it('[13 & 16] paginacao com interrupcao por orcamento temporal e retomada sem excluir usuarios', async () => {
@@ -563,8 +562,8 @@ describe('Etapa 6 — Worker Outbox, Timeout HTTP Real, Reconciliacao e Netlify 
       '00000000-0000-4000-8000-000000000005',
     ];
     // Usuario 5 (ultima pagina) tem divergencia
-    for (const id of ids) sim.addUser(id, true, 1, null);
-    sim.users.get(ids[4])!.bannedUntil = new Date(sim.clockMs + 3.6e12).toISOString();
+    for (const id of ids) this.addUser(id, true, 1, null);
+    this.users.get(ids[4])!.bannedUntil = new Date(this.clockMs + 3.6e12).toISOString();
 
     let savedCursor: string | null = null;
     const cursorStore: ReconcileCursorStore = {
@@ -577,14 +576,14 @@ describe('Etapa 6 — Worker Outbox, Timeout HTTP Real, Reconciliacao e Netlify 
     };
 
     // Cada getUserById consome 1.500ms no relogio simulado; budget=5.000ms interrompe apos 1a pagina (2 usuarios)
-    const baseClient = sim.createClient();
+    const baseClient = this.createClient();
     const timedClient: AuthSyncClientLike = {
       rpc: baseClient.rpc.bind(baseClient),
       auth: {
         admin: {
           updateUserById: baseClient.auth.admin.updateUserById.bind(baseClient.auth.admin),
-          async getUserById(uid) {
-            sim.clockMs += 1_500;
+          getUserById: async (uid) => {
+            this.clockMs += 1_500;
             return baseClient.auth.admin.getUserById(uid);
           },
         },
@@ -599,7 +598,7 @@ describe('Etapa 6 — Worker Outbox, Timeout HTTP Real, Reconciliacao e Netlify 
       drainAfterReconcile: false,
       cursorStore,
       client: timedClient,
-      now: () => sim.clockMs,
+      now: () => this.clockMs,
     });
     expect(run1.stoppedByBudget).toBe(true);
     expect(run1.completedFullPass).toBe(false);
@@ -615,7 +614,7 @@ describe('Etapa 6 — Worker Outbox, Timeout HTTP Real, Reconciliacao e Netlify 
       drainAfterReconcile: false,
       cursorStore,
       client: timedClient,
-      now: () => sim.clockMs,
+      now: () => this.clockMs,
     });
     expect(run2.completedFullPass).toBe(true);
     expect(run2.driftEnqueued).toBe(1);
@@ -627,7 +626,7 @@ describe('Etapa 6 — Worker Outbox, Timeout HTTP Real, Reconciliacao e Netlify 
       requestTimeoutMs: 15_000,
       timeBudgetMs: 10_000,
       client: baseClient,
-      now: () => sim.clockMs,
+      now: () => this.clockMs,
     });
     expect(noClaim.claimed).toBe(0);
     expect(noClaim.stoppedByBudget).toBe(true);

@@ -5,7 +5,7 @@ export class HttpTimeoutError extends Error {
   readonly timeoutMs: number;
 
   constructor(timeoutMs: number) {
-    super(`Tempo limite HTTP excedido (${timeoutMs}ms).`);
+    super(`HTTP_TIMEOUT: Request timed out after ${timeoutMs}ms.`);
     this.name = 'HttpTimeoutError';
     this.timeoutMs = timeoutMs;
   }
