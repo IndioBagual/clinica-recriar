@@ -5,6 +5,7 @@ import {
   type AuthSyncClientLike,
   type ClaimedAuthSyncJob,
   drainAuthSyncOutbox,
+  type ReconcileCursorState,
   type ReconcileCursorStore,
   reconcileAuthDrift,
   runScheduledAuthSync,
@@ -15,7 +16,7 @@ import internalSyncHandler from '@/pages/api/internal/auth-sync';
 class SimulatedAuthAndOutbox {
   users = new Map<
     string,
-    { ativo: boolean; versao: number; bannedUntil: string | null }
+    { ativo: boolean; versao: number; bannedUntil: string | null; activeSessions: number; passwordRotations: number }
   >();
   jobs = new Map<
     string,
@@ -38,8 +39,8 @@ class SimulatedAuthAndOutbox {
   clockMs = 1_700_000_000_000;
   private seq = 1;
 
-  addUser(id: string, ativo: boolean, versao = 1, bannedUntil: string | null = null) {
-    this.users.set(id, { ativo, versao, bannedUntil });
+  addUser(id: string, ativo: boolean, versao = 1, bannedUntil: string | null = null, activeSessions = 2) {
+    this.users.set(id, { ativo, versao, bannedUntil, activeSessions, passwordRotations: 0 });
   }
 
   enqueueJob(
@@ -290,7 +291,13 @@ class SimulatedAuthAndOutbox {
             }
             const u = this.users.get(uid);
             if (!u) return { data: null, error: { status: 404, message: 'not found' } };
-            u.bannedUntil = attrs.ban_duration === 'none' ? null : new Date(this.clockMs + 3.6e12).toISOString();
+            if (attrs.password) {
+              u.passwordRotations += 1;
+              u.activeSessions = 0;
+            }
+            if (attrs.ban_duration !== undefined) {
+              u.bannedUntil = attrs.ban_duration === 'none' ? null : new Date(this.clockMs + 3.6e12).toISOString();
+            }
             return { data: { user: { id: uid, banned_until: u.bannedUntil } }, error: null };
           },
           getUserById: async (uid) => {
@@ -714,6 +721,125 @@ describe('Etapa 6 — Worker Outbox, Timeout HTTP Real, Reconciliacao e Netlify 
     expect(resB.nextAfterId).toBe(ids[0]);
     expect(resB.cursorPersisted).toBe(false);
     expect(savedCursor).toBe(ids[1]);
+  });
+
+  it('[8D 2.4] revoga sessoes globalmente em ban_user/unban e mantem conta banida se revogacao falhar no unban', async () => {
+    const sim = new SimulatedAuthAndOutbox();
+    const uid = '11111111-1111-4111-8111-111111111120';
+    sim.addUser(uid, true, 1, null, 3);
+
+    // 1. ban_user -> bane + rotaciona senha aleatoria + revoga 3 sessoes
+    sim.setUserActive(uid, false);
+    const client = sim.createClient();
+    const dBan = await drainAuthSyncOutbox({ workerId: 'w-8d-ban', client, now: () => sim.clockMs });
+    expect(dBan.succeeded).toBe(1);
+    expect(sim.users.get(uid)?.bannedUntil).not.toBeNull();
+    expect(sim.users.get(uid)?.activeSessions).toBe(0);
+    expect(sim.users.get(uid)?.passwordRotations).toBe(1);
+
+    // 2. Simula sessao residual + falha parcial na etapa 1 do unban (password) -> NAO pode executar unban!
+    sim.users.get(uid)!.activeSessions = 1;
+    sim.setUserActive(uid, true);
+    const unbanCalls: Array<{ ban_duration?: string; password?: string }> = [];
+    const failingStep1Client = sim.createClient({
+      updateUserById: async (_id, attrs) => {
+        unbanCalls.push(attrs);
+        if (attrs.password) {
+          return { data: null, error: { status: 503, message: 'revoke_failed' } };
+        }
+        return { data: {}, error: null };
+      },
+    });
+    const dFail = await drainAuthSyncOutbox({
+      workerId: 'w-8d-unban-fail',
+      client: failingStep1Client,
+      now: () => sim.clockMs,
+      maxBatches: 1,
+    });
+    expect(dFail.failedRetriable).toBe(1);
+    expect(unbanCalls).toHaveLength(1);
+    expect(unbanCalls[0].password).toBeDefined();
+    expect(unbanCalls[0].ban_duration).toBeUndefined();
+    expect(sim.users.get(uid)?.bannedUntil).not.toBeNull();
+
+    // 3. Retry bem-sucedido do unban -> etapa 1 revoga sessoes e etapa 2 desbane
+    const dUnban = await drainAuthSyncOutbox({ workerId: 'w-8d-unban-ok', client, now: () => sim.clockMs });
+    expect(dUnban.succeeded).toBe(1);
+    expect(sim.users.get(uid)?.activeSessions).toBe(0);
+    expect(sim.users.get(uid)?.bannedUntil).toBeNull();
+    expect(sim.users.get(uid)?.passwordRotations).toBe(2);
+  });
+
+  it('[8D 6] protege cursor com epoch entre voltas completas, nova volta iniciada e expiracao', async () => {
+    const sim = new SimulatedAuthAndOutbox();
+    const ids = [
+      '00000000-0000-4000-8000-000000000001',
+      '00000000-0000-4000-8000-000000000002',
+      '00000000-0000-4000-8000-000000000003',
+    ];
+    for (const id of ids) sim.addUser(id, true, 1, null);
+
+    let state: ReconcileCursorState | null = null;
+    const epochStore: ReconcileCursorStore = {
+      async getCursorState() {
+        return state ? { ...state } : { epoch: 0, afterId: null };
+      },
+      async getCursor() {
+        return state?.afterId ?? null;
+      },
+      async setCursor(afterId, options) {
+        if (afterId === null && !options) {
+          state = null;
+          return true;
+        }
+        const expectedEpoch = options?.expectedEpoch ?? 0;
+        const mode = options?.completedFullPass || afterId === null ? 'complete' : options?.wrapped ? 'wrapped' : 'progress';
+        if (state === null) {
+          if (expectedEpoch !== 0) return false;
+          state = { epoch: 0, afterId: null };
+        }
+        if (mode === 'complete') {
+          if (state.epoch === expectedEpoch) {
+            state = { epoch: expectedEpoch + 1, afterId: null };
+            return true;
+          }
+          return false;
+        }
+        if (mode === 'progress') {
+          if (state.epoch === expectedEpoch && afterId && (!state.afterId || afterId > state.afterId)) {
+            state = { epoch: expectedEpoch, afterId };
+            return true;
+          }
+          return false;
+        }
+        const nextEpoch = expectedEpoch + 1;
+        if (afterId && (state.epoch === expectedEpoch || (state.epoch === nextEpoch && (!state.afterId || afterId > state.afterId)))) {
+          state = { epoch: nextEpoch, afterId };
+          return true;
+        }
+        return false;
+      },
+    };
+
+    // Volta 0 conclui -> avanca para epoch 1 com afterId=null
+    expect(await epochStore.setCursor(null, { expectedEpoch: 0, completedFullPass: true })).toBe(true);
+    expect(state).toEqual({ epoch: 1, afterId: null });
+
+    // Worker atrasado da volta 0 tenta gravar id_2 -> rejeitado
+    expect(await epochStore.setCursor(ids[1], { expectedEpoch: 0, wrapped: false })).toBe(false);
+    expect(state).toEqual({ epoch: 1, afterId: null });
+
+    // Volta 1 inicia e grava id_1 -> aceito; worker atrasado da volta 0 com id_3 (> id_1) -> rejeitado!
+    expect(await epochStore.setCursor(ids[0], { expectedEpoch: 1, wrapped: false })).toBe(true);
+    expect(await epochStore.setCursor(ids[2], { expectedEpoch: 0, wrapped: false })).toBe(false);
+    expect(state).toEqual({ epoch: 1, afterId: ids[0] });
+
+    // Cursor expira/e removido -> worker antigo (epoch 1) nao ressuscita; novo worker (epoch 0) retoma
+    state = null;
+    expect(await epochStore.setCursor(ids[2], { expectedEpoch: 1, wrapped: false })).toBe(false);
+    expect(state).toBeNull();
+    expect(await epochStore.setCursor(ids[0], { expectedEpoch: 0, wrapped: false })).toBe(true);
+    expect(state).toEqual({ epoch: 0, afterId: ids[0] });
   });
 
   it('[17] bloqueia acionamento externo nao autorizado em /api/internal/auth-sync e respeita kill-switch Netlify', async () => {

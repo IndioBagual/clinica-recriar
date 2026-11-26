@@ -241,6 +241,68 @@ describe('integracao controlada das API Routes (Etapas 5, 6 e 8B.2)', () => {
     expect(lastAdminReq.getStatus()).toBe(409);
   });
 
+  it('[8D 2.4] POST /api/admin/usuarios/[id]/status aciona drain imediato best-effort e preserva fallback queued', async () => {
+    setupAuthenticatedAdmin(true);
+
+    // 1. Desativacao com drain imediato bem-sucedido -> authSyncImmediate: 'synced'
+    mockUserClient.rpc.mockResolvedValueOnce({
+      data: [{ resultado: 'deactivated', outbox_job_id: '55555555-5555-4555-8555-555555555555', nova_versao: 2 }],
+      error: null,
+    });
+    mockAdminClient.rpc
+      .mockResolvedValueOnce({
+        data: [
+          {
+            job_id: '55555555-5555-4555-8555-555555555555',
+            claim_token: '66666666-6666-4666-8666-666666666666',
+            target_user_id: TARGET_ID,
+            target_versao: 2,
+            operacao: 'ban_user',
+            origem: 'status_change',
+            tentativas: 1,
+            max_tentativas: 5,
+            lease_expires_at: new Date(Date.now() + 60_000).toISOString(),
+          },
+        ],
+        error: null,
+      })
+      .mockResolvedValueOnce({ data: 'valid', error: null })
+      .mockResolvedValueOnce({ data: 'succeeded', error: null });
+
+    const okRes = createReqRes({ query: { id: TARGET_ID }, body: { ativo: false } });
+    await statusHandler(okRes.req, okRes.res);
+    expect(okRes.getStatus()).toBe(200);
+    expect(okRes.getBody()).toEqual({
+      ok: true,
+      resultado: 'deactivated',
+      outboxJobId: '55555555-5555-4555-8555-555555555555',
+      novaVersao: 2,
+      authSyncImmediate: 'synced',
+    });
+    expect(mockAdminClient.auth.admin.updateUserById).toHaveBeenCalledWith(
+      TARGET_ID,
+      expect.objectContaining({ ban_duration: '876000h', password: expect.any(String) })
+    );
+
+    // 2. Falha no drain imediato -> resposta continua 200 com authSyncImmediate: 'queued'
+    mockUserClient.rpc.mockResolvedValueOnce({
+      data: [{ resultado: 'reactivated', outbox_job_id: '77777777-7777-4777-8777-777777777777', nova_versao: 3 }],
+      error: null,
+    });
+    mockAdminClient.rpc.mockRejectedValueOnce(new Error('network_down'));
+
+    const fallbackRes = createReqRes({ query: { id: TARGET_ID }, body: { ativo: true } });
+    await statusHandler(fallbackRes.req, fallbackRes.res);
+    expect(fallbackRes.getStatus()).toBe(200);
+    expect(fallbackRes.getBody()).toEqual({
+      ok: true,
+      resultado: 'reactivated',
+      outboxJobId: '77777777-7777-4777-8777-777777777777',
+      novaVersao: 3,
+      authSyncImmediate: 'queued',
+    });
+  });
+
   it('[7.1 NEGATIVO] POST /api/admin/usuarios bloqueia vinculacao de conta preexistente sem procedencia em app_metadata', async () => {
     setupAuthenticatedAdmin(true);
 
