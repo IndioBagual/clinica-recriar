@@ -608,6 +608,114 @@ describe('Etapa 6 — Worker Outbox, Timeout HTTP Real, Reconciliacao e Netlify 
     expect(noClaim.stoppedByBudget).toBe(true);
   });
 
+  it('[8C.4 C13] evita regressao do cursor sob reconciliadores concorrentes (monotonicidade + CAS)', async () => {
+    const sim = new SimulatedAuthAndOutbox();
+    const ids = [
+      '00000000-0000-4000-8000-000000000001',
+      '00000000-0000-4000-8000-000000000002',
+      '00000000-0000-4000-8000-000000000003',
+    ];
+    for (const id of ids) sim.addUser(id, true, 1, null);
+
+    let savedCursor: string | null = null;
+    const monotonicStore: ReconcileCursorStore = {
+      async getCursor() {
+        return savedCursor;
+      },
+      async setCursor(afterId, options) {
+        if (afterId === null) {
+          if (!options || savedCursor === null || (options.expectedCursor && savedCursor === options.expectedCursor)) {
+            savedCursor = null;
+            return true;
+          }
+          return false;
+        }
+        if (
+          savedCursor === null ||
+          afterId > savedCursor ||
+          (options?.wrapped && options.expectedCursor && savedCursor === options.expectedCursor)
+        ) {
+          savedCursor = afterId;
+          return true;
+        }
+        return false;
+      },
+    };
+
+    const baseClient = sim.createClient();
+    let releaseB!: () => void;
+    let bAtGateResolve!: () => void;
+    const gateB = new Promise<void>((r) => { releaseB = r; });
+    const bAtGate = new Promise<void>((r) => { bAtGateResolve = r; });
+
+    let clockB = 10_000;
+    let bCalls = 0;
+    const promB = reconcileAuthDrift({
+      workerId: 'rec-B',
+      pageSize: 1,
+      concurrency: 1,
+      timeBudgetMs: 10_000,
+      drainAfterReconcile: false,
+      cursorStore: monotonicStore,
+      now: () => clockB,
+      client: {
+        rpc: baseClient.rpc.bind(baseClient),
+        auth: {
+          admin: {
+            updateUserById: baseClient.auth.admin.updateUserById.bind(baseClient.auth.admin),
+            async getUserById(uid) {
+              const r = await baseClient.auth.admin.getUserById(uid);
+              bCalls += 1;
+              if (bCalls === 1) {
+                clockB += 8_500;
+                bAtGateResolve();
+                await gateB;
+              }
+              return r;
+            },
+          },
+        },
+      },
+    });
+
+    await bAtGate;
+
+    let clockA = 20_000;
+    let aCalls = 0;
+    const resA = await reconcileAuthDrift({
+      workerId: 'rec-A',
+      pageSize: 1,
+      concurrency: 1,
+      timeBudgetMs: 10_000,
+      drainAfterReconcile: false,
+      cursorStore: monotonicStore,
+      now: () => clockA,
+      client: {
+        rpc: baseClient.rpc.bind(baseClient),
+        auth: {
+          admin: {
+            updateUserById: baseClient.auth.admin.updateUserById.bind(baseClient.auth.admin),
+            async getUserById(uid) {
+              const r = await baseClient.auth.admin.getUserById(uid);
+              aCalls += 1;
+              if (aCalls === 2) clockA += 8_500;
+              return r;
+            },
+          },
+        },
+      },
+    });
+
+    expect(resA.nextAfterId).toBe(ids[1]);
+    expect(savedCursor).toBe(ids[1]);
+
+    releaseB();
+    const resB = await promB;
+    expect(resB.nextAfterId).toBe(ids[0]);
+    expect(resB.cursorPersisted).toBe(false);
+    expect(savedCursor).toBe(ids[1]);
+  });
+
   it('[17] bloqueia acionamento externo nao autorizado em /api/internal/auth-sync e respeita kill-switch Netlify', async () => {
     delete process.env.AUTH_SYNC_SCHEDULE_ENABLED;
     const schedDisabled = await runScheduledAuthSync({ env: process.env });
