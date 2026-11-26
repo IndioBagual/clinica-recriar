@@ -41,9 +41,14 @@ export interface ReconcileUserRow {
   estado_ativacao_versao: number;
 }
 
+export interface ReconcileCursorSetOptions {
+  expectedCursor?: string | null;
+  wrapped?: boolean;
+}
+
 export interface ReconcileCursorStore {
   getCursor(): Promise<string | null>;
-  setCursor(afterId: string | null): Promise<void>;
+  setCursor(afterId: string | null, options?: ReconcileCursorSetOptions): Promise<boolean | void>;
 }
 
 export interface AuthSyncClientLike {
@@ -177,6 +182,24 @@ export function classifyAuthSyncError(err: unknown): AuthSyncErrorCode {
   return 'auth_5xx';
 }
 
+const LUA_MONOTONIC_SET_CURSOR = `
+local cur = redis.call('GET', KEYS[1])
+if (not cur) or (ARGV[1] > cur) or (ARGV[4] == '1' and ARGV[3] ~= '' and cur == ARGV[3]) then
+  redis.call('SET', KEYS[1], ARGV[1], 'EX', tonumber(ARGV[2]))
+  return 1
+end
+return 0
+`;
+
+const LUA_CAS_CLEAR_CURSOR = `
+local cur = redis.call('GET', KEYS[1])
+if (not cur) or (ARGV[1] ~= '' and cur == ARGV[1]) then
+  redis.call('DEL', KEYS[1])
+  return 1
+end
+return 0
+`;
+
 export function createUpstashCursorStore(): ReconcileCursorStore | null {
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
@@ -188,14 +211,32 @@ export function createUpstashCursorStore(): ReconcileCursorStore | null {
       const value = await redis.get<string>(AUTH_SYNC_DEFAULTS.cursorRedisKey);
       return typeof value === 'string' && value.length > 0 ? value : null;
     },
-    async setCursor(afterId: string | null): Promise<void> {
+    async setCursor(
+      afterId: string | null,
+      options?: ReconcileCursorSetOptions
+    ): Promise<boolean> {
       if (afterId === null) {
-        await redis.del(AUTH_SYNC_DEFAULTS.cursorRedisKey);
-      } else {
-        await redis.set(AUTH_SYNC_DEFAULTS.cursorRedisKey, afterId, {
-          ex: AUTH_SYNC_DEFAULTS.cursorTtlSeconds,
-        });
+        if (options === undefined) {
+          await redis.del(AUTH_SYNC_DEFAULTS.cursorRedisKey);
+          return true;
+        }
+        const expected = options.expectedCursor ?? '';
+        const cleared = await redis.eval(
+          LUA_CAS_CLEAR_CURSOR,
+          [AUTH_SYNC_DEFAULTS.cursorRedisKey],
+          [expected]
+        );
+        return Number(cleared) === 1;
       }
+
+      const expected = options?.expectedCursor ?? '';
+      const wrapped = options?.wrapped ? '1' : '0';
+      const written = await redis.eval(
+        LUA_MONOTONIC_SET_CURSOR,
+        [AUTH_SYNC_DEFAULTS.cursorRedisKey],
+        [afterId, String(AUTH_SYNC_DEFAULTS.cursorTtlSeconds), expected, wrapped]
+      );
+      return Number(written) === 1;
     },
   };
 }
@@ -393,13 +434,16 @@ export async function reconcileAuthDrift(
     options.cursorStore !== undefined ? options.cursorStore : createUpstashCursorStore();
 
   let afterId: string | null = null;
+  let initialAfterId: string | null = null;
   let cursorPersisted = false;
 
   if (cursorStore) {
     try {
       afterId = await cursorStore.getCursor();
+      initialAfterId = afterId;
     } catch {
       afterId = null;
+      initialAfterId = null;
     }
   }
 
@@ -517,8 +561,11 @@ export async function reconcileAuthDrift(
 
   if (cursorStore) {
     try {
-      await cursorStore.setCursor(result.completedFullPass ? null : result.nextAfterId);
-      cursorPersisted = true;
+      const updated = await cursorStore.setCursor(
+        result.completedFullPass ? null : result.nextAfterId,
+        { expectedCursor: initialAfterId, wrapped: wrappedOnce }
+      );
+      cursorPersisted = updated !== false;
     } catch {
       cursorPersisted = false;
     }
