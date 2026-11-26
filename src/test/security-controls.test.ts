@@ -19,7 +19,8 @@ import {
   getTrustedClientIp,
   sanitizeInternalRedirect,
 } from '@/lib/security/http';
-import { checkRateLimit, resetDevRateLimitStore } from '@/lib/security/rateLimit';
+import { consumePasswordFlowNonce, createPasswordFlowCookieValue, registerPasswordFlowNonce, resetDevPasswordFlowStore, verifyPasswordFlowCookie } from '@/lib/security/passwordFlow';
+import { checkRateLimit, checkRateLimits, resetDevRateLimitStore } from '@/lib/security/rateLimit';
 
 function createMockRes() {
   const headers: Record<string, string | string[]> = {};
@@ -53,6 +54,7 @@ describe('controles de seguranca HTTP, CSRF, Origin, Rate Limit e Zod v4', () =>
   afterEach(() => {
     process.env = { ...envBackup };
     resetDevRateLimitStore();
+    resetDevPasswordFlowStore();
   });
 
   it('usa __Host-recriar_csrf com Secure/HttpOnly/SameSite=Lax em HTTPS e preserva multiplos Set-Cookie', () => {
@@ -190,6 +192,112 @@ describe('controles de seguranca HTTP, CSRF, Origin, Rate Limit e Zod v4', () =>
 
     expect(auditQuerySchema.safeParse({ pagina: '1', limite: '20', filtro_acao: 'USER_DEACTIVATED' }).success).toBe(true);
     expect(auditQuerySchema.safeParse({ pagina: '1', limite: '20', filtro_acao: 'joao@clinica.br' }).success).toBe(false);
+  });
+
+  it('[8C.1 7.1] aplica buckets complementares de login (IP+email, IP, email) e reset (IP+email, IP) com normalizacao', async () => {
+    delete process.env.UPSTASH_REDIS_REST_URL;
+    delete process.env.UPSTASH_REDIS_REST_TOKEN;
+    (process.env as Record<string, string | undefined>).NODE_ENV = 'test';
+    process.env.RATE_LIMIT_ALLOW_DEV_MEMORY = 'true';
+
+    // 20 tentativas alternando e-mails a partir do mesmo IP sao aceitas; 21a bloqueia via loginIp
+    for (let i = 0; i < 20; i += 1) {
+      const email = `User${Math.floor(i / 5)}@Clinica.LOCAL `;
+      const r = await checkRateLimits([
+        { bucket: 'login', rawParts: ['10.0.0.1', email] },
+        { bucket: 'loginIp', rawParts: ['10.0.0.1'] },
+        { bucket: 'loginEmail', rawParts: [email] },
+      ]);
+      expect(r.allowed).toBe(true);
+    }
+    const blockedByIp = await checkRateLimits([
+      { bucket: 'login', rawParts: ['10.0.0.1', 'novo@clinica.local'] },
+      { bucket: 'loginIp', rawParts: ['10.0.0.1'] },
+      { bucket: 'loginEmail', rawParts: ['novo@clinica.local'] },
+    ]);
+    expect(blockedByIp.allowed).toBe(false);
+    expect(blockedByIp.unavailable).toBe(false);
+
+    // Mesmo e-mail com IPs distintos bloqueia na 11a tentativa via loginEmail (10/15m)
+    for (let i = 0; i < 10; i += 1) {
+      const ip = `10.1.0.${Math.floor(i / 2) + 1}`;
+      const r = await checkRateLimits([
+        { bucket: 'login', rawParts: [ip, ' Alvo@Clinica.Local '] },
+        { bucket: 'loginIp', rawParts: [ip] },
+        { bucket: 'loginEmail', rawParts: ['alvo@clinica.local'] },
+      ]);
+      expect(r.allowed).toBe(true);
+    }
+    const blockedByEmail = await checkRateLimits([
+      { bucket: 'login', rawParts: ['10.1.99.1', 'alvo@clinica.local'] },
+      { bucket: 'loginIp', rawParts: ['10.1.99.1'] },
+      { bucket: 'loginEmail', rawParts: ['alvo@clinica.local'] },
+    ]);
+    expect(blockedByEmail.allowed).toBe(false);
+
+    // Recuperacao por IP isolado: 10 tentativas alternando e-mails aceitas, 11a bloqueada
+    for (let i = 0; i < 10; i += 1) {
+      const email = `reset${Math.floor(i / 3)}@clinica.local`;
+      const r = await checkRateLimits([
+        { bucket: 'passwordReset', rawParts: ['10.2.0.1', email] },
+        { bucket: 'passwordResetIp', rawParts: ['10.2.0.1'] },
+      ]);
+      expect(r.allowed).toBe(true);
+    }
+    const resetBlockedByIp = await checkRateLimits([
+      { bucket: 'passwordReset', rawParts: ['10.2.0.1', 'outro@clinica.local'] },
+      { bucket: 'passwordResetIp', rawParts: ['10.2.0.1'] },
+    ]);
+    expect(resetBlockedByIp.allowed).toBe(false);
+  });
+
+  it('[8C.1 7.2] valida cookie assinado com session_id, consumo atomico unico e fail-closed sem Redis', async () => {
+    delete process.env.UPSTASH_REDIS_REST_URL;
+    delete process.env.UPSTASH_REDIS_REST_TOKEN;
+    delete process.env.RATE_LIMIT_ALLOW_DEV_MEMORY;
+    process.env.SUPABASE_SECRET_KEY = 'sb_secret_unit_test_signing_key_only';
+
+    const nowSec = Math.floor(Date.now() / 1000);
+    const created = createPasswordFlowCookieValue('u1', 'sess-1', 'recovery', nowSec);
+
+    // Sem Redis e sem flag dev -> fail-closed
+    const regClosed = await registerPasswordFlowNonce({
+      flowId: created.flowId,
+      userId: 'u1',
+      sessionId: 'sess-1',
+      flow: 'recovery',
+      nowSeconds: nowSec,
+    });
+    expect(regClosed).toEqual({ ok: false, reason: 'store_unavailable' });
+
+    // Com flag dev explicita -> registra e permite consumo atomico apenas uma vez
+    (process.env as Record<string, string | undefined>).NODE_ENV = 'test';
+    process.env.RATE_LIMIT_ALLOW_DEV_MEMORY = 'true';
+    const regOk = await registerPasswordFlowNonce({
+      flowId: created.flowId,
+      userId: 'u1',
+      sessionId: 'sess-1',
+      flow: 'recovery',
+      nowSeconds: nowSec,
+    });
+    expect(regOk).toEqual({ ok: true });
+
+    // Vinculo de session_id rejeita outra sessao
+    const badSess = verifyPasswordFlowCookie(
+      { headers: { 'x-forwarded-proto': 'https' }, cookies: { '__Host-recriar_pwd_flow': created.value } },
+      'u1',
+      'sess-2',
+      nowSec + 10
+    );
+    expect(badSess).toEqual({ ok: false, reason: 'session_mismatch' });
+
+    // Dois consumos concorrentes -> exatamente 1 sucesso e 1 rejeicao
+    const [c1, c2] = await Promise.all([
+      consumePasswordFlowNonce({ flowId: created.flowId, userId: 'u1', sessionId: 'sess-1', flow: 'recovery', nowSeconds: nowSec + 10 }),
+      consumePasswordFlowNonce({ flowId: created.flowId, userId: 'u1', sessionId: 'sess-1', flow: 'recovery', nowSeconds: nowSec + 10 }),
+    ]);
+    expect([c1.ok, c2.ok].filter(Boolean)).toHaveLength(1);
+    expect([c1.ok, c2.ok].filter((v) => !v)).toHaveLength(1);
   });
 
   it('diferencia configuracao_inicial_reportada_em de primeiro_acesso_observado_em nas regras de reenvio', () => {

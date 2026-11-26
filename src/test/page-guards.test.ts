@@ -228,25 +228,36 @@ describe('Etapa 7/8B — Guards SSR, matriz de navegacao, cache privado e fluxo 
 
     process.env.SUPABASE_SECRET_KEY = 'sb_secret_unit_test_signing_key_only';
     const nowSec = Math.floor(Date.now() / 1000);
-    const cookieVal = createPasswordFlowCookieValue(BASE_PROFILE.id, 'recovery', nowSec);
+    const created = createPasswordFlowCookieValue(BASE_PROFILE.id, 'sess-guard-1', 'recovery', nowSec);
 
     const ok = verifyPasswordFlowCookie(
-      { headers: { 'x-forwarded-proto': 'https' }, cookies: { '__Host-recriar_pwd_flow': cookieVal } },
+      { headers: { 'x-forwarded-proto': 'https' }, cookies: { '__Host-recriar_pwd_flow': created.value } },
       BASE_PROFILE.id,
+      'sess-guard-1',
       nowSec + 60
     );
-    expect(ok).toEqual({ ok: true, flow: 'recovery', iat: nowSec });
+    expect(ok).toEqual({ ok: true, flow: 'recovery', iat: nowSec, sid: 'sess-guard-1', fid: created.flowId });
 
     const wrongUser = verifyPasswordFlowCookie(
-      { headers: { 'x-forwarded-proto': 'https' }, cookies: { '__Host-recriar_pwd_flow': cookieVal } },
+      { headers: { 'x-forwarded-proto': 'https' }, cookies: { '__Host-recriar_pwd_flow': created.value } },
       '99999999-9999-4999-8999-999999999999',
+      'sess-guard-1',
       nowSec + 60
     );
     expect(wrongUser).toEqual({ ok: false, reason: 'user_mismatch' });
 
-    const tampered = verifyPasswordFlowCookie(
-      { headers: { 'x-forwarded-proto': 'https' }, cookies: { '__Host-recriar_pwd_flow': cookieVal + 'x' } },
+    const wrongSession = verifyPasswordFlowCookie(
+      { headers: { 'x-forwarded-proto': 'https' }, cookies: { '__Host-recriar_pwd_flow': created.value } },
       BASE_PROFILE.id,
+      'sess-guard-OUTRA',
+      nowSec + 60
+    );
+    expect(wrongSession).toEqual({ ok: false, reason: 'session_mismatch' });
+
+    const tampered = verifyPasswordFlowCookie(
+      { headers: { 'x-forwarded-proto': 'https' }, cookies: { '__Host-recriar_pwd_flow': created.value + 'x' } },
+      BASE_PROFILE.id,
+      'sess-guard-1',
       nowSec + 60
     );
     expect(tampered).toEqual({ ok: false, reason: 'invalid_signature' });

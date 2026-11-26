@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createPasswordFlowCookieValue } from '@/lib/security/passwordFlow';
+import { createPasswordFlowCookieValue, registerPasswordFlowNonce, resetDevPasswordFlowStore } from '@/lib/security/passwordFlow';
 import { resetDevRateLimitStore } from '@/lib/security/rateLimit';
 
 const mockUserClient = {
@@ -191,6 +191,7 @@ describe('integracao controlada das API Routes (Etapas 5, 6 e 8B.2)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     resetDevRateLimitStore();
+    resetDevPasswordFlowStore();
     process.env.RATE_LIMIT_ALLOW_DEV_MEMORY = 'true';
     process.env.NEXT_PUBLIC_SITE_URL = 'http://localhost:3000';
     process.env.SUPABASE_SECRET_KEY = 'sb_secret_unit_test_signing_key_only';
@@ -314,7 +315,7 @@ describe('integracao controlada das API Routes (Etapas 5, 6 e 8B.2)', () => {
     });
   });
 
-  it('[8B.2 getClaims + flow cookie] /api/auth/definir-senha-inicial exige AMBOS getClaims valido e cookie assinado do fluxo', async () => {
+  it('[8B.2/8C.1 getClaims + flow cookie atomico] /api/auth/definir-senha-inicial exige getClaims, sid e consumo unico atomico', async () => {
     const nowSec = Math.floor(Date.now() / 1000);
     setupAuthenticatedAdmin(true, ['usuarios.manage'], null);
 
@@ -324,25 +325,32 @@ describe('integracao controlada das API Routes (Etapas 5, 6 e 8B.2)', () => {
     expect(noFlowCookie.getStatus()).toBe(403);
     expect(mockUserClient.auth.getClaims).not.toHaveBeenCalled();
 
-    // 2. Com cookie assinado mas claims.sub divergente -> 403
-    const validInviteCookie = createPasswordFlowCookieValue(ADMIN_ID, 'invite', nowSec - 10);
+    // 2. Cookie valido mas session_id divergente do JWT -> 403
+    const validInvite = createPasswordFlowCookieValue(ADMIN_ID, 'sess-1', 'invite', nowSec - 10);
+    await registerPasswordFlowNonce({
+      flowId: validInvite.flowId,
+      userId: ADMIN_ID,
+      sessionId: 'sess-1',
+      flow: 'invite',
+      nowSeconds: nowSec - 10,
+    });
     mockUserClient.auth.getClaims.mockResolvedValueOnce({
       data: {
         claims: {
-          sub: TARGET_ID,
+          sub: ADMIN_ID,
           exp: nowSec + 600,
-          session_id: 'sess-1',
+          session_id: 'sess-OUTRA',
           amr: [{ method: 'invite', timestamp: nowSec - 10 }],
         },
       },
       error: null,
     });
-    const wrongSub = createReqRes({
-      cookies: { recriar_pwd_flow_dev: validInviteCookie },
+    const wrongSid = createReqRes({
+      cookies: { recriar_pwd_flow_dev: validInvite.value },
       body: { newPassword: 'NovaSenha@2026!' },
     });
-    await definirSenhaInicialHandler(wrongSub.req, wrongSub.res);
-    expect(wrongSub.getStatus()).toBe(403);
+    await definirSenhaInicialHandler(wrongSid.req, wrongSid.res);
+    expect(wrongSid.getStatus()).toBe(403);
 
     // 3. Com cookie assinado mas sessao com amr 'password' -> 403
     mockUserClient.auth.getClaims.mockResolvedValueOnce({
@@ -357,14 +365,14 @@ describe('integracao controlada das API Routes (Etapas 5, 6 e 8B.2)', () => {
       error: null,
     });
     const pwdAmr = createReqRes({
-      cookies: { recriar_pwd_flow_dev: validInviteCookie },
+      cookies: { recriar_pwd_flow_dev: validInvite.value },
       body: { newPassword: 'NovaSenha@2026!' },
     });
     await definirSenhaInicialHandler(pwdAmr.req, pwdAmr.res);
     expect(pwdAmr.getStatus()).toBe(403);
 
-    // 4. Fluxo invite valido (cookie assinado + getClaims ok) -> 200 e limpa cookie (Max-Age=0)
-    mockUserClient.auth.getClaims.mockResolvedValueOnce({
+    // 4. Duas requisicoes concorrentes com a mesma copia do cookie -> exatamente 1x 200 e 1x 403
+    mockUserClient.auth.getClaims.mockResolvedValue({
       data: {
         claims: {
           sub: ADMIN_ID,
@@ -375,22 +383,32 @@ describe('integracao controlada das API Routes (Etapas 5, 6 e 8B.2)', () => {
       },
       error: null,
     });
-    mockUserClient.auth.updateUser.mockResolvedValueOnce({ data: {}, error: null });
-    mockUserClient.rpc.mockResolvedValueOnce({ data: 'reported', error: null });
+    mockUserClient.auth.updateUser.mockResolvedValue({ data: {}, error: null });
+    mockUserClient.rpc.mockResolvedValue({ data: 'reported', error: null });
 
-    const okInvite = createReqRes({
-      cookies: { recriar_pwd_flow_dev: validInviteCookie },
+    const reqA = createReqRes({
+      cookies: { recriar_pwd_flow_dev: validInvite.value },
       body: { newPassword: 'NovaSenha@2026!' },
     });
-    await definirSenhaInicialHandler(okInvite.req, okInvite.res);
-    expect(okInvite.getStatus()).toBe(200);
-    expect(okInvite.getBody()).toEqual({
-      ok: true,
-      flow: 'initial_setup',
-      initialSetupReportState: 'reported',
+    const reqB = createReqRes({
+      cookies: { recriar_pwd_flow_dev: validInvite.value },
+      body: { newPassword: 'NovaSenha@2026!' },
     });
-    const setCookies = okInvite.getHeaders()['set-cookie'] as string[];
-    expect(setCookies.some((c) => c.includes('recriar_pwd_flow_dev=') && c.includes('Max-Age=0'))).toBe(true);
+    await Promise.all([
+      definirSenhaInicialHandler(reqA.req, reqA.res),
+      definirSenhaInicialHandler(reqB.req, reqB.res),
+    ]);
+    const statuses = [reqA.getStatus(), reqB.getStatus()].sort((a, b) => a - b);
+    expect(statuses).toEqual([200, 403]);
+    expect(mockUserClient.auth.updateUser).toHaveBeenCalledTimes(1);
+
+    // 5. Replay posterior com a mesma copia do cookie -> 403
+    const replay = createReqRes({
+      cookies: { recriar_pwd_flow_dev: validInvite.value },
+      body: { newPassword: 'NovaSenha@2026!' },
+    });
+    await definirSenhaInicialHandler(replay.req, replay.res);
+    expect(replay.getStatus()).toBe(403);
   });
 
   it('[8B.2 Migração 4 UI API] GET /api/admin/usuarios/falhas-sync respeita usuarios.manage e paginacao', async () => {
