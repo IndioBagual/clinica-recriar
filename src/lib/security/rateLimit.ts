@@ -3,7 +3,14 @@ import { Redis } from '@upstash/redis';
 import type { NextApiResponse } from 'next';
 import { hashIdentifier, isProductionRuntime } from './http';
 
-export type RateLimitBucket = 'login' | 'passwordReset' | 'adminSensitive' | 'inviteLink';
+export type RateLimitBucket =
+  | 'login'
+  | 'loginIp'
+  | 'loginEmail'
+  | 'passwordReset'
+  | 'passwordResetIp'
+  | 'adminSensitive'
+  | 'inviteLink';
 
 interface BucketConfig {
   limit: number;
@@ -12,12 +19,20 @@ interface BucketConfig {
   prefix: string;
 }
 
-const BUCKETS: Record<RateLimitBucket, BucketConfig> = {
+export const RATE_LIMIT_BUCKETS: Record<RateLimitBucket, BucketConfig> = {
   login: { limit: 5, windowMs: 15 * 60_000, upstashWindow: '15 m', prefix: 'recriar:rl:login' },
+  loginIp: { limit: 20, windowMs: 15 * 60_000, upstashWindow: '15 m', prefix: 'recriar:rl:login:ip' },
+  loginEmail: { limit: 10, windowMs: 15 * 60_000, upstashWindow: '15 m', prefix: 'recriar:rl:login:email' },
   passwordReset: { limit: 3, windowMs: 15 * 60_000, upstashWindow: '15 m', prefix: 'recriar:rl:reset' },
+  passwordResetIp: { limit: 10, windowMs: 15 * 60_000, upstashWindow: '15 m', prefix: 'recriar:rl:reset:ip' },
   adminSensitive: { limit: 30, windowMs: 60_000, upstashWindow: '1 m', prefix: 'recriar:rl:admin' },
   inviteLink: { limit: 10, windowMs: 15 * 60_000, upstashWindow: '15 m', prefix: 'recriar:rl:invite' },
 };
+
+export interface RateLimitCheckSpec {
+  bucket: RateLimitBucket;
+  rawParts: readonly string[];
+}
 
 export interface RateLimitResult {
   allowed: boolean;
@@ -27,10 +42,15 @@ export interface RateLimitResult {
 }
 
 const devMemoryStore = new Map<string, number[]>();
-const upstashLimiters = new Map<RateLimitBucket, Ratelimit>();
+const upstashLimiters = new Map<string, Ratelimit>();
 
 export function resetDevRateLimitStore(): void {
   devMemoryStore.clear();
+  upstashLimiters.clear();
+}
+
+export function normalizeRateLimitPart(part: string): string {
+  return part.trim().toLowerCase();
 }
 
 function getUpstashLimiter(bucket: RateLimitBucket): Ratelimit | null {
@@ -38,10 +58,11 @@ function getUpstashLimiter(bucket: RateLimitBucket): Ratelimit | null {
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
   if (!url || !token) return null;
 
-  const existing = upstashLimiters.get(bucket);
+  const cacheKey = `${bucket}:${url}:${hashIdentifier(token)}`;
+  const existing = upstashLimiters.get(cacheKey);
   if (existing) return existing;
 
-  const cfg = BUCKETS[bucket];
+  const cfg = RATE_LIMIT_BUCKETS[bucket];
   const redis = new Redis({ url, token });
   const limiter = new Ratelimit({
     redis,
@@ -49,12 +70,12 @@ function getUpstashLimiter(bucket: RateLimitBucket): Ratelimit | null {
     prefix: cfg.prefix,
     analytics: false,
   });
-  upstashLimiters.set(bucket, limiter);
+  upstashLimiters.set(cacheKey, limiter);
   return limiter;
 }
 
 function checkDevMemoryLimiter(bucket: RateLimitBucket, hashedKey: string): RateLimitResult {
-  const cfg = BUCKETS[bucket];
+  const cfg = RATE_LIMIT_BUCKETS[bucket];
   const storeKey = `${cfg.prefix}:${hashedKey}`;
   const now = Date.now();
   const cutoff = now - cfg.windowMs;
@@ -79,15 +100,17 @@ function checkDevMemoryLimiter(bucket: RateLimitBucket, hashedKey: string): Rate
 
 /**
  * Politica fail-closed:
- * - Se UPSTASH_REDIS_REST_URL/TOKEN estiverem configurados, usa Upstash; falha do Redis retorna unavailable=true (503).
+ * - Se UPSTASH_REDIS_REST_URL/TOKEN estiverem configurados, usa Upstash; falha retorna unavailable=true (503).
  * - Sem Upstash: NUNCA faz bypass silencioso. Em producao retorna unavailable=true (503).
  *   Fora de producao, somente usa limitador em memoria se RATE_LIMIT_ALLOW_DEV_MEMORY=true estiver explicito.
+ * - Identificadores sao normalizados (trim + lowercase) e passam por SHA-256 (zero e-mails/IPs em texto aberto).
  */
 export async function checkRateLimit(
   bucket: RateLimitBucket,
   rawParts: readonly string[]
 ): Promise<RateLimitResult> {
-  const hashedKey = hashIdentifier(rawParts.join('|'));
+  const normalized = rawParts.map(normalizeRateLimitPart).join('|');
+  const hashedKey = hashIdentifier(normalized);
   const upstash = getUpstashLimiter(bucket);
 
   if (upstash) {
@@ -114,22 +137,55 @@ export async function checkRateLimit(
   return { allowed: false, unavailable: true, remaining: 0, retryAfterSeconds: 60 };
 }
 
-export async function enforceRateLimit(
-  res: NextApiResponse,
-  bucket: RateLimitBucket,
-  rawParts: readonly string[]
+export async function checkRateLimits(
+  checks: readonly RateLimitCheckSpec[]
 ): Promise<RateLimitResult> {
-  const result = await checkRateLimit(bucket, rawParts);
+  if (checks.length === 0) {
+    return { allowed: true, unavailable: false, remaining: 0, retryAfterSeconds: 0 };
+  }
 
+  const results = await Promise.all(
+    checks.map((spec) => checkRateLimit(spec.bucket, spec.rawParts))
+  );
+
+  const unavailableResults = results.filter((r) => r.unavailable);
+  if (unavailableResults.length > 0) {
+    return {
+      allowed: false,
+      unavailable: true,
+      remaining: 0,
+      retryAfterSeconds: Math.max(...unavailableResults.map((r) => r.retryAfterSeconds)),
+    };
+  }
+
+  const blockedResults = results.filter((r) => !r.allowed);
+  if (blockedResults.length > 0) {
+    return {
+      allowed: false,
+      unavailable: false,
+      remaining: 0,
+      retryAfterSeconds: Math.max(...blockedResults.map((r) => r.retryAfterSeconds)),
+    };
+  }
+
+  return {
+    allowed: true,
+    unavailable: false,
+    remaining: Math.min(...results.map((r) => r.remaining)),
+    retryAfterSeconds: 0,
+  };
+}
+
+function sendRateLimitResponse(res: NextApiResponse, result: RateLimitResult): void {
   if (result.unavailable) {
     res.setHeader('Retry-After', String(result.retryAfterSeconds));
     res.status(503).json({
       error: {
         code: 'RATE_LIMIT_UNAVAILABLE',
-        message: 'Serviço de proteção temporariamente indisponível. Tente novamente em instantes.',
+        message: 'Servi?o de prote??o temporariamente indispon?vel. Tente novamente em instantes.',
       },
     });
-    return result;
+    return;
   }
 
   if (!result.allowed) {
@@ -137,11 +193,27 @@ export async function enforceRateLimit(
     res.status(429).json({
       error: {
         code: 'RATE_LIMITED',
-        message: 'Muitas tentativas em sequência. Aguarde antes de tentar novamente.',
+        message: 'Muitas tentativas em sequ?ncia. Aguarde antes de tentar novamente.',
       },
     });
-    return result;
   }
+}
 
+export async function enforceRateLimit(
+  res: NextApiResponse,
+  bucket: RateLimitBucket,
+  rawParts: readonly string[]
+): Promise<RateLimitResult> {
+  const result = await checkRateLimit(bucket, rawParts);
+  sendRateLimitResponse(res, result);
+  return result;
+}
+
+export async function enforceRateLimits(
+  res: NextApiResponse,
+  checks: readonly RateLimitCheckSpec[]
+): Promise<RateLimitResult> {
+  const result = await checkRateLimits(checks);
+  sendRateLimitResponse(res, result);
   return result;
 }

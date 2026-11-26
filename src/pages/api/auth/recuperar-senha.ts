@@ -9,7 +9,7 @@ import {
   requireJsonContentType,
   requireMethod,
 } from '@/lib/security/http';
-import { enforceRateLimit } from '@/lib/security/rateLimit';
+import { enforceRateLimits } from '@/lib/security/rateLimit';
 import { createEphemeralPublicAuthClient } from '@/lib/supabase/userServerClient';
 
 export const config = {
@@ -34,13 +34,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const parsed = passwordResetRequestSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({
-      error: { code: 'INVALID_INPUT', message: 'Informe um e-mail válido.' },
+      error: { code: 'INVALID_INPUT', message: 'Informe um e-mail v?lido.' },
     });
     return;
   }
 
   const clientIp = getTrustedClientIp(req);
-  const rl = await enforceRateLimit(res, 'passwordReset', [clientIp, parsed.data.email]);
+  const rl = await enforceRateLimits(res, [
+    { bucket: 'passwordReset', rawParts: [clientIp, parsed.data.email] },
+    { bucket: 'passwordResetIp', rawParts: [clientIp] },
+  ]);
   if (!rl.allowed) {
     if (!rl.unavailable) {
       await logSystemAuditSafe('AUTH_PASSWORD_RESET_REQUEST', 'auth', 'negado', 'rate_limited');
@@ -57,6 +60,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // Resposta neutra: nao enumera se o e-mail existe ou esta ativo
   res.status(200).json({
     ok: true,
-    message: 'Se o e-mail estiver cadastrado e autorizado, enviaremos instruções de redefinição.',
+    message: 'Se o e-mail estiver cadastrado e autorizado, enviaremos instru??es de redefini??o.',
   });
 }

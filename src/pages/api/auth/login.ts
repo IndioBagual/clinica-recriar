@@ -8,7 +8,7 @@ import {
   requireJsonContentType,
   requireMethod,
 } from '@/lib/security/http';
-import { enforceRateLimit } from '@/lib/security/rateLimit';
+import { enforceRateLimits } from '@/lib/security/rateLimit';
 import { createUserServerClient } from '@/lib/supabase/userServerClient';
 
 export const config = {
@@ -33,13 +33,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const parsed = loginSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({
-      error: { code: 'INVALID_INPUT', message: 'Credenciais em formato inválido.' },
+      error: { code: 'INVALID_INPUT', message: 'Credenciais em formato inv?lido.' },
     });
     return;
   }
 
   const clientIp = getTrustedClientIp(req);
-  const rl = await enforceRateLimit(res, 'login', [clientIp, parsed.data.email]);
+  const rl = await enforceRateLimits(res, [
+    { bucket: 'login', rawParts: [clientIp, parsed.data.email] },
+    { bucket: 'loginIp', rawParts: [clientIp] },
+    { bucket: 'loginEmail', rawParts: [parsed.data.email] },
+  ]);
   if (!rl.allowed) {
     if (!rl.unavailable) {
       await logSystemAuditSafe('AUTH_LOGIN_FAILED', 'auth', 'negado', 'rate_limited');
@@ -56,7 +60,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (signInError) {
     await logSystemAuditSafe('AUTH_LOGIN_FAILED', 'auth', 'negado', 'credenciais_invalidas');
     res.status(401).json({
-      error: { code: 'INVALID_CREDENTIALS', message: 'E-mail ou senha inválidos.' },
+      error: { code: 'INVALID_CREDENTIALS', message: 'E-mail ou senha inv?lidos.' },
     });
     return;
   }
@@ -68,7 +72,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       await logSystemAuditSafe('ACCESS_DENIED', 'auth', 'negado', 'sem_perfil');
     }
     res.status(403).json({
-      error: { code: 'ACCESS_DENIED', message: 'Conta não autorizada ou desativada.' },
+      error: { code: 'ACCESS_DENIED', message: 'Conta n?o autorizada ou desativada.' },
     });
     return;
   }
