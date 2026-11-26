@@ -8,7 +8,11 @@ import {
   requireJsonContentType,
   requireMethod,
 } from '@/lib/security/http';
-import { clearPasswordFlowCookie, verifyPasswordFlowCookie } from '@/lib/security/passwordFlow';
+import {
+  clearPasswordFlowCookie,
+  consumePasswordFlowNonce,
+  verifyPasswordFlowCookie,
+} from '@/lib/security/passwordFlow';
 import { enforceRateLimit } from '@/lib/security/rateLimit';
 
 export const config = {
@@ -31,18 +35,15 @@ export interface VerifiedClaimsCheck {
   ok: boolean;
   reason?: string;
   observedMethods: string[];
+  sessionId?: string;
 }
 
 /**
- * Valida claims JA VERIFICADOS pelo SDK via `supabase.auth.getClaims()` (JWKS ou Auth API):
- * - Correspondencia estrita de `sub` com `auth.userId`;
- * - Token nao expirado (`exp > now`);
- * - Vinculo a uma sessao ativa (`session_id` nao vazio);
- * - Metodo `amr` recente (invite|recovery|otp <= 15m) sem autenticacao `password` igual ou posterior.
- *
- * IMPORTANTE: isoladamente, `otp` NAO e tratado como prova suficiente de convite/recuperacao;
- * esta validacao atua SEMPRE em conjunto com `verifyPasswordFlowCookie`, emitido apenas no SSR
- * apos `verifyOtp(token_hash, 'invite' | 'recovery')`.
+ * Valida claims JA VERIFICADOS pelo SDK via supabase.auth.getClaims():
+ * - Correspondencia estrita de sub com auth.userId;
+ * - Token nao expirado (exp > now);
+ * - Vinculo a uma sessao ativa (session_id nao vazio);
+ * - Metodo amr recente (invite|recovery|otp <= 15m) sem autenticacao password igual ou posterior.
  */
 export function validateVerifiedClaimsForPasswordSetup(
   claims: Record<string, unknown> | null | undefined,
@@ -64,6 +65,7 @@ export function validateVerifiedClaimsForPasswordSetup(
   if (typeof claims.session_id !== 'string' || claims.session_id.trim().length === 0) {
     return { ok: false, reason: 'missing_session_id', observedMethods: [] };
   }
+  const sessionId = claims.session_id.trim();
 
   if (!Array.isArray(claims.amr) || claims.amr.length === 0) {
     return { ok: false, reason: 'missing_amr', observedMethods: [] };
@@ -102,7 +104,7 @@ export function validateVerifiedClaimsForPasswordSetup(
     return { ok: false, reason: 'amr_expired', observedMethods };
   }
 
-  return { ok: true, observedMethods };
+  return { ok: true, observedMethods, sessionId };
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -134,13 +136,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       error: {
         code: 'INITIAL_OR_RECOVERY_SESSION_REQUIRED',
         message:
-          'Esta rota é restrita a sessões recentes originadas de convite ou recuperação. Utilize /api/auth/alterar-senha.',
+          'Esta rota ? restrita a sess?es recentes originadas de convite ou recupera??o. Utilize /api/auth/alterar-senha.',
       },
     });
     return;
   }
 
-  // 2. Valida claims autenticados do JWT via getClaims() (assinatura/exp/sub/session_id/amr)
+  // 2. Valida claims autenticados do JWT via getClaims() e correspondencia estrita de session_id
   const { data: claimsData, error: claimsError } = await auth.supabase.auth.getClaims();
   const claimsCheck = claimsError
     ? { ok: false, reason: 'claims_verification_failed', observedMethods: [] }
@@ -149,7 +151,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         auth.userId
       );
 
-  if (!claimsCheck.ok) {
+  if (!claimsCheck.ok || !claimsCheck.sessionId || flowCheck.sid !== claimsCheck.sessionId) {
     await auth.supabase.rpc('rpc_log_authenticated_event', {
       p_acao: 'ACCESS_DENIED',
       p_recurso_entidade: 'auth',
@@ -159,39 +161,86 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       error: {
         code: 'INITIAL_OR_RECOVERY_SESSION_REQUIRED',
         message:
-          'Sessão incompatível ou expirada para definição inicial/recuperação. Solicite um novo link ou utilize /api/auth/alterar-senha.',
+          'Sess?o incompat?vel ou expirada para defini??o inicial/recupera??o. Solicite um novo link ou utilize /api/auth/alterar-senha.',
       },
     });
     return;
   }
 
+  // 3. Valida politica minima da nova senha antes de consumir o nonce
   const parsed = initialPasswordSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({
       error: {
         code: 'INVALID_PASSWORD',
-        message: parsed.error.issues[0]?.message ?? 'Senha não atende aos requisitos mínimos.',
+        message: parsed.error.issues[0]?.message ?? 'Senha n?o atende aos requisitos m?nimos.',
       },
     });
     return;
   }
 
-  // 3. Alteracao efetiva da senha realizada pelo Supabase Auth
-  const { error: updateError } = await auth.supabase.auth.updateUser({
-    password: parsed.data.newPassword,
+  // 4. Consumo atomico de uso unico no servidor (GETDEL no Upstash) ANTES da mutacao no GoTrue.
+  //    Garante no maximo 1 vencedor sob concorrencia e impede replay de copias anteriores do cookie.
+  const consumed = await consumePasswordFlowNonce({
+    flowId: flowCheck.fid,
+    userId: auth.userId,
+    sessionId: claimsCheck.sessionId,
+    flow: flowCheck.flow,
   });
 
-  if (updateError) {
-    res.status(400).json({
-      error: { code: 'PASSWORD_UPDATE_FAILED', message: 'Não foi possível definir a senha.' },
+  if (!consumed.ok) {
+    if (consumed.reason === 'store_unavailable') {
+      res.setHeader('Retry-After', '60');
+      res.status(503).json({
+        error: {
+          code: 'FLOW_PROTECTION_UNAVAILABLE',
+          message: 'Servi?o de prote??o temporariamente indispon?vel. Tente novamente em instantes.',
+        },
+      });
+      return;
+    }
+
+    clearPasswordFlowCookie(req, res);
+    await auth.supabase.rpc('rpc_log_authenticated_event', {
+      p_acao: 'ACCESS_DENIED',
+      p_recurso_entidade: 'auth',
+      p_codigo_motivo: 'sem_permissao',
+    });
+    res.status(403).json({
+      error: {
+        code: 'INITIAL_OR_RECOVERY_SESSION_REQUIRED',
+        message:
+          'Esta autoriza??o de defini??o de senha j? foi utilizada ou expirou. Solicite um novo link.',
+      },
     });
     return;
   }
 
-  // Consome/limpa o cookie assinado imediatamente (uso unico)
+  // Remove o cookie no navegador imediatamente; o nonce nao e reabilitado se o GoTrue falhar/der timeout
   clearPasswordFlowCookie(req, res);
 
-  // Diferencia fluxo inicial (convite) de recuperacao de senha
+  // 5. Alteracao efetiva da senha realizada pelo Supabase Auth
+  let updateError: { message?: string } | null = null;
+  try {
+    const result = await auth.supabase.auth.updateUser({
+      password: parsed.data.newPassword,
+    });
+    updateError = result.error;
+  } catch {
+    updateError = { message: 'external_auth_error' };
+  }
+
+  if (updateError) {
+    res.status(400).json({
+      error: {
+        code: 'PASSWORD_UPDATE_FAILED',
+        message:
+          'N?o foi poss?vel confirmar a atualiza??o da senha. Caso o acesso n?o funcione, solicite um novo link.',
+      },
+    });
+    return;
+  }
+
   if (flowCheck.flow === 'invite' && auth.profile.primeiro_acesso_observado_em === null) {
     const { data: reportState } = await auth.supabase.rpc('rpc_report_initial_setup_completed');
     res.status(200).json({
