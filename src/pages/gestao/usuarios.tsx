@@ -297,8 +297,8 @@ export default function GestaoUsuariosPage({
     setPendingAction({
       title: nextActive ? 'Reativar conta administrativa' : 'Desativar conta administrativa',
       description: nextActive
-        ? `Confirmar a reativação da conta de ${target.nome} (${target.email})? Uma sincronização de desbloqueio será enfileirada para o Supabase Auth.`
-        : `Confirmar a desativação da conta de ${target.nome} (${target.email})? O acesso ao painel /gestao será bloqueado imediatamente no servidor e no banco, e o bloqueio no Auth será enfileirado.`,
+        ? `Confirmar a reativação da conta de ${target.nome} (${target.email})? Por segurança, todas as sessões anteriores são revogadas e a senha anterior é invalidada; o usuário deverá definir nova senha em "Recuperar senha" para voltar a acessar.`
+        : `Confirmar a desativação da conta de ${target.nome} (${target.email})? O acesso ao painel /gestao será bloqueado imediatamente no banco, e o bloqueio com revogação global de sessões será sincronizado no Supabase Auth.`,
       confirmLabel: nextActive ? 'Confirmar reativação' : 'Confirmar desativação',
       tone: nextActive ? 'primary' : 'danger',
       run: async () => {
@@ -315,8 +315,8 @@ export default function GestaoUsuariosPage({
         }
         setSuccessMsg(
           nextActive
-            ? `Conta de ${target.nome} reativada com sincronização enfileirada.`
-            : `Conta de ${target.nome} desativada com sincronização enfileirada.`
+            ? `Conta de ${target.nome} reativada com revogação de sessões anteriores. O usuário deverá usar "Recuperar senha" para definir nova senha.`
+            : `Conta de ${target.nome} desativada com revogação global de sessões sincronizada/enfileirada.`
         );
         await refreshUsersAndFailures();
       },

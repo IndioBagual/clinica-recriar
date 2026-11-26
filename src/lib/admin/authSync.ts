@@ -41,13 +41,21 @@ export interface ReconcileUserRow {
   estado_ativacao_versao: number;
 }
 
+export interface ReconcileCursorState {
+  epoch: number;
+  afterId: string | null;
+}
+
 export interface ReconcileCursorSetOptions {
+  expectedEpoch?: number;
   expectedCursor?: string | null;
   wrapped?: boolean;
+  completedFullPass?: boolean;
 }
 
 export interface ReconcileCursorStore {
   getCursor(): Promise<string | null>;
+  getCursorState?(): Promise<ReconcileCursorState>;
   setCursor(afterId: string | null, options?: ReconcileCursorSetOptions): Promise<boolean | void>;
 }
 
@@ -60,7 +68,7 @@ export interface AuthSyncClientLike {
     admin: {
       updateUserById(
         uid: string,
-        attributes: { ban_duration: string }
+        attributes: { ban_duration?: string; password?: string }
       ): Promise<{ data: unknown; error: { status?: number; message?: string; code?: string } | null }>;
       getUserById(
         uid: string
@@ -182,21 +190,97 @@ export function classifyAuthSyncError(err: unknown): AuthSyncErrorCode {
   return 'auth_5xx';
 }
 
-const LUA_MONOTONIC_SET_CURSOR = `
-local cur = redis.call('GET', KEYS[1])
-if (not cur) or (ARGV[1] > cur) or (ARGV[4] == '1' and ARGV[3] ~= '' and cur == ARGV[3]) then
-  redis.call('SET', KEYS[1], ARGV[1], 'EX', tonumber(ARGV[2]))
-  return 1
-end
-return 0
-`;
+/**
+ * Gera senha criptograficamente aleatoria (descartada imediatamente) para acionar
+ * a revogacao global nativa de sessoes/refresh tokens do GoTrue via updateUserById.
+ */
+export function generateRevocationPassword(): string {
+  return `Rev!9aA#${crypto.randomBytes(24).toString('base64url')}`;
+}
 
-const LUA_CAS_CLEAR_CURSOR = `
-local cur = redis.call('GET', KEYS[1])
-if (not cur) or (ARGV[1] ~= '' and cur == ARGV[1]) then
-  redis.call('DEL', KEYS[1])
-  return 1
+export function parseCursorState(raw: string | null | undefined): ReconcileCursorState {
+  if (typeof raw !== 'string' || raw.length === 0) {
+    return { epoch: 0, afterId: null };
+  }
+  const sep = raw.indexOf('|');
+  if (sep > 0) {
+    const parsedEpoch = Number(raw.slice(0, sep));
+    if (Number.isInteger(parsedEpoch) && parsedEpoch >= 0) {
+      const suffix = raw.slice(sep + 1);
+      return { epoch: parsedEpoch, afterId: suffix.length > 0 ? suffix : null };
+    }
+  }
+  // Compatibilidade defensiva com valor legado sem prefixo de epoch
+  return { epoch: 0, afterId: raw };
+}
+
+/**
+ * Atualizacao atomica do cursor com epoch monotonico ("<epoch>|<afterId>"):
+ * - 'complete': avanca epoch -> expectedEpoch + 1 e limpa afterId apenas se curEpoch == expectedEpoch.
+ *   Mantem o epoch persistido para bloquear workers atrasados da volta anterior.
+ * - 'progress': avanca afterId monotonico apenas dentro do mesmo epoch (curEpoch == expectedEpoch).
+ * - 'wrapped': transiciona expectedEpoch -> expectedEpoch + 1 (ou avanca dentro de expectedEpoch + 1).
+ * - Chave ausente/expirada: somente aceita expectedEpoch == 0 (impede ressurreicao por worker antigo).
+ */
+const LUA_EPOCH_CURSOR_UPDATE = `
+local raw = redis.call('GET', KEYS[1])
+local nextAfter = ARGV[1]
+local ttl = tonumber(ARGV[2])
+local expectedEpoch = tonumber(ARGV[3])
+local mode = ARGV[4]
+
+local curEpoch = nil
+local curAfter = ''
+
+if not raw then
+  if expectedEpoch ~= 0 then
+    return 0
+  end
+  curEpoch = 0
+  curAfter = ''
+else
+  local sep = string.find(raw, '|', 1, true)
+  if sep then
+    curEpoch = tonumber(string.sub(raw, 1, sep - 1))
+    curAfter = string.sub(raw, sep + 1)
+  else
+    curEpoch = 0
+    curAfter = raw
+  end
+  if curEpoch == nil then
+    if expectedEpoch ~= 0 then
+      return 0
+    end
+    curEpoch = 0
+    curAfter = ''
+  end
 end
+
+if mode == 'complete' then
+  if curEpoch == expectedEpoch then
+    redis.call('SET', KEYS[1], tostring(expectedEpoch + 1) .. '|', 'EX', ttl)
+    return 1
+  end
+  return 0
+end
+
+if mode == 'progress' then
+  if curEpoch == expectedEpoch and nextAfter ~= '' and (curAfter == '' or nextAfter > curAfter) then
+    redis.call('SET', KEYS[1], tostring(expectedEpoch) .. '|' .. nextAfter, 'EX', ttl)
+    return 1
+  end
+  return 0
+end
+
+if mode == 'wrapped' then
+  local nextEpoch = expectedEpoch + 1
+  if nextAfter ~= '' and (curEpoch == expectedEpoch or (curEpoch == nextEpoch and (curAfter == '' or nextAfter > curAfter))) then
+    redis.call('SET', KEYS[1], tostring(nextEpoch) .. '|' .. nextAfter, 'EX', ttl)
+    return 1
+  end
+  return 0
+end
+
 return 0
 `;
 
@@ -207,34 +291,36 @@ export function createUpstashCursorStore(): ReconcileCursorStore | null {
 
   const redis = new Redis({ url, token });
   return {
+    async getCursorState(): Promise<ReconcileCursorState> {
+      const value = await redis.get<string>(AUTH_SYNC_DEFAULTS.cursorRedisKey);
+      return parseCursorState(value);
+    },
     async getCursor(): Promise<string | null> {
       const value = await redis.get<string>(AUTH_SYNC_DEFAULTS.cursorRedisKey);
-      return typeof value === 'string' && value.length > 0 ? value : null;
+      return parseCursorState(value).afterId;
     },
     async setCursor(
       afterId: string | null,
       options?: ReconcileCursorSetOptions
     ): Promise<boolean> {
-      if (afterId === null) {
-        if (options === undefined) {
-          await redis.del(AUTH_SYNC_DEFAULTS.cursorRedisKey);
-          return true;
-        }
-        const expected = options.expectedCursor ?? '';
-        const cleared = await redis.eval(
-          LUA_CAS_CLEAR_CURSOR,
-          [AUTH_SYNC_DEFAULTS.cursorRedisKey],
-          [expected]
-        );
-        return Number(cleared) === 1;
+      if (afterId === null && options === undefined) {
+        await redis.del(AUTH_SYNC_DEFAULTS.cursorRedisKey);
+        return true;
       }
 
-      const expected = options?.expectedCursor ?? '';
-      const wrapped = options?.wrapped ? '1' : '0';
+      const expectedEpoch = Math.max(0, Math.floor(options?.expectedEpoch ?? 0));
+      const mode =
+        options?.completedFullPass || afterId === null
+          ? 'complete'
+          : options?.wrapped
+            ? 'wrapped'
+            : 'progress';
+      const nextAfter = mode === 'complete' ? '' : (afterId ?? '');
+
       const written = await redis.eval(
-        LUA_MONOTONIC_SET_CURSOR,
+        LUA_EPOCH_CURSOR_UPDATE,
         [AUTH_SYNC_DEFAULTS.cursorRedisKey],
-        [afterId, String(AUTH_SYNC_DEFAULTS.cursorTtlSeconds), expected, wrapped]
+        [nextAfter, String(AUTH_SYNC_DEFAULTS.cursorTtlSeconds), String(expectedEpoch), mode]
       );
       return Number(written) === 1;
     },
@@ -289,14 +375,36 @@ async function processSingleClaimedJob(
   let erroCodigo: AuthSyncErrorCode | null = null;
 
   try {
-    const banDuration = job.operacao === 'ban_user' ? AUTH_SYNC_DEFAULTS.banDuration : 'none';
-    const { error: authError } = await client.auth.admin.updateUserById(job.target_user_id, {
-      ban_duration: banDuration,
-    });
-    if (authError) {
-      erroCodigo = classifyAuthSyncError(authError);
+    if (job.operacao === 'ban_user') {
+      // Banimento + rotacao de senha aleatoria: aciona revogacao global nativa de
+      // sessoes e refresh tokens no GoTrue (sem armazenar JWTs ou alterar auth.*).
+      const { error: authError } = await client.auth.admin.updateUserById(job.target_user_id, {
+        ban_duration: AUTH_SYNC_DEFAULTS.banDuration,
+        password: generateRevocationPassword(),
+      });
+      if (authError) {
+        erroCodigo = classifyAuthSyncError(authError);
+      } else {
+        ok = true;
+      }
     } else {
-      ok = true;
+      // Reativacao (unban): revoga globalmente quaisquer sessoes/refresh tokens residuais
+      // ANTES de remover o banimento. Em caso de falha na etapa 1, o unban NAO e aplicado.
+      const { error: revokeError } = await client.auth.admin.updateUserById(job.target_user_id, {
+        password: generateRevocationPassword(),
+      });
+      if (revokeError) {
+        erroCodigo = classifyAuthSyncError(revokeError);
+      } else {
+        const { error: unbanError } = await client.auth.admin.updateUserById(job.target_user_id, {
+          ban_duration: 'none',
+        });
+        if (unbanError) {
+          erroCodigo = classifyAuthSyncError(unbanError);
+        } else {
+          ok = true;
+        }
+      }
     }
   } catch (err) {
     erroCodigo = classifyAuthSyncError(err);
@@ -435,15 +543,25 @@ export async function reconcileAuthDrift(
 
   let afterId: string | null = null;
   let initialAfterId: string | null = null;
+  let initialEpoch = 0;
   let cursorPersisted = false;
 
   if (cursorStore) {
     try {
-      afterId = await cursorStore.getCursor();
-      initialAfterId = afterId;
+      if (cursorStore.getCursorState) {
+        const state = await cursorStore.getCursorState();
+        afterId = state.afterId;
+        initialAfterId = state.afterId;
+        initialEpoch = state.epoch;
+      } else {
+        afterId = await cursorStore.getCursor();
+        initialAfterId = afterId;
+        initialEpoch = 0;
+      }
     } catch {
       afterId = null;
       initialAfterId = null;
+      initialEpoch = 0;
     }
   }
 
@@ -563,7 +681,12 @@ export async function reconcileAuthDrift(
     try {
       const updated = await cursorStore.setCursor(
         result.completedFullPass ? null : result.nextAfterId,
-        { expectedCursor: initialAfterId, wrapped: wrappedOnce }
+        {
+          expectedEpoch: initialEpoch,
+          expectedCursor: initialAfterId,
+          wrapped: wrappedOnce,
+          completedFullPass: result.completedFullPass,
+        }
       );
       cursorPersisted = updated !== false;
     } catch {

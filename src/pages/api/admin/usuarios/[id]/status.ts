@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { logSystemAuditSafe, requireApiAuth } from '@/lib/admin/auth';
+import { drainAuthSyncOutbox } from '@/lib/admin/authSync';
 import { setUserStatusSchema, uuidParamSchema } from '@/lib/admin/schemas';
 import { validateCsrfAndOrigin } from '@/lib/security/csrf';
 import {
@@ -40,20 +41,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const idParsed = uuidParamSchema.safeParse(req.query.id);
   if (!idParsed.success) {
-    res.status(400).json({ error: { code: 'INVALID_ID', message: 'ID de usuário inválido.' } });
+    res.status(400).json({ error: { code: 'INVALID_ID', message: 'ID de usu?rio inv?lido.' } });
     return;
   }
 
   if (idParsed.data === auth.userId) {
     res.status(403).json({
-      error: { code: 'SELF_STATUS_CHANGE_FORBIDDEN', message: 'Não é permitido alterar a própria ativação.' },
+      error: { code: 'SELF_STATUS_CHANGE_FORBIDDEN', message: 'N?o ? permitido alterar a pr?pria ativa??o.' },
     });
     return;
   }
 
   const bodyParsed = setUserStatusSchema.safeParse(req.body);
   if (!bodyParsed.success) {
-    res.status(400).json({ error: { code: 'INVALID_INPUT', message: 'Campo ativo (booleano) é obrigatório.' } });
+    res.status(400).json({ error: { code: 'INVALID_INPUT', message: 'Campo ativo (booleano) ? obrigat?rio.' } });
     return;
   }
 
@@ -68,20 +69,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       res.status(409).json({
         error: {
           code: 'LAST_ADMIN_PRINCIPAL_PROTECTED',
-          message: 'Não é permitido desativar o último Administrador Principal ativo.',
+          message: 'N?o ? permitido desativar o ?ltimo Administrador Principal ativo.',
         },
       });
       return;
     }
     if (error.code === '42501') {
       res.status(403).json({
-        error: { code: 'FORBIDDEN', message: 'Operação não autorizada para este alvo.' },
+        error: { code: 'FORBIDDEN', message: 'Opera??o n?o autorizada para este alvo.' },
       });
       return;
     }
     if (error.code === '22023') {
       res.status(404).json({
-        error: { code: 'USER_NOT_FOUND', message: 'Usuário alvo não encontrado.' },
+        error: { code: 'USER_NOT_FOUND', message: 'Usu?rio alvo n?o encontrado.' },
       });
       return;
     }
@@ -92,10 +93,36 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const row = Array.isArray(data) ? data[0] : data;
+  const resultado: string = row?.resultado ?? 'updated';
+
+  // Dreno imediato best-effort cercado pela outbox: aplica ban/unban + revogacao global
+  // no GoTrue em milissegundos, preservando retry duravel em caso de falha ou timeout.
+  let authSyncImmediate: 'synced' | 'queued' | 'not_needed' = 'not_needed';
+  if (resultado === 'deactivated' || resultado === 'reactivated') {
+    authSyncImmediate = 'queued';
+    try {
+      const drain = await drainAuthSyncOutbox({
+        workerId: `status-api-${auth.userId.slice(0, 8)}`,
+        claimLimit: 5,
+        concurrency: 5,
+        leaseSeconds: 60,
+        requestTimeoutMs: 4_000,
+        timeBudgetMs: 8_500,
+        maxBatches: 1,
+      });
+      if (drain.succeeded > 0 && drain.failedRetriable === 0 && drain.failedPermanent === 0) {
+        authSyncImmediate = 'synced';
+      }
+    } catch {
+      authSyncImmediate = 'queued';
+    }
+  }
+
   res.status(200).json({
     ok: true,
-    resultado: row?.resultado ?? 'updated',
+    resultado,
     outboxJobId: row?.outbox_job_id ?? null,
     novaVersao: row?.nova_versao ?? null,
+    authSyncImmediate,
   });
 }
