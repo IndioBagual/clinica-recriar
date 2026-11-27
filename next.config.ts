@@ -1,6 +1,15 @@
 import type { NextConfig } from "next";
 
+const netlifyBuildEnv: Record<string, string> = {};
+if (process.env.DEPLOY_PRIME_URL) {
+  netlifyBuildEnv.DEPLOY_PRIME_URL = process.env.DEPLOY_PRIME_URL;
+}
+if (process.env.CONTEXT) {
+  netlifyBuildEnv.CONTEXT = process.env.CONTEXT;
+}
+
 const nextConfig: NextConfig = {
+  ...(Object.keys(netlifyBuildEnv).length > 0 ? { env: netlifyBuildEnv } : {}),
   images: {
     formats: ["image/avif", "image/webp"],
   },
