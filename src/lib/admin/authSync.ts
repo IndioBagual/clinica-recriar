@@ -396,6 +396,27 @@ async function processSingleClaimedJob(
       if (revokeError) {
         erroCodigo = classifyAuthSyncError(revokeError);
       } else {
+        // Revalida claim e versao vigente entre etapa 1 (password) e etapa 2 (unban)
+        const { data: verifyBeforeUnban, error: verifyBeforeUnbanErr } = await client.rpc(
+          'rpc_verify_auth_sync_job',
+          {
+            p_job_id: job.job_id,
+            p_claim_token: job.claim_token,
+          }
+        );
+        if (verifyBeforeUnbanErr) {
+          counters.abortedInvalidClaim += 1;
+          return;
+        }
+        if (verifyBeforeUnban === 'abort_stale') {
+          counters.abortedStale += 1;
+          return;
+        }
+        if (verifyBeforeUnban !== 'valid') {
+          counters.abortedInvalidClaim += 1;
+          return;
+        }
+
         const { error: unbanError } = await client.auth.admin.updateUserById(job.target_user_id, {
           ban_duration: 'none',
         });
