@@ -182,7 +182,7 @@ function sendRateLimitResponse(res: NextApiResponse, result: RateLimitResult): v
     res.status(503).json({
       error: {
         code: 'RATE_LIMIT_UNAVAILABLE',
-        message: 'Servi?o de prote??o temporariamente indispon?vel. Tente novamente em instantes.',
+        message: 'Serviço de proteção temporariamente indisponível. Tente novamente em instantes.',
       },
     });
     return;
@@ -193,7 +193,7 @@ function sendRateLimitResponse(res: NextApiResponse, result: RateLimitResult): v
     res.status(429).json({
       error: {
         code: 'RATE_LIMITED',
-        message: 'Muitas tentativas em sequ?ncia. Aguarde antes de tentar novamente.',
+        message: 'Muitas tentativas em sequência. Aguarde antes de tentar novamente.',
       },
     });
   }

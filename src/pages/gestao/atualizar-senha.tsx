@@ -60,12 +60,12 @@ export const getServerSideProps: GetServerSideProps<AtualizarSenhaProps> = async
   if (errorCode) {
     const message =
       errorCode === 'otp_expired' || errorCode === 'access_denied'
-        ? 'O link de convite ou recupera??o expirou ou j? foi utilizado. Solicite um novo link.'
+        ? 'O link de convite ou recuperação expirou ou já foi utilizado. Solicite um novo link.'
         : errorCode === 'unsupported_link_format'
-          ? 'Formato de link n?o suportado. Solicite um novo convite ou recupera??o de senha.'
+          ? 'Formato de link não suportado. Solicite um novo convite ou recuperação de senha.'
           : errorCode === 'service_unavailable'
-            ? 'Servi?o de prote??o temporariamente indispon?vel. Solicite um novo link em instantes.'
-            : 'Link de acesso inv?lido. Solicite um novo convite ou recupera??o de senha.';
+            ? 'Serviço de proteção temporariamente indisponível. Solicite um novo link em instantes.'
+            : 'Link de acesso inválido. Solicite um novo convite ou recuperação de senha.';
     return {
       props: {
         linkError: message,
@@ -155,7 +155,8 @@ export const getServerSideProps: GetServerSideProps<AtualizarSenhaProps> = async
 
     return {
       redirect: {
-        destination: '/gestao/atualizar-senha',
+        // Querystring explicita forca o roteador da Netlify a descartar token_hash e type da URL
+        destination: '/gestao/atualizar-senha?etapa=definir_senha',
         permanent: false,
       },
     };
@@ -217,7 +218,7 @@ export const getServerSideProps: GetServerSideProps<AtualizarSenhaProps> = async
   if (nonceState.unavailable) {
     return {
       props: {
-        linkError: 'Servi?o de prote??o temporariamente indispon?vel. Tente novamente em instantes.',
+        linkError: 'Serviço de proteção temporariamente indisponível. Tente novamente em instantes.',
         hasValidFlowSession: false,
         flowType: null,
         sessionEmail: null,
@@ -275,8 +276,8 @@ export default function AtualizarSenhaPage({
     if (inspected.errorCode) {
       const msg =
         inspected.errorCode === 'otp_expired' || inspected.errorCode === 'access_denied'
-          ? 'O link de convite ou recupera??o expirou. Solicite um novo link.'
-          : 'N?o foi poss?vel validar o link recebido.';
+          ? 'O link de convite ou recuperação expirou. Solicite um novo link.'
+          : 'Não foi possível validar o link recebido.';
       Promise.resolve().then(() => setFragmentError(msg));
       return;
     }
@@ -284,7 +285,7 @@ export default function AtualizarSenhaPage({
     if (inspected.hasUnexpectedTokens) {
       Promise.resolve().then(() =>
         setFragmentError(
-          'Links com tokens no fragmento da URL n?o s?o aceitos por pol?tica de seguran?a. Solicite um novo link.'
+          'Links com tokens no fragmento da URL não são aceitos por política de segurança. Solicite um novo link.'
         )
       );
     }
@@ -318,7 +319,7 @@ export default function AtualizarSenhaPage({
       if (res.errorCode === 'INITIAL_OR_RECOVERY_SESSION_REQUIRED') {
         setNeedsChangePasswordRoute(true);
       }
-      setErrorMessage(res.errorMessage ?? 'N?o foi poss?vel atualizar a senha.');
+      setErrorMessage(res.errorMessage ?? 'Não foi possível atualizar a senha.');
       setSubmitting(false);
       return;
     }
@@ -329,7 +330,7 @@ export default function AtualizarSenhaPage({
   return (
     <AuthShell
       title={flowType === 'invite' ? 'Definir senha inicial' : 'Definir nova senha'}
-      description="Fluxo exclusivo para links recentes de convite administrativo ou recupera??o de senha."
+      description="Fluxo exclusivo para links recentes de convite administrativo ou recuperação de senha."
     >
       {fragmentError && (
         <div
@@ -339,7 +340,7 @@ export default function AtualizarSenhaPage({
           <p>{fragmentError}</p>
           <div className="mt-3 flex flex-wrap gap-3 text-xs font-semibold">
             <Link href="/gestao/recuperar-senha" className="text-teal-800 underline">
-              Solicitar nova recupera??o
+              Solicitar nova recuperação
             </Link>
             <Link href="/gestao/login" className="text-slate-700 underline">
               Ir para o login
@@ -354,7 +355,7 @@ export default function AtualizarSenhaPage({
           className="mb-5 rounded-xl border border-teal-200 bg-teal-50 px-4 py-3 text-sm text-teal-900"
         >
           Link validado para a conta <strong>{sessionEmail}</strong> (
-          {flowType === 'invite' ? 'convite inicial' : 'recupera??o de senha'}).
+          {flowType === 'invite' ? 'convite inicial' : 'recuperação de senha'}).
         </div>
       )}
 
@@ -364,7 +365,7 @@ export default function AtualizarSenhaPage({
           className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
         >
           <p>
-            Voc? j? est? autenticado em uma sess?o administrativa comum. Para alterar sua senha
+            Você já está autenticado em uma sessão administrativa comum. Para alterar sua senha
             informando a senha atual, utilize a tela Minha conta.
           </p>
           <p className="mt-2">
@@ -380,8 +381,8 @@ export default function AtualizarSenhaPage({
           role="status"
           className="mb-5 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700"
         >
-          Nenhuma sess?o recente de convite ou recupera??o foi detectada. Abra o link recebido por
-          e-mail ou solicite uma nova recupera??o de senha.
+          Nenhuma sessão recente de convite ou recuperação foi detectada. Abra o link recebido por
+          e-mail ou solicite uma nova recuperação de senha.
         </div>
       )}
 
@@ -436,19 +437,19 @@ export default function AtualizarSenhaPage({
 
         <ul
           className="space-y-1 rounded-xl bg-slate-50 p-3 text-xs text-slate-700"
-          aria-label="Requisitos m?nimos da senha"
+          aria-label="Requisitos mínimos da senha"
         >
           <li className={checks.minLength ? 'font-medium text-emerald-700' : ''}>
-            ? M?nimo de 12 caracteres (m?ximo 128)
+            • Mínimo de 12 caracteres (máximo 128)
           </li>
           <li className={checks.upper && checks.lower ? 'font-medium text-emerald-700' : ''}>
-            ? Letras mai?sculas e min?sculas
+            • Letras maiúsculas e minúsculas
           </li>
           <li className={checks.digit && checks.special ? 'font-medium text-emerald-700' : ''}>
-            ? Pelo menos um n?mero e um caractere especial
+            • Pelo menos um número e um caractere especial
           </li>
           <li className={checks.match ? 'font-medium text-emerald-700' : ''}>
-            ? Confirma??o id?ntica ? nova senha
+            • Confirmação idêntica à nova senha
           </li>
         </ul>
 
