@@ -770,6 +770,45 @@ describe('Etapa 6 — Worker Outbox, Timeout HTTP Real, Reconciliacao e Netlify 
     expect(sim.users.get(uid)?.passwordRotations).toBe(2);
   });
 
+  it('[9B 8.1] aborta etapa 2 do unban se a versao mudar ou lease expirar durante etapa 1 (password)', async () => {
+    const sim = new SimulatedAuthAndOutbox();
+    const uid = '11111111-1111-4111-8111-111111111121';
+    sim.addUser(uid, false, 2, new Date(sim.clockMs + 3.6e12).toISOString(), 0);
+    sim.setUserActive(uid, true); // v3 -> unban
+
+    const baseClient = sim.createClient();
+    const calls: Array<{ ban_duration?: string; password?: string }> = [];
+    const raceClient: AuthSyncClientLike = {
+      rpc: baseClient.rpc.bind(baseClient),
+      auth: {
+        admin: {
+          getUserById: baseClient.auth.admin.getUserById.bind(baseClient.auth.admin),
+          async updateUserById(targetId, attrs) {
+            calls.push(attrs);
+            const res = await baseClient.auth.admin.updateUserById(targetId, attrs);
+            if (attrs.password) {
+              // Admin desativa novamente (v4) enquanto etapa 1 estava em voo
+              sim.setUserActive(uid, false);
+            }
+            return res;
+          },
+        },
+      },
+    };
+
+    const r1 = await drainAuthSyncOutbox({
+      workerId: 'w-9b-mid-unban',
+      client: raceClient,
+      now: () => sim.clockMs,
+      maxBatches: 1,
+    });
+    expect(r1.abortedStale).toBe(1);
+    expect(calls).toHaveLength(1);
+    expect(calls[0].password).toBeDefined();
+    expect(calls[0].ban_duration).toBeUndefined();
+    expect(sim.users.get(uid)?.bannedUntil).not.toBeNull();
+  });
+
   it('[8D 6] protege cursor com epoch entre voltas completas, nova volta iniciada e expiracao', async () => {
     const sim = new SimulatedAuthAndOutbox();
     const ids = [
