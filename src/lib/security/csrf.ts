@@ -16,11 +16,16 @@ export function getCsrfCookieName(req: NextApiRequest): string {
 
 export function getAllowedOrigins(): Set<string> {
   const origins = new Set<string>();
-  const envUrls = [
-    process.env.NEXT_PUBLIC_SITE_URL,
-    process.env.DEPLOY_PRIME_URL,
-    process.env.URL,
-  ];
+  const isPreviewContext =
+    process.env.CONTEXT === 'deploy-preview' || process.env.CONTEXT === 'branch-deploy';
+  const envUrls =
+    isPreviewContext && process.env.DEPLOY_PRIME_URL
+      ? [process.env.DEPLOY_PRIME_URL]
+      : [
+          process.env.NEXT_PUBLIC_SITE_URL,
+          process.env.DEPLOY_PRIME_URL,
+          process.env.URL,
+        ];
 
   for (const raw of envUrls) {
     if (!raw) continue;
