@@ -143,12 +143,20 @@ export function sanitizeInternalRedirect(raw: unknown, fallback = '/gestao'): st
 }
 
 export function getCanonicalSiteOrigin(): string {
-  const candidates = [
-    process.env.NEXT_PUBLIC_SITE_URL,
-    process.env.DEPLOY_PRIME_URL,
-    process.env.URL,
-    !isProductionRuntime() ? 'http://localhost:3000' : undefined,
-  ];
+  const isPreviewContext =
+    process.env.CONTEXT === 'deploy-preview' || process.env.CONTEXT === 'branch-deploy';
+  const candidates = isPreviewContext
+    ? [
+        process.env.DEPLOY_PRIME_URL,
+        process.env.NEXT_PUBLIC_SITE_URL,
+        process.env.URL,
+      ]
+    : [
+        process.env.NEXT_PUBLIC_SITE_URL,
+        process.env.DEPLOY_PRIME_URL,
+        process.env.URL,
+        !isProductionRuntime() ? 'http://localhost:3000' : undefined,
+      ];
   for (const candidate of candidates) {
     if (!candidate) continue;
     try {

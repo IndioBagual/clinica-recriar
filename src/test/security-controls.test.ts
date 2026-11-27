@@ -16,6 +16,7 @@ import {
 } from '@/lib/security/csrf';
 import {
   appendSetCookie,
+  getCanonicalSiteOrigin,
   getTrustedClientIp,
   sanitizeInternalRedirect,
 } from '@/lib/security/http';
@@ -130,6 +131,17 @@ describe('controles de seguranca HTTP, CSRF, Origin, Rate Limit e Zod v4', () =>
       socket: { remoteAddress: '127.0.0.1' },
     } as unknown as NextApiRequest;
     expect(getTrustedClientIp(reqNetlify)).toBe('203.0.113.10');
+  });
+
+  it('[9A] prioriza DEPLOY_PRIME_URL como origem canonica em deploy-preview mesmo com NEXT_PUBLIC_SITE_URL de producao', () => {
+    (process.env as Record<string, string | undefined>).NODE_ENV = 'production';
+    process.env.CONTEXT = 'deploy-preview';
+    process.env.NEXT_PUBLIC_SITE_URL = 'https://clinicarecriar.com.br';
+    process.env.DEPLOY_PRIME_URL = 'https://deploy-preview-42--clinicarecriar.netlify.app';
+    expect(getCanonicalSiteOrigin()).toBe('https://deploy-preview-42--clinicarecriar.netlify.app');
+
+    process.env.CONTEXT = 'production';
+    expect(getCanonicalSiteOrigin()).toBe('https://clinicarecriar.com.br');
   });
 
   it('bloqueia open redirects fora de /gestao', () => {
